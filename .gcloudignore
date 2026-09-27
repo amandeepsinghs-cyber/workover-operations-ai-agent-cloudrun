@@ -1,0 +1,8 @@
+.git
+.venv
+backend/.venv
+node_modules
+frontend/node_modules
+archive
+*.log
+.DS_Store

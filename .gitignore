@@ -10,8 +10,8 @@ __pycache__/
 # Node / Frontend
 node_modules/
 frontend/node_modules/
-dist/
-frontend/dist/
+/dist/
+# frontend/dist/ tracked for turnkey Docker builds
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*

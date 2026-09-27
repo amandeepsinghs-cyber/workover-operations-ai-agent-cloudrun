@@ -1,20 +1,9 @@
 # ==============================================================================
-# Multi-Stage Dockerfile for WellPulse Cloud Run Deployment
-# Builds React+Vite Frontend and serves via FastAPI Backend in a single container
+# Dockerfile for WellPulse Cloud Run Deployment
+# Serves React+Vite Frontend and FastAPI Backend
 # ==============================================================================
 
-# Stage 1: Build Frontend Assets
-FROM node:20-alpine AS frontend-builder
-WORKDIR /app/frontend
-
-COPY frontend/package*.json ./
-RUN npm install
-
-COPY frontend/ ./
-RUN npm run build
-
-# Stage 2: Python Runtime Environment
-FROM python:3.11-slim AS runner
+FROM python:3.11-slim
 WORKDIR /app
 
 ENV PYTHONUNBUFFERED=1
@@ -28,7 +17,7 @@ COPY backend/requirements.txt ./
 RUN pip install --no-cache-dir -r requirements.txt
 
 COPY backend/ /app/backend/
-COPY --from=frontend-builder /app/frontend/dist /app/frontend/dist
+COPY frontend/dist/ /app/frontend/dist/
 
 WORKDIR /app/backend
 
