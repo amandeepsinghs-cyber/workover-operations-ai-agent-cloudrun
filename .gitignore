@@ -1,0 +1,38 @@
+# Python virtual environment
+.venv/
+backend/.venv/
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# Node / Frontend
+node_modules/
+frontend/node_modules/
+dist/
+frontend/dist/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# Environment and secrets
+.env
+.env.local
+.env.*.local
+*.pem
+*.key
+
+# Temporary data exports
+backend/app/data/lake_export/
+
+# IDE / System
+.vscode/
+.idea/
+.DS_Store
+*.swp
+*.swo
+
+# Logs
+*.log
