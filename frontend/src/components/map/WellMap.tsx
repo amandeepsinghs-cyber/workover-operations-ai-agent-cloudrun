@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import L from 'leaflet';
-import { WellSummary } from '../../types/well';
-import { Globe, Layers } from 'lucide-react';
+import { WellSummary, FieldInfrastructure, GatheringStation } from '../../types/well';
+import { Globe, Layers, Network, Building2 } from 'lucide-react';
 
 interface WellMapProps {
   wells: WellSummary[];
@@ -17,8 +17,23 @@ export const WellMap: React.FC<WellMapProps> = ({
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<L.Map | null>(null);
   const tileLayerGroupRef = useRef<L.LayerGroup | null>(null);
+  const infraLayerGroupRef = useRef<L.LayerGroup | null>(null);
   const markersRef = useRef<{ [id: string]: L.Marker }>({});
   const [mapStyle, setMapStyle] = useState<'satellite' | 'dark'>('satellite');
+  const [showFlowlines, setShowFlowlines] = useState<boolean>(true);
+  const [infrastructure, setInfrastructure] = useState<FieldInfrastructure | null>(null);
+
+  // Fetch Geleki Field Infrastructure (GGS stations, CDP)
+  useEffect(() => {
+    fetch('/api/field/infrastructure')
+      .then((res) => res.json())
+      .then((data: FieldInfrastructure) => {
+        setInfrastructure(data);
+      })
+      .catch((err) => {
+        console.warn('Field infrastructure fetch failed, using fallback:', err);
+      });
+  }, []);
 
   // Initialize Leaflet Map
   useEffect(() => {
@@ -34,6 +49,10 @@ export const WellMap: React.FC<WellMapProps> = ({
 
     const tileGroup = L.layerGroup().addTo(map);
     tileLayerGroupRef.current = tileGroup;
+
+    const infraGroup = L.layerGroup().addTo(map);
+    infraLayerGroupRef.current = infraGroup;
+
     mapInstanceRef.current = map;
 
     return () => {
@@ -237,12 +256,223 @@ export const WellMap: React.FC<WellMapProps> = ({
     }
   }, [wells, selectedWellId, onSelectWell]);
 
+  // Update Infrastructure and Flowlines Layer
+  useEffect(() => {
+    const infraGroup = infraLayerGroupRef.current;
+    if (!infraGroup) return;
+
+    infraGroup.clearLayers();
+
+    if (!infrastructure || !showFlowlines) return;
+
+    const cdpStation = infrastructure.gathering_stations.find((s) => s.id.startsWith('CDP'));
+
+    // 1. Render Trunk Flowlines from GGS stations to Central Desalting Plant (CDP)
+    if (cdpStation) {
+      infrastructure.gathering_stations.forEach((station) => {
+        if (!station.id.startsWith('CDP')) {
+          const trunkLine = L.polyline(
+            [
+              [station.coordinates.lat, station.coordinates.lng],
+              [cdpStation.coordinates.lat, cdpStation.coordinates.lng],
+            ],
+            {
+              color: '#10b981',
+              weight: 3,
+              dashArray: '8, 8',
+              opacity: 0.75,
+              smoothFactor: 1,
+            }
+          );
+          trunkLine.bindTooltip(`Main Gathering Header: ${station.id} ➔ ${cdpStation.id}`, {
+            sticky: true,
+            className: 'font-mono text-[10px]',
+          });
+          infraGroup.addLayer(trunkLine);
+        }
+      });
+    }
+
+    // 2. Render Field Flowlines from Wells to their Servicing GGS
+    const wellMapById: { [id: string]: WellSummary } = {};
+    wells.forEach((w) => {
+      wellMapById[w.id] = w;
+    });
+
+    infrastructure.gathering_stations.forEach((station) => {
+      if (station.serviced_wells) {
+        station.serviced_wells.forEach((wellId) => {
+          const well = wellMapById[wellId];
+          if (well) {
+            const isTargetWell = well.id === selectedWellId;
+            const flowline = L.polyline(
+              [
+                [well.coordinates.lat, well.coordinates.lng],
+                [station.coordinates.lat, station.coordinates.lng],
+              ],
+              {
+                color: isTargetWell ? '#60a5fa' : '#38bdf8',
+                weight: isTargetWell ? 3.5 : 1.8,
+                dashArray: '4, 6',
+                opacity: isTargetWell ? 0.95 : 0.55,
+                smoothFactor: 1,
+              }
+            );
+            flowline.bindTooltip(`${well.id} ➔ ${station.id} Flowline`, {
+              sticky: true,
+              className: 'font-mono text-[10px]',
+            });
+            infraGroup.addLayer(flowline);
+          }
+        });
+      }
+    });
+
+    // 3. Render Gathering Station (GGS) & CDP Facility Markers
+    infrastructure.gathering_stations.forEach((station) => {
+      const isCDP = station.id.startsWith('CDP');
+      const facilityColor = isCDP ? '#06b6d4' : '#f59e0b';
+      const facilityBg = isCDP ? 'rgba(6, 182, 212, 0.25)' : 'rgba(245, 158, 11, 0.25)';
+
+      const facilityIcon = L.divIcon({
+        className: 'custom-facility-pin',
+        html: `
+          <div style="position: relative; width: 34px; height: 34px; cursor: pointer;">
+            <!-- Permanent Facility Label -->
+            <div style="
+              position: absolute;
+              bottom: 38px;
+              left: 50%;
+              transform: translateX(-50%);
+              background: rgba(13, 17, 23, 0.94);
+              border: 1.5px solid ${facilityColor};
+              color: ${facilityColor};
+              font-family: 'JetBrains Mono', monospace;
+              font-size: 10px;
+              font-weight: 800;
+              padding: 2px 6px;
+              border-radius: 4px;
+              white-space: nowrap;
+              box-shadow: 0 4px 12px rgba(0,0,0,0.85);
+              pointer-events: none;
+              letter-spacing: 0.5px;
+            ">
+              ${station.id}
+            </div>
+
+            <!-- Pulsing Ring -->
+            <div style="
+              position: absolute;
+              top: -4px;
+              left: -4px;
+              width: 42px;
+              height: 42px;
+              border-radius: 8px;
+              border: 2px solid ${facilityColor};
+              opacity: 0.4;
+            "></div>
+
+            <!-- Facility Hexagon/Square Hub Icon -->
+            <div style="
+              width: 34px;
+              height: 34px;
+              border-radius: 8px;
+              background-color: #0d1117;
+              border: 2px solid ${facilityColor};
+              box-shadow: 0 0 12px ${facilityBg};
+              display: flex;
+              align-items: center;
+              justify-content: center;
+            ">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="${facilityColor}" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="4" y="2" width="16" height="20" rx="2" />
+                <path d="M9 22v-4h6v4" />
+                <path d="M8 6h.01" />
+                <path d="M16 6h.01" />
+                <path d="M12 6h.01" />
+                <path d="M12 10h.01" />
+                <path d="M12 14h.01" />
+                <path d="M16 10h.01" />
+                <path d="M16 14h.01" />
+                <path d="M8 10h.01" />
+                <path d="M8 14h.01" />
+              </svg>
+            </div>
+          </div>
+        `,
+        iconSize: [34, 34],
+        iconAnchor: [17, 17],
+      });
+
+      const facilityMarker = L.marker([station.coordinates.lat, station.coordinates.lng], {
+        icon: facilityIcon,
+        zIndexOffset: 500,
+      });
+
+      const stationPopup = `
+        <div style="font-family: 'Inter', sans-serif; font-size: 12px; color: #e6edf3; min-width: 200px;">
+          <div style="font-weight: 700; font-size: 13px; color: ${facilityColor}; margin-bottom: 2px;">
+            ${station.name}
+          </div>
+          <div style="font-family: monospace; font-size: 10px; color: #8b949e; margin-bottom: 8px;">
+            Infrastructure Node: ${station.id}
+          </div>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px; border-top: 1px solid #30363d; padding-top: 6px;">
+            <div>
+              <span style="color: #8b949e; font-size: 10px;">Throughput Cap:</span><br/>
+              <strong style="color: #ffffff;">${station.capacity_bopd.toLocaleString()} BOPD</strong>
+            </div>
+            ${station.compressor_capacity_mmscfd ? `
+              <div>
+                <span style="color: #8b949e; font-size: 10px;">Compressor Cap:</span><br/>
+                <strong style="color: #ffffff;">${station.compressor_capacity_mmscfd} MMSCFD</strong>
+              </div>
+            ` : ''}
+            ${station.water_handling_bwpd ? `
+              <div>
+                <span style="color: #8b949e; font-size: 10px;">Effluent Treatment:</span><br/>
+                <strong style="color: #ffffff;">${station.water_handling_bwpd.toLocaleString()} BWPD</strong>
+              </div>
+            ` : ''}
+          </div>
+          ${station.serviced_wells ? `
+            <div style="margin-top: 8px; border-top: 1px solid #30363d; padding-top: 6px;">
+              <span style="color: #8b949e; font-size: 10px;">Serviced Production Wells:</span><br/>
+              <div style="display: flex; flex-wrap: wrap; gap: 4px; margin-top: 4px;">
+                ${station.serviced_wells.map((wId) => `
+                  <span style="font-family: monospace; font-size: 9px; padding: 1px 4px; background: rgba(56, 189, 248, 0.15); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.4); border-radius: 3px;">${wId}</span>
+                `).join('')}
+              </div>
+            </div>
+          ` : ''}
+        </div>
+      `;
+
+      facilityMarker.bindPopup(stationPopup);
+      infraGroup.addLayer(facilityMarker);
+    });
+  }, [infrastructure, showFlowlines, wells, selectedWellId]);
+
   return (
     <div className="relative w-full h-full">
       <div ref={mapContainerRef} className="w-full h-full z-0" />
 
-      {/* Layer Style Switcher (Satellite vs Dark GIS) */}
-      <div className="absolute top-3 right-3 z-[400] flex items-center bg-surface/90 backdrop-blur-md border border-border p-1 rounded-lg shadow-xl font-mono text-xs">
+      {/* Layer Style & Flowline Controls */}
+      <div className="absolute top-3 right-3 z-[400] flex items-center gap-1.5 bg-surface/90 backdrop-blur-md border border-border p-1 rounded-lg shadow-xl font-mono text-xs">
+        <button
+          onClick={() => setShowFlowlines(!showFlowlines)}
+          title="Toggle Geleki Field Flowline Network & GGS Gathering Stations"
+          className={`flex items-center gap-1.5 px-2.5 py-1 rounded transition-colors ${
+            showFlowlines
+              ? 'bg-emerald-600 text-white font-bold shadow-sm'
+              : 'text-textMuted hover:text-white'
+          }`}
+        >
+          <Network className="w-3.5 h-3.5" /> Flowlines
+        </button>
+
+        <span className="text-border">|</span>
+
         <button
           onClick={() => setMapStyle('satellite')}
           className={`flex items-center gap-1.5 px-2.5 py-1 rounded transition-colors ${
@@ -251,7 +481,7 @@ export const WellMap: React.FC<WellMapProps> = ({
               : 'text-textMuted hover:text-white'
           }`}
         >
-          <Globe className="w-3.5 h-3.5" /> Satellite Field
+          <Globe className="w-3.5 h-3.5" /> Satellite
         </button>
         <button
           onClick={() => setMapStyle('dark')}
@@ -261,30 +491,44 @@ export const WellMap: React.FC<WellMapProps> = ({
               : 'text-textMuted hover:text-white'
           }`}
         >
-          <Layers className="w-3.5 h-3.5" /> Dark SCADA
+          <Layers className="w-3.5 h-3.5" /> SCADA
         </button>
       </div>
 
       {/* Map Legend Overlay */}
-      <div className="absolute bottom-4 left-4 z-[400] bg-surface/90 backdrop-blur-md border border-border px-3 py-2 rounded-lg text-xs font-mono shadow-xl">
-        <div className="text-[10px] text-textMuted uppercase font-bold tracking-wider mb-1.5">
-          Geleki Field Health Legend
+      <div className="absolute bottom-4 left-4 z-[400] bg-surface/90 backdrop-blur-md border border-border px-3 py-2.5 rounded-lg text-xs font-mono shadow-xl max-w-xs">
+        <div className="text-[10px] text-textMuted uppercase font-bold tracking-wider mb-2">
+          Geleki Production & Infrastructure
         </div>
         <div className="flex flex-col gap-1.5">
           <div className="flex items-center gap-2">
-            <span className="w-3 h-3 rounded-full bg-healthy border border-surface"></span>
-            <span className="text-textMain">Healthy / Flowing</span>
+            <span className="w-2.5 h-2.5 rounded-full bg-healthy border border-surface"></span>
+            <span className="text-textMain text-[11px]">Healthy Producing Well</span>
           </div>
           <div className="flex items-center gap-2">
-            <span className="w-3 h-3 rounded-full bg-warning border border-surface"></span>
-            <span className="text-textMain">Needs Attention (Wax / Water Cut)</span>
+            <span className="w-2.5 h-2.5 rounded-full bg-warning border border-surface"></span>
+            <span className="text-textMain text-[11px]">Needs Attention (Wax / Water Cut)</span>
           </div>
           <div className="flex items-center gap-2">
-            <span className="w-3 h-3 rounded-full bg-critical border border-surface animate-pulse"></span>
-            <span className="text-textMain">Critical / Tripped</span>
+            <span className="w-2.5 h-2.5 rounded-full bg-critical border border-surface animate-pulse"></span>
+            <span className="text-textMain text-[11px]">Critical / Tripped</span>
+          </div>
+          <div className="border-t border-border/80 my-0.5"></div>
+          <div className="flex items-center gap-2">
+            <span className="w-2.5 h-2.5 rounded bg-amber-500 border border-amber-300"></span>
+            <span className="text-textMain text-[11px]">Gas Gathering Station (GGS)</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="w-2.5 h-2.5 rounded bg-cyan-500 border border-cyan-300"></span>
+            <span className="text-textMain text-[11px]">Central Desalting Plant (CDP)</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="w-5 h-0.5 border-t border-dashed border-sky-400"></span>
+            <span className="text-textMain text-[11px]">Well Flowlines & Headers</span>
           </div>
         </div>
       </div>
     </div>
   );
 };
+

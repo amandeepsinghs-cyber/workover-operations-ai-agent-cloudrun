@@ -96,7 +96,7 @@ export const VoiceAgentPanel: React.FC<VoiceAgentPanelProps> = ({ well }) => {
     if (SpeechRecognition) {
       const recognition = new SpeechRecognition();
       recognition.continuous = false;
-      recognition.interimResults = false;
+      recognition.interimResults = true;
 
       // Select recognition language
       if (language === 'hindi') {
@@ -112,10 +112,27 @@ export const VoiceAgentPanel: React.FC<VoiceAgentPanelProps> = ({ well }) => {
       };
 
       recognition.onresult = (event: any) => {
-        const transcript = event.results[0][0].transcript;
-        setInputPrompt(transcript);
-        setIsListening(false);
-        handleSendMessage(transcript);
+        let interimText = '';
+        let finalText = '';
+
+        for (let i = event.resultIndex; i < event.results.length; ++i) {
+          const item = event.results[i];
+          if (item.isFinal) {
+            finalText += item[0].transcript;
+          } else {
+            interimText += item[0].transcript;
+          }
+        }
+
+        if (interimText) {
+          setInputPrompt(interimText);
+        }
+
+        if (finalText) {
+          setInputPrompt(finalText);
+          setIsListening(false);
+          handleSendMessage(finalText);
+        }
       };
 
       recognition.onerror = (event: any) => {
@@ -402,11 +419,21 @@ export const VoiceAgentPanel: React.FC<VoiceAgentPanelProps> = ({ well }) => {
 
       {/* Dynamic Sound Wave Visualizer Banner (When Active) */}
       {(isListening || isSpeaking) && (
-        <div className="h-10 bg-blue-950/40 border-b border-blue-800/40 px-4 flex items-center justify-between text-xs font-mono">
-          <span className="text-blue-300 flex items-center gap-2">
+        <div
+          className={`h-10 border-b px-4 flex items-center justify-between text-xs font-mono transition-colors ${
+            isListening
+              ? 'bg-emerald-950/60 border-emerald-800/60'
+              : 'bg-blue-950/40 border-blue-800/40'
+          }`}
+        >
+          <span
+            className={`flex items-center gap-2 font-medium ${
+              isListening ? 'text-emerald-300' : 'text-blue-300'
+            }`}
+          >
             {isListening ? (
               <>
-                <Mic className="w-3.5 h-3.5 text-rose-400 animate-bounce" /> Listening ({language.toUpperCase()})...
+                <Mic className="w-3.5 h-3.5 text-emerald-400 animate-pulse" /> Listening ({language.toUpperCase()})... Speak now
               </>
             ) : (
               <>
@@ -417,11 +444,26 @@ export const VoiceAgentPanel: React.FC<VoiceAgentPanelProps> = ({ well }) => {
 
           {/* Animated Frequency Bars */}
           <div className="flex items-center gap-1 h-5">
-            <div className="w-1 bg-accent rounded-full animate-wave" style={{ animationDelay: '0ms' }}></div>
-            <div className="w-1 bg-accent rounded-full animate-wave" style={{ animationDelay: '150ms' }}></div>
-            <div className="w-1 bg-accent rounded-full animate-wave" style={{ animationDelay: '300ms' }}></div>
-            <div className="w-1 bg-accent rounded-full animate-wave" style={{ animationDelay: '450ms' }}></div>
-            <div className="w-1 bg-accent rounded-full animate-wave" style={{ animationDelay: '200ms' }}></div>
+            <div
+              className={`w-1 rounded-full animate-wave ${isListening ? 'bg-emerald-400' : 'bg-accent'}`}
+              style={{ animationDelay: '0ms' }}
+            ></div>
+            <div
+              className={`w-1 rounded-full animate-wave ${isListening ? 'bg-emerald-400' : 'bg-accent'}`}
+              style={{ animationDelay: '150ms' }}
+            ></div>
+            <div
+              className={`w-1 rounded-full animate-wave ${isListening ? 'bg-emerald-400' : 'bg-accent'}`}
+              style={{ animationDelay: '300ms' }}
+            ></div>
+            <div
+              className={`w-1 rounded-full animate-wave ${isListening ? 'bg-emerald-400' : 'bg-accent'}`}
+              style={{ animationDelay: '450ms' }}
+            ></div>
+            <div
+              className={`w-1 rounded-full animate-wave ${isListening ? 'bg-emerald-400' : 'bg-accent'}`}
+              style={{ animationDelay: '200ms' }}
+            ></div>
           </div>
         </div>
       )}
@@ -562,14 +604,20 @@ export const VoiceAgentPanel: React.FC<VoiceAgentPanelProps> = ({ well }) => {
           <button
             type="button"
             onClick={toggleVoiceInput}
-            title={isListening ? 'Stop listening' : 'Start voice input'}
-            className={`p-2.5 rounded-lg border transition-all ${
+            title={isListening ? 'Listening... Click to send or stop' : 'Click to speak via microphone'}
+            className={`relative p-2.5 rounded-lg border transition-all ${
               isListening
-                ? 'bg-rose-600 text-white border-rose-500 animate-pulse shadow-lg shadow-rose-600/30'
-                : 'bg-[#0d1117] text-textMuted hover:text-white border-border hover:border-accent'
+                ? 'bg-emerald-600 text-white border-emerald-400 ring-4 ring-emerald-500/30 shadow-lg shadow-emerald-500/40'
+                : 'bg-[#0d1117] text-emerald-400 hover:text-white border-border hover:border-emerald-500/60'
             }`}
           >
-            {isListening ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
+            <Mic className={`w-4 h-4 ${isListening ? 'animate-bounce text-white' : ''}`} />
+            {isListening && (
+              <span className="absolute -top-1 -right-1 flex h-2.5 w-2.5">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
+              </span>
+            )}
           </button>
 
           <input

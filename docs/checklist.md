@@ -1,8 +1,8 @@
 # Implementation & Verification Checklist (`checklist.md`)
 ## WellPulse: Energy Well Operations & Voice AI Platform
 
-**Document Version:** 1.0.0  
-**Status:** In Progress  
+**Document Version:** 2.0.0  
+**Status:** In Progress (Autonomous Overnight Execution)
 
 ---
 
@@ -11,109 +11,72 @@
 - [x] Relocate legacy `drilling-dashboard/` and `drilling-intelligence/` into `archive/`.
 - [x] Synthesize `archive/LEARNINGS.md` with lessons learned.
 - [x] Scaffold top-level project folders: `docs/`, `backend/`, `frontend/`, `scripts/`.
-- [x] Create repository README and symlinks.
+- [x] Initialize Git repository and link to GitHub remote.
 
 ---
 
 ## Phase 2: Specification Documentation Suite
-- [x] Generate **BRD.md** (Business Requirements Document: Executive Summary, Personas, Objectives, Functional & Non-functional requirements).
-- [x] Generate **BDD.md** (Behavior-Driven Development: Gherkin scenarios for Map Triage, Telemetry, Timeline, Voice AI, and Recommendations).
-- [x] Generate **SDD.md** (Software Design Document: System Architecture, Tech Stack, Data Models, API Specs, Voice Pipeline).
+- [x] Generate **BRD.md** (Business Requirements Document).
+- [x] Generate **BDD.md** (Behavior-Driven Development Gherkin scenarios).
+- [x] Generate **SDD.md** (Software Design Document & Architecture).
 - [x] Generate **features.md** (Detailed Feature Catalog with MoSCoW prioritization).
-- [x] Generate **build.md** (Step-by-step local prerequisites, environment setup, and execution commands).
-- [x] Generate **checklist.md** (This phased verification tracker).
+- [x] Generate **build.md** (Step-by-step local prerequisites and execution commands).
+- [x] Generate **checklist.md** (Phased verification tracker).
 
 ---
 
 ## Phase 3: Backend & Synthetic Data Engine
-- [x] Create `backend/requirements.txt` (fastapi, uvicorn, pydantic, google-genai).
-- [x] Implement `backend/app/services/data_generator.py` simulating 50 Geleki Brownfield wells (Assam Asset, ONGC) with:
-  - [x] 730 days of realistic daily telemetry (BOPD, MCFD, Water Cut %, Tubing/Casing Pressure psi).
-  - [x] Realistic failure events (Gas lift cuts, severe paraffin wax choking, Tipam sand bridging).
-  - [x] Comprehensive historical workover logs (Hot oil wax cleanouts, WSO polymer squeezes, gravel packs, GLV replacements with costs and flow deltas).
-- [x] Implement `backend/app/api/wells.py` endpoints:
-  - [x] `GET /api/health`
-  - [x] `GET /api/wells` (with status and formation filters)
-  - [x] `GET /api/wells/kpis` (fleet metrics)
-  - [x] `GET /api/wells/{id}`
-  - [x] `GET /api/wells/{id}/history`
-  - [x] `GET /api/wells/{id}/workovers`
-  - [x] `POST /api/wells/{id}/chat`
-  - [x] `POST /api/wells/{id}/recommendations`
-- [x] Implement `backend/app/services/ai_agent.py`:
-  - [x] Context builder assembling well profile, 24-month high/lows, and workover history.
-  - [x] Live Gemini 2.5 Flash query integration when `GEMINI_API_KEY` is present.
-  - [x] Deterministic local Petroleum Diagnostic fallback engine when API key is omitted.
-  - [x] Structured prescriptive workover recommendation generation.
-- [x] Implement `backend/run.py` server launcher.
+- [x] Create `backend/requirements.txt` (`fastapi`, `uvicorn`, `pydantic`, `python-dotenv`, `google-genai`).
+- [x] Implement `backend/app/services/data_generator.py` simulating 50 Geleki Brownfield wells with 730d telemetry.
+- [x] Implement `backend/app/api/wells.py` REST API and WebSocket routes.
+- [x] Implement Engineering Reports Dossier Generator:
+  - [x] Well Completion Report (WCR)
+  - [x] Daily Workover Shift Log (DWR)
+  - [x] Bottomhole Pressure & Sonolog Survey (BHP)
+  - [x] Produced Water Chemistry & Scale Assay (Lab)
+- [x] Implement GCS Data Lake export script and hydrate `gs://workover-operations-agentic-ai-datalake`.
 
 ---
 
 ## Phase 4: Frontend Map, Telemetry & Voice UI
-- [x] Initialize `frontend/package.json` with React 18, Vite, Tailwind CSS, Leaflet, Recharts, and Lucide-react.
-- [x] Configure `tailwind.config.js` with industrial dark SCADA theme palette:
-  - `#0d1117` main background
-  - `#161b22` card containers
-  - `#2ea043` green (healthy)
-  - `#d29922` amber (needs attention)
-  - `#f85149` red (critical/failed)
-- [x] Implement `frontend/src/components/map/WellMap.tsx`:
-  - [x] Interactive Leaflet map centered on Geleki Field, Assam (lat ~26.77, lng ~94.69).
-  - [x] Custom SVG markers colored Green, Amber, Red.
-  - [x] Pulsing CSS radar effect on Critical/Failed wells.
-  - [x] Click-to-select and focus handlers.
-- [x] Implement `frontend/src/components/common/Header.tsx` & Fleet KPI ribbon (Total, Healthy, Attention, Failed).
-- [x] Implement `frontend/src/components/telemetry/TelemetryCharts.tsx`:
-  - [x] Time-series charts for Oil (BOPD) and Gas (MCFD).
-  - [x] Water Cut (%) area chart.
-  - [x] Dual-axis Tubing vs Casing pressure line chart.
-  - [x] Time range selectors (30D, 6M, 1Y, 2Y).
-- [x] Implement `frontend/src/components/timeline/WorkoverTimeline.tsx`:
-  - [x] Chronological intervention cards showing date, operation type, cost, contractor, and flow delta.
-- [x] Implement `frontend/src/components/agent/VoiceAgentPanel.tsx`:
-  - [x] Web Speech API Speech-to-Text with push-to-talk microphone button.
-  - [x] Animated audio sound-wave visualizer.
-  - [x] Web Speech API Text-to-Speech audio response playback.
-  - [x] Contextual chat message stream with pre-canned prompt suggestions.
-  - [x] Prescriptive recommendation card with ROI, cost, and flow recovery estimates.
-- [x] Implement `frontend/src/components/telemetry/WellDetails.tsx`.
-- [x] Implement `frontend/src/App.tsx` master operations dashboard.
+- [x] React 18 + Vite + Tailwind CSS + Leaflet GIS setup.
+- [x] Interactive Leaflet Satellite imagery with tagged wellhead labels.
+- [x] 3-tier health status visualization (🟢 Optimal, 🟡 Warning, 🔴 Critical).
+- [x] 24-month historical telemetry charts (BOPD, MCFD, Water Cut %, Pressures).
+- [x] Chronological workover timeline and quantitative flow gain cards.
+- [x] 4-tab Engineering Reports Dossier component.
+- [x] Bilingual Voice AI Copilot (Hinglish, English, Hindi).
 
 ---
 
-## Phase 5: Local Integration & Verification
-- [x] Implement root `run_local.sh` single-command startup script with automated port management (8001 & 5175).
-- [x] Create root `README.md` with complete architectural guide and navigation links.
-- [x] Test backend APIs with python test runner to ensure 200 OK responses and proper context injection.
-- [x] Test frontend production build (`npm run build`) with zero TypeScript and bundling errors.
-- [x] Verify full end-to-end user workflow:
-  - [x] Map renders with 3 distinct color tiers (Green = Healthy, Amber = Attention, Red = Critical with radar pulse).
-  - [x] Status filtering and search work smoothly.
-  - [x] Clicking a well updates the 24-month charts and workover timeline.
-  - [x] Voice query receives a grounded response with historical intervention data and audio playback.
-  - [x] Recommendation engine produces actionable workover suggestions with costs, ROI, and risk factors.
+## Phase 5: Cloud Run Production Deployment
+- [x] Multi-stage Dockerfile bundling frontend distribution into Python runtime.
+- [x] Configure Google Cloud project `workover-operations-agentic-ai`.
+- [x] Deploy to Cloud Run in `us-central1` (native Gemini Live region).
+- [x] Resolve organization policy to permit unauthenticated access (`allUsers`).
+- [x] Initial push to GitHub repository `amandeepsinghs-cyber/workover-operations-ai-agent-cloudrun`.
 
 ---
 
-## Phase 6: Engineering Reports Dossier & Deep AI Grounding
-- [x] Implement multi-page Engineering Reports generator in `backend/app/services/data_generator.py`:
-  - [x] Well Completion Report (WCR) with casing policy, perforations, crude assay (wax %, pour point).
-  - [x] Daily Workover Report (DWR) with supervising engineer, rig, contractor, and hourly execution logs.
-  - [x] Subsurface BHP & Acoustic Sonolog Survey with SBHP, FBHP, Drawdown, and acoustic fluid level.
-  - [x] Produced Water Chemistry & Scale Deposition Assay with TDS, pH, ions, and Stiff-Davis index.
-- [x] Expose reports in backend API (`GET /api/wells/{id}`, `GET /api/wells/{id}/reports`, `GET /api/wells/{id}/reports/{type}`).
-- [x] Inject full reports dossier into AI Copilot prompt context and local deterministic petroleum expert.
-- [x] Add `WellReportsTab.tsx` component with 4 interactive sub-tabs styled as official ONGC engineering documents.
-- [x] Embed `Engineering Reports Dossier (4 Docs)` tab into `WellDetails.tsx`.
-- [x] Add report-grounded prompt chips to `VoiceAgentPanel.tsx`.
-- [x] Verify frontend builds cleanly (`npm run build`) and backend tests succeed.
+## Phase 6: Deep Context AI & Voice UX Overhaul (Completed)
+- [x] Enable Vertex AI API (`aiplatform.googleapis.com`) in GCP project `workover-operations-agentic-ai`.
+- [x] Grant `roles/aiplatform.user` to Cloud Run service account.
+- [x] Update `ai_agent.py` to use Vertex AI ADC natively in `us-central1` (`gemini-2.5-flash`).
+- [x] Upgrade local petroleum fallback engine with comprehensive semantic question matching.
+- [x] Fix Voice Button UX in `VoiceAgentPanel.tsx`:
+  - [x] Replace `<MicOff>` mute icon with an active, pulsing `<Mic>` icon.
+  - [x] Switch styling to active emerald green glow with ripple animation.
+  - [x] Enable `interimResults = true` so spoken words appear immediately in the input box.
+  - [x] Add sound-wave frequency bars and clear "Listening... Speak now" indicator.
+- [x] Add Geleki Gas Gathering Stations (GGS-1, GGS-2, GGS-3) and pipeline network on the satellite map.
+- [x] Add One-Click Engineering Dossier Export (Download formatted JSON/Markdown).
 
 ---
 
-## Phase 7: Natural Conversational Voice, Bilingual Hinglish & Gemini Live API
-- [x] Cap spoken AI responses to strictly 2–3 punchy sentences (30–45 words max) for natural human speech cadence.
-- [x] Implement natural bilingual Hindi + English (Hinglish) code-switching for ONGC Geleki field operations.
-- [x] Add 3-way language toggle in UI header: 🇮🇳 Hinglish *(Default)*, 🇬🇧 English, 🇮🇳 Pure Hindi.
-- [x] Integrate Gemini Live bidirectional WebSocket endpoint at `/api/wells/{id}/live`.
-- [x] Upgrade Web Speech API TTS to select authentic Indian/Hindi voices (`hi-IN`, `en-IN`, Google हिन्दी) and sanitize markdown before playback.
-- [x] Verify concise responses and WebSocket streaming with automated test suite.
+## Phase 7: Verification, Redeployment & GitHub Sync (Completed)
+- [x] Verify local production build (`npm run build`).
+- [x] Test Vertex AI live chat in Hinglish, English, and Hindi.
+- [x] Redeploy optimized service to Cloud Run in `us-central1`.
+- [x] Verify live unauthenticated Cloud Run URL.
+- [x] Stage, commit, and push all updates to GitHub.
+

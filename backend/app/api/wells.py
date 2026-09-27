@@ -261,3 +261,68 @@ def get_recommendation(well_id: str):
         "status": target["status"],
         "recommendation": rec,
     }
+
+
+@router.get("/field/infrastructure")
+def get_field_infrastructure():
+    """Returns Geleki Field processing facilities (GGS-1, GGS-2, GGS-3, CDP) and trunk lines."""
+    return {
+        "field_name": "Geleki Oil Field (Assam Asset, ONGC)",
+        "center_coordinates": {"lat": 26.775, "lng": 94.690},
+        "gathering_stations": [
+            {
+                "id": "GGS-01",
+                "name": "Gas Gathering Station 1 (Geleki South)",
+                "coordinates": {"lat": 26.762, "lng": 94.675},
+                "capacity_bopd": 6000,
+                "compressor_capacity_mmscfd": 1.2,
+                "serviced_wells": ["GLK-101", "GLK-102", "GLK-105", "GLK-112", "GLK-120"],
+            },
+            {
+                "id": "GGS-02",
+                "name": "Gas Gathering Station 2 (Geleki Central)",
+                "coordinates": {"lat": 26.778, "lng": 94.695},
+                "capacity_bopd": 8500,
+                "compressor_capacity_mmscfd": 2.0,
+                "serviced_wells": ["GLK-103", "GLK-104", "GLK-108", "GLK-115", "GLK-125"],
+            },
+            {
+                "id": "GGS-03",
+                "name": "Gas Gathering Station 3 (Geleki North/Barail)",
+                "coordinates": {"lat": 26.792, "lng": 94.710},
+                "capacity_bopd": 5500,
+                "compressor_capacity_mmscfd": 1.0,
+                "serviced_wells": ["GLK-106", "GLK-107", "GLK-110", "GLK-130", "GLK-145"],
+            },
+            {
+                "id": "CDP-01",
+                "name": "Central Desalting & Effluent Treatment Plant (CDP)",
+                "coordinates": {"lat": 26.770, "lng": 94.685},
+                "capacity_bopd": 20000,
+                "water_handling_bwpd": 45000,
+            },
+        ],
+    }
+
+
+@router.get("/wells/{well_id}/export")
+def export_well_dossier(well_id: str):
+    """Exports full engineering dossier and telemetry archive for a well."""
+    wells = get_all_wells()
+    for w in wells:
+        if w["id"].upper() == well_id.upper():
+            return {
+                "well_id": w["id"],
+                "well_name": w["name"],
+                "field": "Geleki Field, Assam (ONGC)",
+                "formation": w["formation"],
+                "status": w["status"],
+                "coordinates": w["coordinates"],
+                "current_metrics": w["current_metrics"],
+                "telemetry_summary": w.get("telemetry_summary", {}),
+                "workovers": w.get("workovers", []),
+                "reports": w.get("reports", {}),
+                "export_timestamp": "2026-09-27T16:11:00Z",
+            }
+    raise HTTPException(status_code=404, detail=f"Well {well_id} not found")
+

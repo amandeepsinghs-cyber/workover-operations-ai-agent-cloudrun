@@ -39,12 +39,14 @@ def build_well_context(well: Dict[str, Any]) -> str:
     )
 
     casing_text = ", ".join(
-        [f"{c['string']} to {c['depth_m']}m ({c['cement_class']})" for c in wcr.get("casing_policy", [])]
+        [f"{c['string']} to {c['depth_m']}m ({c['cement_class']})" if isinstance(c, dict) else str(c) for c in wcr.get("casing_policy", [])]
     )
 
-    perf_text = ", ".join(
-        [f"{p['top_depth_m']}-{p['bottom_depth_m']}m ({p['formation']}, {p['shots_per_meter']} spm, {p['status']})" for p in wcr.get("perforated_intervals", [])]
-    )
+    perfs = wcr.get("perforated_intervals", "")
+    if isinstance(perfs, list):
+        perf_text = ", ".join([f"{p.get('top_depth_m', '')}-{p.get('bottom_depth_m', '')}m ({p.get('formation', '')})" if isinstance(p, dict) else str(p) for p in perfs])
+    else:
+        perf_text = str(perfs)
 
     crude = wcr.get("crude_assay", {})
     ionic = lab.get("ionic_constituents_mg_l", {})
@@ -83,7 +85,7 @@ def build_well_context(well: Dict[str, Any]) -> str:
    - Total Depth: {wcr.get('total_depth_m', 'N/A')}m | Target: {wcr.get('target_formation', 'N/A')}
    - Casing Policy: {casing_text}
    - Perforations: {perf_text}
-   - Crude Assay: API Gravity {crude.get('api_gravity', 'N/A')}°, Wax Content {crude.get('paraffin_wax_pct', 'N/A')}%, Pour Point {crude.get('pour_point_c', 'N/A')}°C
+   - Crude Assay: API Gravity {crude.get('api_gravity', 'N/A')}°, Wax Content {crude.get('wax_content_pct', crude.get('paraffin_wax_pct', 'N/A'))}%, Pour Point {crude.get('pour_point_celsius', crude.get('pour_point_c', 'N/A'))}°C
 
 2. DAILY WORKOVER SHIFT REPORT [Ref: {dwr.get('report_id', 'N/A')}]
    - Date: {dwr.get('date', 'N/A')} | Rig: {dwr.get('workover_rig', 'N/A')}
@@ -318,23 +320,26 @@ def query_local_petroleum_expert(
                 f"led primarily by the {last_name}."
             )
 
-    # 8. General Overview Fallback
+    # 8. General Operational Status & Query Handling
     else:
-        status_label = "Optimal" if status == "healthy" else ("Needs Attention" if status == "warning" else "Failed")
+        status_label = "Optimal" if status == "healthy" else ("Needs Attention" if status == "warning" else "Critical / Failed")
+        last_wo_summary = f"Last workover was {last_wo['type']} on {last_wo['date']} (+{last_wo['flow_delta_bopd']} BOPD)." if last_wo else "No major workovers in last 24 months."
+        last_wo_hi = f"Pichla workover {last_wo['type']} ({last_wo['date']}) tha (+{last_wo['flow_delta_bopd']} BOPD gain)." if last_wo else "Pichle 24 mahino mein koi major workover nahi hua."
+
         if lang == "hinglish":
             text_response = (
-                f"Namaste! {well['name']} Geleki Field mein {well['formation']} formation se abhi {current['oil_bopd']} BOPD de raha hai ({status_label}). "
-                f"Water cut {current['water_cut_pct']}% hai. Aap mujhse workover history, wax problem, ya recommendations ke baare mein puch sakte hain."
+                f"{well['name']} ({well['formation']}) abhi {current['oil_bopd']} BOPD oil aur {current['gas_mcfd']} MCFD gas par chal raha hai ({status_label}). "
+                f"Water cut {current['water_cut_pct']}% aur tubing pressure {current['tubing_pressure_psi']} psi hai. {last_wo_hi}"
             )
         elif lang == "hindi":
             text_response = (
-                f"नमस्ते! {well['name']} अभी {current['oil_bopd']} बीओपीडी का उत्पादन दे रहा है। "
-                f"वाटर कट {current['water_cut_pct']}% है। आप वर्कओवर इतिहास या सुधार योजनाओं के बारे में पूछ सकते हैं।"
+                f"{well['name']} ({well['formation']}) वर्तमान में {current['oil_bopd']} बीओपीडी तेल और {current['gas_mcfd']} एमसीएफडी गैस दे रहा है ({status_label})। "
+                f"वाटर कट {current['water_cut_pct']}% और ट्यूबिंग प्रेशर {current['tubing_pressure_psi']} पीएसआई है। अंतिम वर्कओवर {last_wo['date'] if last_wo else 'हाल ही में'} हुआ था।"
             )
         else:
             text_response = (
-                f"{well['name']} is currently producing {current['oil_bopd']} BOPD with {current['water_cut_pct']}% water cut under {status_label} status. "
-                f"Feel free to ask about workover history, wax choking, or recommended interventions."
+                f"{well['name']} ({well['formation']}) is producing {current['oil_bopd']} BOPD oil and {current['gas_mcfd']} MCFD gas under {status_label} status. "
+                f"Current water cut is {current['water_cut_pct']}% at {current['tubing_pressure_psi']} psi tubing head pressure. {last_wo_summary}"
             )
 
     if any(k in user_lower for k in ["recommend", "fix", "action", "upay", "kya karein", "solution"]) or status in ("warning", "failed"):
@@ -403,61 +408,81 @@ def generate_structured_recommendation(well: Dict[str, Any]) -> Dict[str, Any]:
         }
 
 
+def get_genai_client():
+    """
+    Initializes Google GenAI Client.
+    Prioritizes Vertex AI with Application Default Credentials (ADC) in us-central1,
+    or uses explicit GEMINI_API_KEY if configured.
+    """
+    from google import genai
+    api_key = os.environ.get("GEMINI_API_KEY", "")
+    if api_key:
+        return genai.Client(api_key=api_key)
+
+    project = os.environ.get("GCP_PROJECT", os.environ.get("GOOGLE_CLOUD_PROJECT", "workover-operations-agentic-ai"))
+    location = os.environ.get("VERTEX_LOCATION", os.environ.get("GEMINI_LIVE_REGION", "us-central1"))
+    return genai.Client(vertexai=True, project=project, location=location)
+
+
 def chat_with_well_agent(
     well: Dict[str, Any], user_message: str, language: str = "hinglish"
 ) -> Dict[str, Any]:
     """
     Main entry point for Geleki well contextual AI copilot.
-    Attempts Gemini 2.5 Flash via google-genai; falls back gracefully to local expert.
+    Attempts Gemini 2.5 Flash via Vertex AI ADC (or GEMINI_API_KEY); falls back gracefully to local expert.
     Strictly instructs Gemini to be concise (2-3 sentences max) in Hindi + English (Hinglish).
     """
-    api_key = os.environ.get("GEMINI_API_KEY", "")
-    if not api_key:
-        return query_local_petroleum_expert(well, user_message, language=language)
-
     try:
-        from google import genai
-        client = genai.Client(api_key=api_key)
+        client = get_genai_client()
         context = build_well_context(well)
 
         lang_instruction = {
-            "hinglish": "Speak in natural, conversational Hinglish (a fluid blend of Hindi and English code-switching as spoken by ONGC petroleum engineers in Assam, e.g. 'GLK-101 abhi warning state mein hai kyunki water cut 84% tak badh gaya hai... Er. R. K. Gogoi ne last workover supervise kiya tha. Immediate hot oil flush recommend karta hoon.').",
-            "english": "Speak in crisp, professional, conversational English.",
-            "hindi": "Speak in natural, fluent conversational Hindi (हिंदी).",
+            "hinglish": (
+                "Speak in natural, conversational Hinglish (a fluid blend of Hindi and English code-switching as spoken by ONGC petroleum engineers in Assam, "
+                "e.g. 'GLK-101 abhi warning state mein hai kyunki water cut 84% tak badh gaya hai... Er. R. K. Gogoi ne last workover mein 1,450m pe wax bridge clean kiya tha. "
+                "Immediate hot oil flush recommend karta hoon.'). Keep tone direct, collegial, and authoritative."
+            ),
+            "english": "Speak in crisp, professional, operational petroleum engineering English.",
+            "hindi": "Speak in natural, fluent conversational Hindi (हिंदी) with standard oilfield terms in English script/parentheses where common.",
         }.get((language or "hinglish").lower(), "Speak in natural, conversational Hinglish.")
 
-        prompt = f"""
-You are WellPulse Voice Copilot, a senior ONGC petroleum engineer talking via live voice with a field engineer in the Geleki control room.
-Wellhead Operational Data:
+        prompt = f"""You are WellPulse Voice Copilot, a senior ONGC petroleum and reservoir engineer in the Geleki Brownfield control room (Assam Asset, Sivasagar).
+You are speaking via live two-way radio/voice with a field workover engineer at the wellsite.
+
+Asset Context & Engineering Dossier:
 {context}
 
-Engineer Query: "{user_message}"
+Field Engineer's Question: "{user_message}"
 
 CRITICAL VOICE CONVERSATION RULES:
-1. MAXIMUM 2 TO 3 SENTENCES (35 to 45 words total). Keep it punchy, natural, and direct to the point. Never ramble.
-2. NO RAW REPORT TEXT: Never recite document IDs, markdown tables, or bulleted lists out loud.
-3. LANGUAGE REQUIREMENT: {lang_instruction}
-4. Give the operational conclusion and immediate action first.
-"""
+1. CONCISENESS: EXACTLY 2 TO 3 SENTENCES (35 to 45 words maximum). Deliver the core diagnostic answer and immediate technical next step immediately.
+2. NO SCRIPT READING: Never recite document numbers, markdown headers, or raw bullet lists aloud.
+3. LANGUAGE: {lang_instruction}
+4. FACTUALITY: Ground your response strictly in the well's telemetry, historical workovers, or the 4 engineering reports (WCR, Daily Shift Log, BHP Survey, Water/Scale Lab Assay)."""
+
         response = client.models.generate_content(
             model="gemini-2.5-flash",
             contents=prompt,
         )
 
+        reply_text = response.text.strip() if response and response.text else ""
+        if not reply_text:
+            raise ValueError("Empty response received from Gemini model")
+
         recommendation = None
         user_lower = user_message.lower()
-        if any(k in user_lower for k in ["recommend", "fix", "action", "upay", "solution"]) or well["status"] in ("warning", "failed"):
+        if any(k in user_lower for k in ["recommend", "fix", "action", "upay", "solution", "kya karein"]) or well["status"] in ("warning", "failed"):
             recommendation = generate_structured_recommendation(well)
 
         return {
-            "response": response.text.strip(),
+            "response": reply_text,
             "recommendation": recommendation,
-            "engine": "gemini-2.5-flash",
+            "engine": "gemini-2.5-flash-vertex-ai",
             "well_id": well["id"],
             "language": language,
         }
     except Exception as e:
-        print(f"[!] Warning: Gemini API call failed ({e}). Falling back to Local Geleki Petroleum Expert.")
+        print(f"[!] Warning: Gemini Vertex AI call failed ({e}). Falling back to Local Geleki Petroleum Expert.")
         result = query_local_petroleum_expert(well, user_message, language=language)
         result["note"] = f"Fallback active: {str(e)}"
         return result

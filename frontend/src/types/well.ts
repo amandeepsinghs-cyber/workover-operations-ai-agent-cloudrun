@@ -212,3 +212,20 @@ export interface ChatMessage {
   text: string;
   recommendation?: Recommendation;
 }
+
+export interface GatheringStation {
+  id: string;
+  name: string;
+  coordinates: WellCoordinates;
+  capacity_bopd: number;
+  compressor_capacity_mmscfd?: number;
+  water_handling_bwpd?: number;
+  serviced_wells?: string[];
+}
+
+export interface FieldInfrastructure {
+  field_name: string;
+  center_coordinates: WellCoordinates;
+  gathering_stations: GatheringStation[];
+}
+

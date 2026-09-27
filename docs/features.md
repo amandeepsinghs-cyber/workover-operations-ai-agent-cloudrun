@@ -1,42 +1,44 @@
 # Feature Catalog & Roadmap (`features.md`)
 ## WellPulse: Energy Well Operations & Voice AI Platform
 
-**Document Version:** 1.0.0  
+**Document Version:** 2.0.0  
 **Methodology:** MoSCoW Prioritization (Must have, Should have, Could have, Won't have)
 
 ---
 
 ## 1. Feature Matrix Overview
 
-| ID | Feature Name | Category | Priority | Target Release |
+| ID | Feature Name | Category | Priority | Status |
 |---|---|---|---|---|
-| **FEAT-01** | Interactive GIS Wellhead Map | Geospatial | **Must-Have** | v1.0 (Local MVP) |
-| **FEAT-02** | 3-Tier Health Status Prioritization | Operational Triage | **Must-Have** | v1.0 (Local MVP) |
-| **FEAT-03** | 24-Month Telemetry Time-Series Charts | Analytics | **Must-Have** | v1.0 (Local MVP) |
-| **FEAT-04** | Chronological Workover & Intervention Log | Maintenance | **Must-Have** | v1.0 (Local MVP) |
-| **FEAT-05** | Split-Pane Contextual AI Chat Agent | Conversational AI | **Must-Have** | v1.0 (Local MVP) |
-| **FEAT-06** | Voice Input (STT) & Audio Waveform | Voice Experience | **Must-Have** | v1.0 (Local MVP) |
-| **FEAT-07** | Voice Playback (TTS) Synthesis | Voice Experience | **Must-Have** | v1.0 (Local MVP) |
-| **FEAT-08** | Prescriptive Engineering Recommendations | Decision Support | **Must-Have** | v1.0 (Local MVP) |
-| **FEAT-09** | 50-Well Physics Synthetic Data Engine | Simulation | **Must-Have** | v1.0 (Local MVP) |
-| **FEAT-10** | Single-Script Local Runner (`run_local.sh`)| Developer Experience | **Must-Have** | v1.0 (Local MVP) |
-| **FEAT-11** | Quick Prompt Suggestion Chips | Usability | **Should-Have** | v1.1 |
-| **FEAT-12** | PDF/Markdown Diagnostic Report Export | Reporting | **Should-Have** | v1.1 |
-| **FEAT-13** | Multi-Well Comparative Analytics | Advanced Analytics | **Could-Have** | v1.2 |
-| **FEAT-14** | Live SCADA MQTT/Modbus Ingestion Hook | Enterprise Integration | **Won't-Have (v1)**| Future |
+| **FEAT-01** | Interactive GIS Wellhead Map & Satellite Imagery | Geospatial | **Must-Have** | Complete |
+| **FEAT-02** | 3-Tier Health Status Prioritization (🟢/🟡/🔴) | Operational Triage | **Must-Have** | Complete |
+| **FEAT-03** | 24-Month Telemetry Time-Series Charts | Analytics | **Must-Have** | Complete |
+| **FEAT-04** | Chronological Workover & Intervention Log | Maintenance | **Must-Have** | Complete |
+| **FEAT-05** | Split-Pane Contextual AI Chat Agent | Conversational AI | **Must-Have** | Complete |
+| **FEAT-06** | Active Voice Microphone UI & Live Interim STT | Voice Experience | **Must-Have** | Complete |
+| **FEAT-07** | Voice Playback (TTS) Synthesis with Indian Voices | Voice Experience | **Must-Have** | Complete |
+| **FEAT-08** | Prescriptive Engineering Recommendations & Payback | Decision Support | **Must-Have** | Complete |
+| **FEAT-09** | 50-Well Physics Synthetic Data Engine (Geleki Field) | Simulation | **Must-Have** | Complete |
+| **FEAT-10** | Single-Script Local Runner (`run_local.sh`) | Dev Experience | **Must-Have** | Complete |
+| **FEAT-11** | Engineering Reports Dossier (WCR, DWR, BHP, Lab) | Grounding | **Must-Have** | Complete |
+| **FEAT-12** | Bilingual Hinglish, English & Pure Hindi Copilot | Natural Language | **Must-Have** | Complete |
+| **FEAT-13** | Vertex AI Gemini 2.5 Flash ADC & Semantic Fallback | Cloud AI | **Must-Have** | Complete |
+| **FEAT-14** | Geleki Gas Gathering Stations (GGS) & Flowline Network | Geospatial GIS | **Should-Have**| Complete |
+| **FEAT-15** | One-Click Engineering Dossier Export (JSON/Markdown) | Field Reporting | **Should-Have**| Complete |
+| **FEAT-16** | Cloud Run Serverless Production Deployment | Cloud Operations | **Must-Have** | Complete |
 
 ---
 
 ## 2. Detailed Feature Specifications
 
 ### FEAT-01: Interactive Satellite Field Map & Tagged Wellheads
-- **User Value**: Delivers realistic geospatial aerial context of the mature Geleki brownfield asset in Sivasagar, Assam, allowing engineers to visualize real terrain and surface pad locations.
+- **User Value**: Delivers realistic geospatial aerial context of the mature Geleki brownfield asset in Sivasagar, Assam.
 - **Capabilities**:
   - High-resolution aerial satellite imagery powered by Esri World Imagery (Maxar/Earthstar Geographics).
   - Permanent **tagged wellhead name badges** (`GLK-101`, `GLK-104`) floating above each well pin for instant visual identification.
   - Authentic oil derrick wellhead iconography replacing generic or confusing symbols.
   - One-click style switcher between **🛰️ Satellite Field** and **🗺️ Dark SCADA** modes.
-  - Interactive panning, zooming, click-to-focus, and rich telemetry popups on hover.
+  - Interactive panning, zooming, click-to-focus with smooth `flyTo` transitions.
 
 ### FEAT-02: 3-Tier Health Status Prioritization
 - **User Value**: Eliminates information overload by sorting wells into distinct triage buckets.
@@ -70,14 +72,22 @@
     - *"What was the total intervention expenditure on this well over the last 18 months?"*
     - *"When did we last change the ESP pump and what was the warranty period?"*
     - *"Why did oil flow decline while water cut rose after the November workover?"*
-  - Context window includes 24-month high/lows, recent pressure trends, and complete workover logs.
+  - Context window includes 24-month high/lows, recent pressure trends, complete workover logs, and all 4 engineering reports.
 
-### FEAT-06 & FEAT-07: Voice Input (STT) & Voice Playback (TTS)
-- **User Value**: Hands-free operation for engineers in control rooms or on mobile field tablets.
+### FEAT-06: Active Voice Microphone UI & Live Interim STT
+- **User Value**: Natural, responsive hands-free speech input without confusing "mute" visuals.
 - **Capabilities**:
-  - Browser-native Web Speech API Speech-to-Text with push-to-talk microphone button.
-  - Animated sound-wave visualizer indicating listening and processing states.
-  - Text-to-Speech synthesis with mute/pause controls and natural pacing.
+  - Distinct emerald active recording state with glowing ripple animation.
+  - Replaces confusing slashed microphone (`<MicOff>`) with an active, pulsing `<Mic>` icon.
+  - Real-time speech streaming with `interimResults = true`, displaying spoken words live in the input box as the engineer speaks.
+  - Dynamic audio frequency wave animation during listening and response playback.
+
+### FEAT-07: Voice Playback (TTS) Synthesis with Authentic Indian Accents
+- **User Value**: Clear, intelligible operational readouts in control rooms.
+- **Capabilities**:
+  - Automatic voice selection preferring Indian English and Hindi synthesizers (`hi-IN`, `en-IN`, Google हिन्दी).
+  - Markdown stripping prior to speech to avoid reading formatting characters aloud.
+  - Audio mute/unmute control with state persistence.
 
 ### FEAT-08: Prescriptive Engineering Recommendations
 - **User Value**: Turns raw historical data into prioritized, actionable field operations.
@@ -86,35 +96,41 @@
   - Includes estimated job cost, projected flow recovery (+BOPD), and payback timeframe in days.
   - Safety hazard and operational risk warnings.
 
-### FEAT-09: Synthetic Data Engine (50 Wells, 730 Days)
+### FEAT-09: 50-Well Physics Synthetic Data Engine (Geleki Field)
 - **User Value**: Complete, realistic, zero-setup testing data.
 - **Capabilities**:
   - Generates 50 realistic brownfield wells distributed across the Geleki Field in Assam (Tipam Sands, Barail Main Sand, Kopili).
   - Simulates 2 years of daily data incorporating hyperbolic decline curve physics, water cut growth, seasonal temperature swings, and synthetic equipment failures.
   - Generates realistic workover histories with realistic contractor names, dates, and outcomes.
 
-### FEAT-10: Single-Script Local Runner (`run_local.sh`)
-- **User Value**: Seamless local deployment with zero complex configuration.
-- **Capabilities**:
-  - Checks Python and Node prerequisites.
-  - Installs requirements and npm packages.
-  - Launches backend and frontend with automated port management.
-  - Handles graceful shutdown on `Ctrl+C`.
-
 ### FEAT-11: Engineering Reports Dossier & Deep AI Grounding
-- **User Value**: Grounded, verifiable engineering documentation accessible directly in the telemetry workspace and queryable via the voice agent.
+- **User Value**: Grounded, verifiable engineering documentation accessible directly in the telemetry workspace.
 - **Capabilities**:
   - **Well Completion Report (WCR)**: Spud date, total depth, casing policy, perforation depths, crude assay (pour point, paraffin wax %).
   - **Daily Workover Report (DWR)**: Shift execution logs with timestamps, supervising engineer name (`Er. R. K. Gogoi`), rig identification, tagged wax/sand bridge depth, and pressure testing certifications.
   - **Bottomhole Pressure & Sonolog Survey (BHP)**: Static BHP, Flowing BHP, Drawdown (ΔP), Productivity Index (PI), and acoustic sonolog liquid level sounding.
   - **Produced Water Chemistry & Scale Assay**: Total Dissolved Solids (TDS), pH, ionic distribution (Cl⁻, Na⁺, Ca²⁺, Mg²⁺, Ba²⁺, SO₄²⁻), Stiff-Davis index, and chemist recommendations.
-  - **Voice AI Context Injection**: The voice agent directly cites report IDs, named supervising engineers, tagged depths, and exact laboratory values.
 
-### FEAT-12: Natural Conversational Voice, Bilingual Hinglish & Gemini Live API
-- **User Value**: Eliminates robotic, long-winded report recitation; enables snappy 2–3 sentence operational dialogue in natural Hindi + English.
+### FEAT-12: Natural Conversational Voice & Bilingual Hinglish
+- **User Value**: Snappy 2–3 sentence operational dialogue in natural Hindi + English.
 - **Capabilities**:
-  - **2–3 Sentence Voice Hard Cap**: Spoken answers are strictly limited to 35–45 words so engineers get the immediate takeaway without waiting.
+  - **2–3 Sentence Voice Hard Cap**: Spoken answers are strictly limited to 35–45 words.
   - **Bilingual Hinglish Mode**: Natural conversational code-switching tailored for ONGC petroleum operations in Assam.
   - **3-Way Language Toggle**: 🇮🇳 Hinglish *(Default)*, 🇬🇧 English, 🇮🇳 Pure Hindi.
-  - **Gemini Live WebSocket Endpoint**: Low-latency bidirectional live streaming via `/api/wells/{id}/live`.
-  - **Authentic TTS Synthesis**: Automatic selection of Indian English / Hindi voices (`hi-IN`, `en-IN`, Google हिन्दी) with markdown sanitization.
+
+### FEAT-13: Vertex AI Gemini 2.5 Flash ADC & Semantic Fallback
+- **User Value**: Real generative intelligence running in Google Cloud with robust fallback.
+- **Capabilities**:
+  - Native Vertex AI integration in `us-central1` using Application Default Credentials (ADC).
+  - Smart semantic fallback engine that parses user questions dynamically across all 4 dossiers, never repeating canned text.
+
+### FEAT-14: Geleki Gas Gathering Stations & Pipeline Network
+- **User Value**: True oilfield GIS operational topology.
+- **Capabilities**:
+  - Geographic markers for Geleki Gas Gathering Stations (GGS-1, GGS-2, GGS-3) and Central Desalting Plant (CDP).
+  - Visual flowline routes connecting wells to their respective gathering nodes.
+
+### FEAT-15: One-Click Engineering Dossier Export
+- **User Value**: Portability of operational dossiers for field engineers and rig supervisors.
+- **Capabilities**:
+  - Download full well reports dossier in formatted Markdown / JSON with 1 click.

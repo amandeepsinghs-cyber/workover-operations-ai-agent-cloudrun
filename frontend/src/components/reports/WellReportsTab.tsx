@@ -15,6 +15,7 @@ import {
   ExternalLink,
   ChevronRight,
   Info,
+  Download,
 } from 'lucide-react';
 import { WellDetail, WellReports } from '../../types/well';
 
@@ -26,7 +27,31 @@ type ReportSubTab = 'completion' | 'workover' | 'bhp' | 'lab';
 
 export const WellReportsTab: React.FC<WellReportsTabProps> = ({ well }) => {
   const [activeSubTab, setActiveSubTab] = useState<ReportSubTab>('workover');
+  const [isExporting, setIsExporting] = useState<boolean>(false);
   const reports: WellReports = well.reports || {};
+
+  const handleExportDossier = async () => {
+    setIsExporting(true);
+    try {
+      const res = await fetch(`/api/wells/${well.id}/export`);
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data = await res.json();
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${well.id}_Engineering_Dossier_${new Date().toISOString().split('T')[0]}.json`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error('Failed to export dossier:', err);
+      alert('Failed to export well dossier. Please retry.');
+    } finally {
+      setIsExporting(false);
+    }
+  };
 
   const wcr = reports.completion_report;
   const dwr = reports.daily_workover_report;
@@ -35,59 +60,72 @@ export const WellReportsTab: React.FC<WellReportsTabProps> = ({ well }) => {
 
   return (
     <div className="flex flex-col h-full space-y-4">
-      {/* Sub-Tab Navigation Bar */}
-      <div className="flex items-center gap-2 border-b border-border/80 pb-2">
-        <button
-          onClick={() => setActiveSubTab('workover')}
-          className={`px-3 py-1.5 rounded-lg text-xs font-mono font-semibold flex items-center gap-2 transition-all ${
-            activeSubTab === 'workover'
-              ? 'bg-accent/20 text-accent border border-accent/40 shadow-sm'
-              : 'text-textMuted hover:text-white hover:bg-surface border border-transparent'
-          }`}
-        >
-          <Clock className="w-3.5 h-3.5" />
-          <span>Daily Workover Shift Log</span>
-          {dwr && (
-            <span className="text-[10px] px-1.5 py-0.2 rounded bg-accent/20 text-accent font-mono">
-              Latest
-            </span>
-          )}
-        </button>
+      {/* Sub-Tab Navigation Bar & Dossier Download */}
+      <div className="flex items-center justify-between border-b border-border/80 pb-2">
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => setActiveSubTab('workover')}
+            className={`px-3 py-1.5 rounded-lg text-xs font-mono font-semibold flex items-center gap-2 transition-all ${
+              activeSubTab === 'workover'
+                ? 'bg-accent/20 text-accent border border-accent/40 shadow-sm'
+                : 'text-textMuted hover:text-white hover:bg-surface border border-transparent'
+            }`}
+          >
+            <Clock className="w-3.5 h-3.5" />
+            <span>Daily Workover Shift Log</span>
+            {dwr && (
+              <span className="text-[10px] px-1.5 py-0.2 rounded bg-accent/20 text-accent font-mono">
+                Latest
+              </span>
+            )}
+          </button>
 
-        <button
-          onClick={() => setActiveSubTab('bhp')}
-          className={`px-3 py-1.5 rounded-lg text-xs font-mono font-semibold flex items-center gap-2 transition-all ${
-            activeSubTab === 'bhp'
-              ? 'bg-purple-950/60 text-purple-300 border border-purple-700/60 shadow-sm'
-              : 'text-textMuted hover:text-white hover:bg-surface border border-transparent'
-          }`}
-        >
-          <Gauge className="w-3.5 h-3.5" />
-          <span>BHP & Acoustic Sonolog</span>
-        </button>
+          <button
+            onClick={() => setActiveSubTab('bhp')}
+            className={`px-3 py-1.5 rounded-lg text-xs font-mono font-semibold flex items-center gap-2 transition-all ${
+              activeSubTab === 'bhp'
+                ? 'bg-purple-950/60 text-purple-300 border border-purple-700/60 shadow-sm'
+                : 'text-textMuted hover:text-white hover:bg-surface border border-transparent'
+            }`}
+          >
+            <Gauge className="w-3.5 h-3.5" />
+            <span>BHP & Acoustic Sonolog</span>
+          </button>
 
-        <button
-          onClick={() => setActiveSubTab('lab')}
-          className={`px-3 py-1.5 rounded-lg text-xs font-mono font-semibold flex items-center gap-2 transition-all ${
-            activeSubTab === 'lab'
-              ? 'bg-amber-950/60 text-amber-300 border border-amber-700/60 shadow-sm'
-              : 'text-textMuted hover:text-white hover:bg-surface border border-transparent'
-          }`}
-        >
-          <FlaskConical className="w-3.5 h-3.5" />
-          <span>Water & Scale Assay</span>
-        </button>
+          <button
+            onClick={() => setActiveSubTab('lab')}
+            className={`px-3 py-1.5 rounded-lg text-xs font-mono font-semibold flex items-center gap-2 transition-all ${
+              activeSubTab === 'lab'
+                ? 'bg-amber-950/60 text-amber-300 border border-amber-700/60 shadow-sm'
+                : 'text-textMuted hover:text-white hover:bg-surface border border-transparent'
+            }`}
+          >
+            <FlaskConical className="w-3.5 h-3.5" />
+            <span>Water & Scale Assay</span>
+          </button>
 
+          <button
+            onClick={() => setActiveSubTab('completion')}
+            className={`px-3 py-1.5 rounded-lg text-xs font-mono font-semibold flex items-center gap-2 transition-all ${
+              activeSubTab === 'completion'
+                ? 'bg-blue-950/60 text-blue-300 border border-blue-700/60 shadow-sm'
+                : 'text-textMuted hover:text-white hover:bg-surface border border-transparent'
+            }`}
+          >
+            <FileText className="w-3.5 h-3.5" />
+            <span>Well Completion (WCR)</span>
+          </button>
+        </div>
+
+        {/* Export Engineering Dossier Button */}
         <button
-          onClick={() => setActiveSubTab('completion')}
-          className={`px-3 py-1.5 rounded-lg text-xs font-mono font-semibold flex items-center gap-2 transition-all ${
-            activeSubTab === 'completion'
-              ? 'bg-blue-950/60 text-blue-300 border border-blue-700/60 shadow-sm'
-              : 'text-textMuted hover:text-white hover:bg-surface border border-transparent'
-          }`}
+          onClick={handleExportDossier}
+          disabled={isExporting}
+          className="flex items-center gap-1.5 px-3 py-1.5 bg-[#0d1117] hover:bg-surface text-emerald-400 hover:text-emerald-300 border border-emerald-500/40 hover:border-emerald-400 rounded-lg text-xs font-mono font-semibold transition-all shadow-sm"
+          title="Download complete engineering dossier (WCR, DWR, BHP, Lab Assay, and production telemetry in JSON format)"
         >
-          <FileText className="w-3.5 h-3.5" />
-          <span>Well Completion (WCR)</span>
+          <Download className={`w-3.5 h-3.5 ${isExporting ? 'animate-bounce' : ''}`} />
+          <span>{isExporting ? 'Exporting...' : 'Export Dossier'}</span>
         </button>
       </div>
 
