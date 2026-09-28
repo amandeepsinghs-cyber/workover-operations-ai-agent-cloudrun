@@ -7,6 +7,7 @@ tailored to Tipam/Barail sands, high water cut, paraffin wax choking, and contin
 
 import os
 import json
+from typing import Dict, Any, List, Optional
 from dotenv import load_dotenv
 
 load_dotenv()
