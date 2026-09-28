@@ -6,14 +6,24 @@ from typing import List, Optional
 from fastapi import APIRouter, HTTPException, Query, WebSocket, WebSocketDisconnect
 from pydantic import BaseModel
 from app.services.data_generator import get_all_wells
-from app.services.ai_agent import chat_with_well_agent, generate_structured_recommendation
+from app.services.ai_agent import (
+    chat_with_well_agent,
+    chat_with_well_agent_audio,
+    generate_structured_recommendation,
+)
 
 router = APIRouter()
 
 
 class ChatRequest(BaseModel):
     message: str
-    language: Optional[str] = "hinglish"
+    language: Optional[str] = "english"
+
+
+class AudioMessageRequest(BaseModel):
+    audio_base64: str
+    mime_type: Optional[str] = "audio/webm"
+    language: Optional[str] = "english"
 
 
 @router.get("/health")
@@ -183,7 +193,34 @@ def chat_with_well(well_id: str, request: ChatRequest):
         raise HTTPException(status_code=404, detail=f"Well {well_id} not found")
 
     result = chat_with_well_agent(
-        target, request.message, language=request.language or "hinglish"
+        target, request.message, language=request.language or "english"
+    )
+    return result
+
+
+@router.post("/wells/{well_id}/audio")
+def chat_with_well_audio(well_id: str, request: AudioMessageRequest):
+    wells = get_all_wells()
+    target = None
+    for w in wells:
+        if w["id"].upper() == well_id.upper():
+            target = w
+            break
+
+    if not target:
+        raise HTTPException(status_code=404, detail=f"Well {well_id} not found")
+
+    import base64
+    try:
+        audio_bytes = base64.b64decode(request.audio_base64)
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Invalid base64 audio: {e}")
+
+    result = chat_with_well_agent_audio(
+        target,
+        audio_bytes,
+        mime_type=request.mime_type or "audio/webm",
+        language=request.language or "english",
     )
     return result
 

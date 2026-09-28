@@ -1,4 +1,8 @@
 import os
+from dotenv import load_dotenv
+
+load_dotenv()
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
@@ -19,6 +23,16 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
+@app.middleware("http")
+async def add_utf8_charset_header(request, call_next):
+    response = await call_next(request)
+    ct = response.headers.get("content-type", "")
+    if "application/json" in ct and "charset" not in ct:
+        response.headers["content-type"] = "application/json; charset=utf-8"
+    return response
+
 
 # Register API routes FIRST so they take precedence over static files
 app.include_router(wells_router, prefix="/api")

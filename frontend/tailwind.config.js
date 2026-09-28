@@ -19,7 +19,16 @@ export default {
       },
       fontFamily: {
         mono: ['JetBrains Mono', 'Fira Code', 'monospace'],
-        sans: ['Inter', 'system-ui', 'sans-serif'],
+        sans: [
+          'Inter',
+          '"Noto Sans Devanagari"',
+          '-apple-system',
+          'BlinkMacSystemFont',
+          'Segoe UI',
+          'Roboto',
+          'sans-serif',
+        ],
+        devanagari: ['"Noto Sans Devanagari"', 'sans-serif'],
       },
       keyframes: {
         radar: {

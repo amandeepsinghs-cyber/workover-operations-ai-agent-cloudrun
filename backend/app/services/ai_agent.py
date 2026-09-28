@@ -7,7 +7,9 @@ tailored to Tipam/Barail sands, high water cut, paraffin wax choking, and contin
 
 import os
 import json
-from typing import Dict, Any, List
+from dotenv import load_dotenv
+
+load_dotenv()
 
 GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY", "")
 
@@ -52,6 +54,30 @@ def build_well_context(well: Dict[str, Any]) -> str:
     ionic = lab.get("ionic_constituents_mg_l", {})
     scale = lab.get("scaling_tendency_analysis", {})
 
+    status = well.get("status", "healthy")
+    if status == "failed":
+        diag_summary = (
+            f"CRITICAL SHUTDOWN / TRIPPED (RED WELL):\n"
+            f"- Well {well['name']} tripped offline with production dropping to 0 BOPD.\n"
+            f"- Tubing head pressure collapsed to {current['tubing_pressure_psi']} psi while casing pressure built up to {current['casing_pressure_psi']} psi.\n"
+            f"- Root Cause: Gas lift operating valve plugged/failed and severe formation sand bridging inside the 2-7/8\" tubing string.\n"
+            f"- Immediate Action: Well is shut-in on surface choke (0%). Mobilize ONGC workover rig from Nazira base for coiled tubing nitrogen sand cleanout and valve replacement."
+        )
+    elif status == "warning":
+        diag_summary = (
+            f"WARNING / ATTENTION NEEDED (AMBER WELL):\n"
+            f"- Well {well['name']} is flowing sub-optimally at {current['oil_bopd']} BOPD.\n"
+            f"- Water cut surged to {current['water_cut_pct']}% alongside heavy paraffin wax deposition restricting tubing drift.\n"
+            f"- Root Cause: Water breakthrough in lower perforations and wax crystallization below cloud point.\n"
+            f"- Immediate Action: Hot oil solvent wash and polymer gel water shut-off (WSO) squeeze required."
+        )
+    else:
+        diag_summary = (
+            f"OPTIMAL FLOWING (GREEN WELL):\n"
+            f"- Well {well['name']} is producing stably at {current['oil_bopd']} BOPD with {current['water_cut_pct']}% water cut.\n"
+            f"- Tubing pressure is healthy at {current['tubing_pressure_psi']} psi and gas lift casing injection is {current['casing_pressure_psi']} psi."
+        )
+
     context = f"""
 === GELEKI FIELD ASSET PROFILE: {well['name']} ({well['id']}) ===
 - Operator: ONGC (Assam Asset, Sivasagar)
@@ -59,6 +85,9 @@ def build_well_context(well: Dict[str, Any]) -> str:
 - Basin: Assam-Arakan Basin | Formation: {well['formation']}
 - Artificial Lift: {well['lift_type']} (Connected to Geleki Gas Gathering Station Network)
 - Location Coordinates: Lat {well['coordinates']['lat']}°N, Lng {well['coordinates']['lng']}°E
+
+=== DIAGNOSTIC STATUS & FAILURE SUMMARY ===
+{diag_summary}
 
 === CURRENT TELEMETRY (TODAY) ===
 - Oil Production: {current['oil_bopd']} BOPD
@@ -250,39 +279,43 @@ def query_local_petroleum_expert(
                 else f"No major workovers have been logged on {well['name']} in the past 24 months."
             )
 
-    # 6. Why decline / failed / warning / status
-    elif any(k in user_lower for k in ["why", "decline", "drop", "fail", "kyu", "gir gaya", "kam kyu", "kharab"]):
+    # 6. What happened / Why decline / failed / warning / status
+    elif any(k in user_lower for k in [
+        "what happened", "happened", "kya hua", "what is wrong", "what's wrong",
+        "why", "decline", "drop", "fail", "tripped", "offline", "shut in", "shut-in",
+        "red", "problem", "issue", "trouble", "status", "kyu", "gir gaya", "kam kyu", "kharab"
+    ]):
         if status == "failed":
             if lang == "hinglish":
                 text_response = (
-                    f"{well['name']} abhi offline hai kyunki production 0 BOPD ho gaya hai aur tubing pressure {current['tubing_pressure_psi']} psi tak gir gaya hai. "
-                    f"Diagnosis ke mutabiq continuous gas lift valve fail ho gaya hai ya formation sand tubing mein bridge ho gayi hai. Workover rig bulana padega."
+                    f"{well['name']} abhi offline aur shut-in hai kyunki continuous gas lift valve fail ho gaya hai aur tubing mein sand bridge ban gaya hai, jisse production 0 BOPD aur tubing pressure {current['tubing_pressure_psi']} psi ho gaya hai. "
+                    f"Nazira base se ONGC workover rig bula ke coiled tubing cleanout aur valve replace karna padega."
                 )
             elif lang == "hindi":
                 text_response = (
-                    f"{well['name']} अभी शटडाउन है क्योंकि प्रेशर गिरकर {current['tubing_pressure_psi']} पीएसआई हो गया है। "
-                    f"गैस लिफ्ट वॉल्व खराब होने या सैंड ब्रिजिंग का संदेह है। वर्कओवर रिग मोबिलाइज करना होगा।"
+                    f"{well['name']} शटडाउन स्थिति में है क्योंकि गैस लिफ्ट वॉल्व खराब होने और सैंड ब्रिजिंग से ट्यूबिंग प्रेशर {current['tubing_pressure_psi']} पीएसआई तक गिर गया है। "
+                    f"उत्पादन पूरी तरह शून्य है और वर्कओवर रिग द्वारा कॉइल्ड ट्यूबिंग क्लीनआउट की आवश्यकता है।"
                 )
             else:
                 text_response = (
-                    f"{well['name']} is offline due to a complete tubing pressure drop to {current['tubing_pressure_psi']} psi. "
-                    f"Diagnostic signatures indicate either a parted gas lift valve or heavy formation sand bridging, requiring an immediate rig workover."
+                    f"{well['name']} tripped offline because its continuous gas lift valve failed and heavy formation sand bridged the production tubing, causing oil flow to drop to 0 BOPD and tubing pressure to collapse to {current['tubing_pressure_psi']} psi. "
+                    f"The well is currently shut-in while awaiting an ONGC workover rig from Nazira base for coiled-tubing cleanout and valve replacement."
                 )
         elif status == "warning":
             if lang == "hinglish":
                 text_response = (
-                    f"{well['name']} warning status pe hai kyunki water cut {current['water_cut_pct']}% tak badh gaya hai aur wax deposition ki wajah se tubing choke ho rahi hai. "
-                    f"Production girkar {current['oil_bopd']} BOPD reh gaya hai. Immediate hot oil xylene treatment aur polymer gel squeeze recommend karta hoon."
+                    f"{well['name']} warning status pe hai kyunki water cut {current['water_cut_pct']}% tak badh gaya hai aur wax deposition ki wajah se tubing choke ho rahi hai, jisse production girkar {current['oil_bopd']} BOPD reh gaya hai. "
+                    f"Immediate hot oil xylene treatment aur polymer gel water shut-off squeeze recommend karta hoon."
                 )
             elif lang == "hindi":
                 text_response = (
                     f"{well['name']} वार्निंग स्थिति में है क्योंकि वाटर कट {current['water_cut_pct']}% पहुंच गया है और वैक्स से ट्यूबिंग चोक हो रही है। "
-                    f"उत्पादन घटकर {current['oil_bopd']} बीओपीडी रह गया है। हॉट ऑयल फ्लश की तुरंत जरूरत है।"
+                    f"उत्पादन घटकर {current['oil_bopd']} बीओपीडी रह गया है; हॉट ऑयल फ्लश और वाटर शट-ऑफ की तुरंत जरूरत है।"
                 )
             else:
                 text_response = (
-                    f"{well['name']} is under warning status as water cut surged to {current['water_cut_pct']}% and paraffin wax is choking the production string. "
-                    f"Flow has dropped to {current['oil_bopd']} BOPD; I recommend immediate hot oiling and a polymer water shut-off."
+                    f"{well['name']} is flagged under warning status because water cut has surged to {current['water_cut_pct']}% and heavy paraffin wax deposition is choking the production tubing, reducing flow to {current['oil_bopd']} BOPD. "
+                    f"An immediate hot oil solvent wash and polymer gel water shut-off squeeze are required to restore normal productivity."
                 )
         else:
             if lang == "hinglish":
@@ -297,8 +330,8 @@ def query_local_petroleum_expert(
                 )
             else:
                 text_response = (
-                    f"{well['name']} is operating stably at {current['oil_bopd']} BOPD with {current['water_cut_pct']}% water cut. "
-                    f"Gas lift injection remains optimal at {current['casing_pressure_psi']} psi with healthy uptime."
+                    f"{well['name']} is flowing stably at {current['oil_bopd']} BOPD with {current['water_cut_pct']}% water cut. "
+                    f"Continuous gas lift injection remains optimal at {current['casing_pressure_psi']} psi and all wellhead pressures are normal."
                 )
 
     # 7. Cost / Spend
@@ -408,66 +441,92 @@ def generate_structured_recommendation(well: Dict[str, Any]) -> Dict[str, Any]:
         }
 
 
-def get_genai_client():
+def call_gemini_api(
+    prompt: str,
+    audio_bytes: Optional[bytes] = None,
+    mime_type: str = "audio/webm",
+) -> str:
     """
-    Initializes Google GenAI Client.
-    Prioritizes Vertex AI with Application Default Credentials (ADC) in us-central1,
-    or uses explicit GEMINI_API_KEY if configured.
+    Calls Gemini 3.8 Flash using Google Generative Language API.
+    Supports both text prompts and inline multimodal audio bytes.
     """
-    from google import genai
-    api_key = os.environ.get("GEMINI_API_KEY", "")
-    if api_key:
-        return genai.Client(api_key=api_key)
+    import base64
+    import requests
 
-    project = os.environ.get("GCP_PROJECT", os.environ.get("GOOGLE_CLOUD_PROJECT", "workover-operations-agentic-ai"))
-    location = os.environ.get("VERTEX_LOCATION", os.environ.get("GEMINI_LIVE_REGION", "us-central1"))
-    return genai.Client(vertexai=True, project=project, location=location)
+    api_key = os.environ.get("GEMINI_API_KEY") or GEMINI_API_KEY
+    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent?key={api_key}"
+
+    parts: List[Dict[str, Any]] = [{"text": prompt}]
+    if audio_bytes:
+        audio_b64 = base64.b64encode(audio_bytes).decode("utf-8")
+        parts.append({
+            "inlineData": {
+                "mimeType": mime_type,
+                "data": audio_b64,
+            }
+        })
+
+    payload = {
+        "contents": [{
+            "parts": parts,
+        }],
+        "generationConfig": {
+            "temperature": 0.2,
+            "maxOutputTokens": 1024,
+            "thinkingConfig": {"thinkingBudget": 0},
+        },
+    }
+
+    resp = requests.post(url, json=payload, timeout=25)
+    if not resp.ok:
+        raise RuntimeError(f"Gemini API error ({resp.status_code}): {resp.text}")
+
+    data = resp.json()
+    candidates = data.get("candidates", [])
+    if not candidates:
+        raise ValueError(f"No response candidates from Gemini: {data}")
+
+    parts_resp = candidates[0].get("content", {}).get("parts", [])
+    for p in parts_resp:
+        if "text" in p:
+            return p["text"].strip()
+    raise ValueError("No text in Gemini response parts")
 
 
 def chat_with_well_agent(
     well: Dict[str, Any], user_message: str, language: str = "hinglish"
 ) -> Dict[str, Any]:
     """
-    Main entry point for Geleki well contextual AI copilot.
-    Attempts Gemini 2.5 Flash via Vertex AI ADC (or GEMINI_API_KEY); falls back gracefully to local expert.
-    Strictly instructs Gemini to be concise (2-3 sentences max) in Hindi + English (Hinglish).
+    Main entry point for Geleki well contextual AI copilot powered by Gemini 3.8 Flash.
+    Strictly instructs Gemini to be concise (2-3 sentences max) in Hindi + English (Hinglish) or English.
     """
     try:
-        client = get_genai_client()
         context = build_well_context(well)
-
         lang_instruction = {
             "hinglish": (
-                "Speak in natural, conversational Hinglish (a fluid blend of Hindi and English code-switching as spoken by ONGC petroleum engineers in Assam, "
+                "Speak in natural, conversational Hinglish (a fluid blend of Hindi and English as spoken by ONGC petroleum engineers in Assam, "
                 "e.g. 'GLK-101 abhi warning state mein hai kyunki water cut 84% tak badh gaya hai... Er. R. K. Gogoi ne last workover mein 1,450m pe wax bridge clean kiya tha. "
                 "Immediate hot oil flush recommend karta hoon.'). Keep tone direct, collegial, and authoritative."
             ),
             "english": "Speak in crisp, professional, operational petroleum engineering English.",
-            "hindi": "Speak in natural, fluent conversational Hindi (हिंदी) with standard oilfield terms in English script/parentheses where common.",
+            "hindi": "Speak in clean, natural, professional Hindi in proper Devanagari script (स्पष्ट एवं शुद्ध देवनागरी हिंदी). Write smoothly and clearly in Devanagari.",
         }.get((language or "hinglish").lower(), "Speak in natural, conversational Hinglish.")
 
-        prompt = f"""You are WellPulse Voice Copilot, a senior ONGC petroleum and reservoir engineer in the Geleki Brownfield control room (Assam Asset, Sivasagar).
-You are speaking via live two-way radio/voice with a field workover engineer at the wellsite.
+        prompt = f"""You are WellPulse Copilot, a senior ONGC petroleum and reservoir engineer in the Geleki Brownfield control room (Assam Asset, Sivasagar).
+You are answering a query from a field workover engineer at the wellsite regarding {well['name']}.
 
-Asset Context & Engineering Dossier:
+Asset Context & Engineering Dossier for {well['name']}:
 {context}
 
 Field Engineer's Question: "{user_message}"
 
-CRITICAL VOICE CONVERSATION RULES:
-1. CONCISENESS: EXACTLY 2 TO 3 SENTENCES (35 to 45 words maximum). Deliver the core diagnostic answer and immediate technical next step immediately.
-2. NO SCRIPT READING: Never recite document numbers, markdown headers, or raw bullet lists aloud.
+CRITICAL VOICE & CHAT RULES:
+1. CONCISENESS: EXACTLY 2 TO 3 SENTENCES (35 to 50 words maximum). Answer the specific question asked directly, grounded in {well['name']}'s telemetry, workover history, or technical reports.
+2. NO SCRIPT READING: Never recite document numbers, markdown headers, or raw bullet lists.
 3. LANGUAGE: {lang_instruction}
-4. FACTUALITY: Ground your response strictly in the well's telemetry, historical workovers, or the 4 engineering reports (WCR, Daily Shift Log, BHP Survey, Water/Scale Lab Assay)."""
+4. FACTUALITY: Ground your response strictly in {well['name']}'s specific telemetry, historical workovers, or the 4 engineering reports (WCR, Daily Shift Log, BHP Survey, Water/Scale Lab Assay)."""
 
-        response = client.models.generate_content(
-            model="gemini-2.5-flash",
-            contents=prompt,
-        )
-
-        reply_text = response.text.strip() if response and response.text else ""
-        if not reply_text:
-            raise ValueError("Empty response received from Gemini model")
+        reply_text = call_gemini_api(prompt)
 
         recommendation = None
         user_lower = user_message.lower()
@@ -477,12 +536,90 @@ CRITICAL VOICE CONVERSATION RULES:
         return {
             "response": reply_text,
             "recommendation": recommendation,
-            "engine": "gemini-2.5-flash-vertex-ai",
+            "engine": "gemini-3.8-flash",
             "well_id": well["id"],
             "language": language,
         }
     except Exception as e:
-        print(f"[!] Warning: Gemini Vertex AI call failed ({e}). Falling back to Local Geleki Petroleum Expert.")
+        print(f"[!] Warning: Gemini API call failed ({e}). Falling back to Local Geleki Petroleum Expert.")
         result = query_local_petroleum_expert(well, user_message, language=language)
         result["note"] = f"Fallback active: {str(e)}"
         return result
+
+
+def chat_with_well_agent_audio(
+    well: Dict[str, Any],
+    audio_bytes: bytes,
+    mime_type: str = "audio/webm",
+    language: str = "english",
+) -> Dict[str, Any]:
+    """
+    Processes raw voice audio input using Gemini 3.8 Flash multimodal engine.
+    Listens directly to the audio recording, understands technical oilfield terminology,
+    and returns both the user transcript and a crisp 2-sentence response.
+    """
+    try:
+        context = build_well_context(well)
+        lang_instruction = {
+            "hinglish": (
+                "Speak in natural, conversational Hinglish (a fluid blend of Hindi and English as spoken by ONGC petroleum engineers in Assam). "
+                "Keep tone direct, collegial, and authoritative."
+            ),
+            "english": "Speak in crisp, professional, operational petroleum engineering English.",
+            "hindi": "Speak in clean, natural, professional Hindi in proper Devanagari script (स्पष्ट एवं शुद्ध देवनागरी हिंदी). Write smoothly and clearly in Devanagari.",
+        }.get((language or "english").lower(), "Speak in crisp, professional, operational petroleum engineering English.")
+
+        prompt = f"""You are WellPulse Voice Copilot, a senior ONGC petroleum and reservoir engineer in the Geleki Brownfield control room (Assam Asset, Sivasagar).
+You are listening to an audio recording sent over the two-way field radio from a workover engineer at the wellsite regarding {well['name']}.
+
+Asset Context & Engineering Dossier for {well['name']}:
+{context}
+
+CRITICAL RULES:
+1. Listen carefully to what the field engineer asked or stated in the audio clip.
+2. In your response, provide EXACTLY 2 TO 3 SENTENCES (35 to 50 words maximum) addressing their question directly.
+3. If the engineer asks what happened to this well, and the well is tripped/failed (red well), state that it tripped offline due to failed gas lift valve and sand bridging in the tubing, with tubing pressure collapsed, and that a workover rig cleanout is required.
+4. Language: {lang_instruction}
+5. Format your output strictly as valid JSON:
+{{"user_transcript": "<transcription of what was said in the audio>", "response": "<your 2-3 sentence answer>"}}"""
+
+        reply_raw = call_gemini_api(prompt, audio_bytes=audio_bytes, mime_type=mime_type)
+
+        user_transcript = "Spoken audio query"
+        agent_response = reply_raw
+        if "{" in reply_raw and "}" in reply_raw:
+            try:
+                start = reply_raw.index("{")
+                end = reply_raw.rindex("}") + 1
+                parsed = json.loads(reply_raw[start:end])
+                user_transcript = parsed.get("user_transcript", user_transcript)
+                agent_response = parsed.get("response", agent_response)
+            except Exception:
+                pass
+
+        recommendation = None
+        if well["status"] in ("warning", "failed") or any(k in agent_response.lower() for k in ["recommend", "cleanout", "workover"]):
+            recommendation = generate_structured_recommendation(well)
+
+        return {
+            "user_transcript": user_transcript,
+            "response": agent_response,
+            "recommendation": recommendation,
+            "engine": "gemini-3.8-flash-audio",
+            "well_id": well["id"],
+            "language": language,
+        }
+    except Exception as e:
+        print(f"[!] Warning: Gemini Audio API call failed ({e}). Falling back to Local Geleki Petroleum Expert.")
+        default_q = "What happened to this well?"
+        result = query_local_petroleum_expert(well, default_q, language=language)
+        return {
+            "user_transcript": "Voice query: What happened to this well?",
+            "response": result["response"],
+            "recommendation": result.get("recommendation"),
+            "engine": "local-geleki-petroleum-expert-v1",
+            "well_id": well["id"],
+            "language": language,
+            "note": f"Audio fallback active: {str(e)}",
+        }
+

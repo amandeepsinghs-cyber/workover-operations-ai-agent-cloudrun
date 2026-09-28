@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import L from 'leaflet';
 import { WellSummary, FieldInfrastructure, GatheringStation } from '../../types/well';
-import { Globe, Layers, Network, Building2 } from 'lucide-react';
+import { Globe, Layers, Network, Building2, Maximize2, Minimize2, X } from 'lucide-react';
 
 interface WellMapProps {
   wells: WellSummary[];
@@ -21,7 +21,29 @@ export const WellMap: React.FC<WellMapProps> = ({
   const markersRef = useRef<{ [id: string]: L.Marker }>({});
   const [mapStyle, setMapStyle] = useState<'satellite' | 'dark'>('satellite');
   const [showFlowlines, setShowFlowlines] = useState<boolean>(true);
+  const [isFullscreen, setIsFullscreen] = useState<boolean>(false);
   const [infrastructure, setInfrastructure] = useState<FieldInfrastructure | null>(null);
+
+  // Resize Leaflet Map when toggling Fullscreen
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (mapInstanceRef.current) {
+        mapInstanceRef.current.invalidateSize();
+      }
+    }, 150);
+    return () => clearTimeout(timer);
+  }, [isFullscreen]);
+
+  // Handle ESC key to exit fullscreen
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && isFullscreen) {
+        setIsFullscreen(false);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isFullscreen]);
 
   // Fetch Geleki Field Infrastructure (GGS stations, CDP)
   useEffect(() => {
@@ -453,9 +475,35 @@ export const WellMap: React.FC<WellMapProps> = ({
     });
   }, [infrastructure, showFlowlines, wells, selectedWellId]);
 
+  const selectedWell = wells.find((w) => w.id === selectedWellId);
+
   return (
-    <div className="relative w-full h-full">
+    <div className={isFullscreen ? "fixed inset-0 z-[1000] w-screen h-screen bg-background flex flex-col" : "relative w-full h-full"}>
       <div ref={mapContainerRef} className="w-full h-full z-0" />
+
+      {/* Fullscreen Floating Header Banner (HUD) */}
+      {isFullscreen && (
+        <div className="absolute top-3 left-3 z-[400] flex items-center gap-3 bg-surface/95 backdrop-blur-md border border-border px-4 py-2 rounded-lg shadow-2xl font-mono text-xs">
+          <div className="flex items-center gap-2">
+            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+            <span className="font-bold text-white tracking-wide">GELEKI FIELD GIS • FULLSCREEN</span>
+          </div>
+          <span className="text-border">|</span>
+          <span className="text-textMuted text-[11px]">
+            Press <kbd className="px-1.5 py-0.5 bg-[#0d1117] border border-border rounded text-white text-[10px]">ESC</kbd> to return
+          </span>
+          {selectedWell && (
+            <>
+              <span className="text-border">|</span>
+              <div className="flex items-center gap-1.5">
+                <span className="text-textMuted">Inspecting:</span>
+                <span className="text-accent font-bold">{selectedWell.name} ({selectedWell.id})</span>
+                <span className="text-emerald-400 font-semibold">• {selectedWell.current_metrics.oil_bopd} BOPD</span>
+              </div>
+            </>
+          )}
+        </div>
+      )}
 
       {/* Layer Style & Flowline Controls */}
       <div className="absolute top-3 right-3 z-[400] flex items-center gap-1.5 bg-surface/90 backdrop-blur-md border border-border p-1 rounded-lg shadow-xl font-mono text-xs">
@@ -492,6 +540,29 @@ export const WellMap: React.FC<WellMapProps> = ({
           }`}
         >
           <Layers className="w-3.5 h-3.5" /> SCADA
+        </button>
+
+        <span className="text-border">|</span>
+
+        {/* Fullscreen Map Toggle */}
+        <button
+          onClick={() => setIsFullscreen(!isFullscreen)}
+          title={isFullscreen ? 'Exit full screen view (ESC)' : 'Expand map to full screen view'}
+          className={`flex items-center gap-1.5 px-2.5 py-1 rounded transition-colors ${
+            isFullscreen
+              ? 'bg-accent hover:bg-accent/80 text-white font-bold shadow-sm'
+              : 'text-textMuted hover:text-white'
+          }`}
+        >
+          {isFullscreen ? (
+            <>
+              <Minimize2 className="w-3.5 h-3.5" /> Normal View
+            </>
+          ) : (
+            <>
+              <Maximize2 className="w-3.5 h-3.5" /> Fullscreen
+            </>
+          )}
         </button>
       </div>
 
