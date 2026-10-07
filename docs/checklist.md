@@ -126,26 +126,26 @@
 **Verbatim anchor:** §1 *"Lakwa… Lakhmani… three areas, with their individual cluster"*; §1 *"generate more data"*
 
 #### Tasks
-- [ ] [F] N-F1 Port generator modules and `train.py` boilerplate from `${ADK_REPO}` with import rewrites into `backend/app/analytics/generator/` and `backend/app/analytics/model/train.py`
-- [ ] [O] N.1 FieldConfig and field modules: implement `backend/app/analytics/generator/fields/{__init__.py, geleki.py, lakwa.py, lakhmani.py}` with fixtures (LKW-047, LKW-088, LKW-112, LKM-023, LKM-061, LKM-090) and new tables in `{hierarchy.py, construction.py, operations_events.py, targets.py}` (incl. `pressure_surveys`, `formation_tops`, D-19)
-- [ ] [O] N.2 Catalogue and labels (K-1, K-2): add `GLV_REPLACE` and `cost_band` to `job_catalogue`; add `catalogue_job_code` and `intervention_class` (IC-01…IC-15) to `workover_history`
-- [ ] [O] N.3 Telemetry columns (D-19): add `wht_degc`, `gl_inj_rate_mscfd`, `gl_inj_pressure_kgcm2` (GOR = `gor_scf_bbl`; SPM for SRP), plus append-only `pressure_surveys` and `formation_tops`
-- [ ] [O] N.4 Repository layer: implement `backend/app/data_access/{repository.py, parquet_repo.py, adapters.py}`, update `backend/app/api/wells.py` to read from repository, and deprecate/delete `backend/app/services/data_generator.py`
-- [ ] [F] N-F2 Frontend type and label updates: update `frontend/src/types/well.ts` and `frontend/src/components/timeline/WorkoverTimeline.tsx` (replace `cost_usd` with `cost_band` + `rig_days`)
-- [ ] [O] N.5 Generation and validation: generate 60-month dataset (2021-10-01 to 2026-09-30) for all fields, validate V-N1..V-N7 and baseline comparison, verify CoxPH model training
-- [ ] [O] N.6 Pin design targets: run `pin_targets.py` to generate `docs/pinned_values.md` and replace `«target ± tol»` placeholders in `BDD.md`
+- [x] [F] N-F1 Port generator modules and `train.py` boilerplate from `${ADK_REPO}` with import rewrites into `backend/app/analytics/generator/` and `backend/app/analytics/model/train.py`
+- [x] [O] N.1 FieldConfig and field modules: implement `backend/app/analytics/generator/fields/{__init__.py, geleki.py, lakwa.py, lakhmani.py}` with fixtures (LKW-047, LKW-088, LKW-112, LKM-023, LKM-061, LKM-090) and new tables in `{hierarchy.py, construction.py, operations_events.py, targets.py}` (incl. `pressure_surveys`, `formation_tops`, D-19)
+- [x] [O] N.2 Catalogue and labels (K-1, K-2): add `GLV_REPLACE` and `cost_band` to `job_catalogue`; add `catalogue_job_code` and `intervention_class` (IC-01…IC-15) to `workover_history`
+- [x] [O] N.3 Telemetry columns (D-19): add `wht_degc`, `gl_inj_rate_mscfd`, `gl_inj_pressure_kgcm2` (GOR = `gor_scf_bbl`; SPM for SRP), plus append-only `pressure_surveys` and `formation_tops`
+- [x] [O] N.4 Repository layer: implement `backend/app/data_access/{repository.py, parquet_repo.py, adapters.py}`, update `backend/app/api/wells.py` to read from repository, and deprecate/delete `backend/app/services/data_generator.py`
+- [x] [F] N-F2 Frontend type and label updates: update `frontend/src/types/well.ts` and `frontend/src/components/timeline/WorkoverTimeline.tsx` (replace `cost_usd` with `cost_band` + `rig_days`)
+- [x] [O] N.5 Generation and validation: generate 60-month dataset (2021-10-01 to 2026-09-30) for all fields, validate V-N1..V-N7 and baseline comparison, verify CoxPH model training
+- [x] [O] N.6 Pin design targets: run `pin_targets.py` to generate `docs/pinned_values.md` and replace `«target ± tol»` placeholders in `BDD.md`
 
 #### Gate N
-- [ ] Validator 0 violations for Geleki, Lakwa and Lakhmani; well counts 142 / 160 / 110
-- [ ] Geleki's pre-existing columns are hash-identical to `landing_v030`; the Geleki join at the prepend boundary is continuous (±3%)
-- [ ] All fields cover 2021-10-01 → 2026-09-30, and two runs produce byte-identical parquet (reproducible; fixes the `now()` defect)
-- [ ] CoxPH C-index reproduces 0.7128 with the prepend excluded (Gate E)
-- [ ] Every IC-01…IC-15 has ≥ 30 `workover_history` rows; `GLV_REPLACE` exists
-- [ ] Lakwa gap vs. target inside −18% ± 3 pp; LKW-047 has 41 `WAIT_ON_RIG` days and 12 `WAIT_ON_MATERIAL` days
-- [ ] `wht_degc`, `gor_scf_bbl`, `gl_inj_rate_mscfd`, `gl_inj_pressure_kgcm2` present; `pressure_surveys` and `formation_tops` populated (verbatim WS6, D-19)
-- [ ] `test_api_shapes.py` green against the repository (React UI unchanged except for the N-F2 cost-band fields); `npm run build` green
-- [ ] No `cost_usd` remains in API responses (D-1)
-- [ ] `docs/pinned_values.md` written; BDD targets replaced
+- [x] Validator 0 violations for Geleki, Lakwa and Lakhmani; well counts 142 / 160 / 110
+- [x] Geleki's pre-existing columns are hash-identical to `landing_v030`; the Geleki join at the prepend boundary is continuous (±3%)
+- [x] All fields cover 2021-10-01 → 2026-09-30, and two runs produce byte-identical parquet (reproducible; fixes the `now()` defect)
+- [x] CoxPH C-index reproduces 0.7128 with the prepend excluded (Gate E)
+- [x] Every IC-01…IC-15 has ≥ 30 `workover_history` rows; `GLV_REPLACE` exists
+- [x] Lakwa gap vs. target inside −18% ± 3 pp; LKW-047 has 41 `WAIT_ON_RIG` days and 12 `WAIT_ON_MATERIAL` days
+- [x] `wht_degc`, `gor_scf_bbl`, `gl_inj_rate_mscfd`, `gl_inj_pressure_kgcm2` present; `pressure_surveys` and `formation_tops` populated (verbatim WS6, D-19)
+- [x] `test_api_shapes.py` green against the repository (React UI unchanged except for the N-F2 cost-band fields); `npm run build` green
+- [x] No `cost_usd` remains in API responses (D-1)
+- [x] `docs/pinned_values.md` written; BDD targets replaced
 - [ ] [O] Commit + push after Gate N passes: `git commit -m "v0.4(N): data foundation v2 — Gate N passed" && git push origin main`
 
 ---
@@ -307,20 +307,20 @@
 **Verbatim anchor:** §1 *"Gemini Live is not working well… working very good in Drilling Intelligence 2.0"*
 
 #### Tasks
-- [ ] [O] Reference study: inspect `${DI2_REPO}/backend/app/agent/live_session.py`, `backend/app/api/ws_live.py`, `frontend/src/live/{liveClient,micCapture,audioPlayer}.ts`, and `docs/adr/ADR-003-gemini-live-adk-proxy.md`
-- [ ] [O] Model verification (U.2): run live model verification script against Vertex AI in `us-central1` and write exact returned names into `backend/.env` (`TEXT_MODEL`, `LIVE_MODEL`, `LIVE_LOCATION`); if missing after 3 attempts, mark Stage U BLOCKED — never substitute
-- [ ] [O] Live session engine: implement `backend/app/live/{session.py, voice_tools.py, live_prompt.md, fallback.py}` supporting resumption, context compression, session recap, and 3-failure fallback to text
-- [ ] [O] Live WebSocket route: implement `backend/app/api/live.py` serving `WS /ws/live` (field/well context message); legacy `WS /api/wells/{id}/live` shim kept until Gate V (D-20)
-- [ ] [F] U-F1 AudioWorklet client: implement `frontend/src/live/{liveClient.ts, micCapture.ts, pcm-worklet.js, audioPlayer.ts}` (16 kHz upload / 24 kHz playback)
-- [ ] [F] U-F2 Voice UI state machine: update `frontend/src/components/agent/VoiceAgentPanel.tsx` with connection states (connecting, listening, speaking, fallback), remove browser `speechSynthesis`, retain language toggle, add open-mic hands-free option (audio-only)
-- [ ] [O] Integration testing: implement `backend/tests/integration/test_ws_live.py` verifying reconnect, recap, and 3-failure fallback
+- [x] [O] Reference study: inspect `${DI2_REPO}/backend/app/agent/live_session.py`, `backend/app/api/ws_live.py`, `frontend/src/live/{liveClient,micCapture,audioPlayer}.ts`, and `docs/adr/ADR-003-gemini-live-adk-proxy.md`
+- [x] [O] Model verification (U.2): run live model verification script against Vertex AI in `us-central1` and write exact returned names into `backend/.env` (`TEXT_MODEL`, `LIVE_MODEL`, `LIVE_LOCATION`); if missing after 3 attempts, mark Stage U BLOCKED — never substitute
+- [x] [O] Live session engine: implement `backend/app/live/{session.py, voice_tools.py, live_prompt.md, fallback.py}` supporting resumption, context compression, session recap, and 3-failure fallback to text
+- [x] [O] Live WebSocket route: implement `backend/app/api/live.py` serving `WS /ws/live` (field/well context message); legacy `WS /api/wells/{id}/live` shim kept until Gate V (D-20)
+- [x] [F] U-F1 AudioWorklet client: implement `frontend/src/live/{liveClient.ts, micCapture.ts, pcm-worklet.js, audioPlayer.ts}` (16 kHz upload / 24 kHz playback)
+- [x] [F] U-F2 Voice UI state machine: update `frontend/src/components/agent/VoiceAgentPanel.tsx` with connection states (connecting, listening, speaking, fallback), remove browser `speechSynthesis`, retain language toggle, add open-mic hands-free option (audio-only)
+- [x] [O] Integration testing: implement `backend/tests/integration/test_ws_live.py` verifying reconnect, recap, and 3-failure fallback
 
 #### Gate U
-- [ ] The model names in `.env` come from the U.2 listing (output pasted into the commit message or PR)
+- [x] The model names in `.env` come from the U.2 listing (output pasted into the commit message or PR)
 - [ ] Spoken answer to *"Which field is underperforming?"*; first audio ≤ 2.5 s warm
 - [ ] Barge-in ≤ 300 ms; a forced reconnect keeps context (resumption + recap); 3 failures → text fallback with a visible notice
-- [ ] Spoken numbers equal tool returns (same functions as the text path)
-- [ ] The language toggle still works; `speechSynthesis` is no longer used for Live replies
+- [x] Spoken numbers equal tool returns (same functions as the text path)
+- [x] The language toggle still works; `speechSynthesis` is no longer used for Live replies
 - [ ] Open-mic hands-free mode works; `FIELD_ENGINEER` persona can use Live voice
 - [ ] Runs on Vertex ADC; `GEMINI_API_KEY` is not read anywhere (`grep -rn GEMINI_API_KEY backend/app` is empty)
 - [ ] [O] Commit + push after Gate U passes: `git commit -m "v0.4(U): real Gemini Live — Gate U passed" && git push origin main`

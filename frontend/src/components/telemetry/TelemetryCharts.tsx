@@ -116,6 +116,7 @@ export const TelemetryCharts: React.FC<TelemetryChartsProps> = ({ wellId }) => {
                       fontSize: '11px',
                       color: '#e6edf3',
                     }}
+                    formatter={(value: any, name: any) => [value != null ? value : 'N/A', name]}
                   />
                   <Line
                     type="monotone"
@@ -123,6 +124,7 @@ export const TelemetryCharts: React.FC<TelemetryChartsProps> = ({ wellId }) => {
                     stroke="#2ea043"
                     strokeWidth={2}
                     dot={false}
+                    connectNulls={false}
                     name="Oil (BOPD)"
                   />
                   <Line
@@ -131,6 +133,7 @@ export const TelemetryCharts: React.FC<TelemetryChartsProps> = ({ wellId }) => {
                     stroke="#38bdf8"
                     strokeWidth={1.5}
                     dot={false}
+                    connectNulls={false}
                     name="Gas (MCFD)"
                   />
                 </LineChart>
@@ -145,7 +148,7 @@ export const TelemetryCharts: React.FC<TelemetryChartsProps> = ({ wellId }) => {
                 Water Cut (%) Progression
               </span>
               <span className="text-xs font-mono text-amber-400">
-                Current: {data.length > 0 ? `${data[data.length - 1].water_cut_pct}%` : 'N/A'}
+                Current: {data.length > 0 && data[data.length - 1]?.water_cut_pct != null ? `${data[data.length - 1].water_cut_pct}%` : 'N/A'}
               </span>
             </div>
             <div className="h-40 w-full">
@@ -172,6 +175,7 @@ export const TelemetryCharts: React.FC<TelemetryChartsProps> = ({ wellId }) => {
                       fontSize: '11px',
                       color: '#e6edf3',
                     }}
+                    formatter={(value: any, name: any) => [value != null ? value : 'N/A', name]}
                   />
                   <Area
                     type="monotone"
@@ -180,6 +184,7 @@ export const TelemetryCharts: React.FC<TelemetryChartsProps> = ({ wellId }) => {
                     strokeWidth={2}
                     fillOpacity={1}
                     fill="url(#waterCutGrad)"
+                    connectNulls={false}
                     name="Water Cut (%)"
                   />
                 </AreaChart>
@@ -220,6 +225,7 @@ export const TelemetryCharts: React.FC<TelemetryChartsProps> = ({ wellId }) => {
                       fontSize: '11px',
                       color: '#e6edf3',
                     }}
+                    formatter={(value: any, name: any) => [value != null ? value : 'N/A', name]}
                   />
                   <Line
                     type="monotone"
@@ -227,6 +233,7 @@ export const TelemetryCharts: React.FC<TelemetryChartsProps> = ({ wellId }) => {
                     stroke="#a855f7"
                     strokeWidth={1.8}
                     dot={false}
+                    connectNulls={false}
                     name="Tubing (psi)"
                   />
                   <Line
@@ -235,6 +242,7 @@ export const TelemetryCharts: React.FC<TelemetryChartsProps> = ({ wellId }) => {
                     stroke="#fb923c"
                     strokeWidth={1.8}
                     dot={false}
+                    connectNulls={false}
                     name="Casing (psi)"
                   />
                 </LineChart>

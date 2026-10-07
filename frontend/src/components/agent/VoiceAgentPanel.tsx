@@ -36,9 +36,10 @@ export interface ToolCallInfo {
   duration_ms?: number;
 }
 
-export interface SafeRecommendation extends Recommendation {
-  estimated_cost_usd?: number;
-  estimated_payback_days?: number;
+// D-1: no currency. Cost band + rig-days may be absent on live/tool payloads.
+export interface SafeRecommendation extends Omit<Recommendation, 'cost_band' | 'rig_days'> {
+  cost_band?: Recommendation['cost_band'];
+  rig_days?: number;
 }
 
 export type LiveChatMessage = Omit<ChatMessage, 'recommendation'> & {
@@ -1165,11 +1166,19 @@ export const VoiceAgentPanel: React.FC<VoiceAgentPanelProps> = ({ well }) => {
                     </div>
 
                     <div className="grid grid-cols-3 gap-2 bg-surface/60 p-2 rounded border border-border/60 font-mono text-[10px]">
-                      {typeof msg.recommendation.estimated_cost_usd === 'number' && (
+                      {msg.recommendation.cost_band && (
                         <div>
-                          <span className="text-textMuted">Est. Cost:</span>
-                          <div className="font-bold text-white">
-                            ${msg.recommendation.estimated_cost_usd.toLocaleString()}
+                          <span className="text-textMuted">Cost band:</span>
+                          <div
+                            className={`font-bold ${
+                              msg.recommendation.cost_band === 'HIGH'
+                                ? 'text-rose-400'
+                                : msg.recommendation.cost_band === 'MED'
+                                ? 'text-amber-400'
+                                : 'text-emerald-400'
+                            }`}
+                          >
+                            {msg.recommendation.cost_band}
                           </div>
                         </div>
                       )}
@@ -1179,11 +1188,11 @@ export const VoiceAgentPanel: React.FC<VoiceAgentPanelProps> = ({ well }) => {
                           +{msg.recommendation.projected_flow_uplift_bopd} BOPD
                         </div>
                       </div>
-                      {typeof msg.recommendation.estimated_payback_days === 'number' && (
+                      {typeof msg.recommendation.rig_days === 'number' && (
                         <div>
-                          <span className="text-textMuted">Payback:</span>
+                          <span className="text-textMuted">Rig-days:</span>
                           <div className="font-bold text-sky-400">
-                            ~{msg.recommendation.estimated_payback_days} Days
+                            {msg.recommendation.rig_days.toFixed(1)}
                           </div>
                         </div>
                       )}

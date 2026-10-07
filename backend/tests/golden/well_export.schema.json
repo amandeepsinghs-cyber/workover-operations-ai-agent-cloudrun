@@ -420,11 +420,6 @@
                   "string"
                 ]
               },
-              "job_cost_usd": {
-                "type": [
-                  "number"
-                ]
-              },
               "operation_type": {
                 "type": [
                   "string"
@@ -466,7 +461,6 @@
               "date",
               "hourly_logs",
               "issuing_authority",
-              "job_cost_usd",
               "operation_type",
               "outcome_summary",
               "report_id",
@@ -661,11 +655,6 @@
               "number"
             ]
           },
-          "total_workover_spend_usd": {
-            "type": [
-              "number"
-            ]
-          },
           "total_workovers": {
             "type": [
               "number"
@@ -676,7 +665,6 @@
           "avg_oil_bopd",
           "min_oil_bopd",
           "peak_oil_bopd",
-          "total_workover_spend_usd",
           "total_workovers"
         ],
         "type": [
@@ -699,11 +687,6 @@
             "contractor": {
               "type": [
                 "string"
-              ]
-            },
-            "cost_usd": {
-              "type": [
-                "number"
               ]
             },
             "date": {
@@ -739,7 +722,6 @@
           },
           "required": [
             "contractor",
-            "cost_usd",
             "date",
             "description",
             "flow_delta_bopd",
@@ -775,8 +757,8 @@
   },
   "status": 200,
   "wells": [
-    "GLK-101",
-    "GLK-120",
-    "GLK-150"
+    "GK-129",
+    "LKW-047",
+    "LKM-061"
   ]
 }

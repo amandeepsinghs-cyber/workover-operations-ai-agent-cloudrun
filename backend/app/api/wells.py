@@ -1,11 +1,18 @@
 """
 FastAPI Routes for Well Management, Telemetry, and Contextual AI Agent.
+
+v0.4 (Stage N): every route reads the ``WellRepository`` (parquet landing by default, SDD §5.7).
+``GLK-`` IDs are retired (404 with a pointer to ``GK-``); no currency leaves the API (D-1).
 """
 
-from typing import List, Optional
+import base64
+
 from fastapi import APIRouter, HTTPException, Query, WebSocket, WebSocketDisconnect
 from pydantic import BaseModel
-from app.services.data_generator import get_all_wells
+
+from app.analytics.generator.fields import FIELD_CONFIGS
+from app.data_access.adapters import as_of_timestamp
+from app.data_access.repository import RetiredWellId, get_repository
 from app.services.ai_agent import (
     chat_with_well_agent,
     chat_with_well_agent_audio,
@@ -14,16 +21,42 @@ from app.services.ai_agent import (
 
 router = APIRouter()
 
+RETIRED_DETAIL = "GLK- IDs retired in v0.4; use GK-"
+HISTORY_RANGES = ("30d", "6m", "1y", "2y", "3y", "5y")
+SUMMARY_KEYS = (
+    "id", "name", "coordinates", "basin", "formation", "lift_type", "status", "current_metrics",
+    "telemetry_summary", "recent_workovers_count", "field", "cluster_id", "health_bucket", "health_reason",
+    "status_reason", "health_rule", "as_of", "current_metrics_date",
+)
+
 
 class ChatRequest(BaseModel):
     message: str
-    language: Optional[str] = "english"
+    language: str | None = "english"
 
 
 class AudioMessageRequest(BaseModel):
     audio_base64: str
-    mime_type: Optional[str] = "audio/webm"
-    language: Optional[str] = "english"
+    mime_type: str | None = "audio/webm"
+    language: str | None = "english"
+
+
+# ---------------------------------------------------------------------------
+# Data seams (also used by app.live.voice_tools: voice == screen)
+# ---------------------------------------------------------------------------
+def get_all_wells() -> list[dict]:
+    """All well summaries (incl. workovers) from the repository."""
+    return get_repository().list_wells()
+
+
+def _well_or_404(well_id: str) -> dict:
+    try:
+        w = get_repository().get_well(well_id)
+    except RetiredWellId:
+        raise HTTPException(status_code=404, detail=RETIRED_DETAIL)
+    if w is None:
+        raise HTTPException(status_code=404, detail=f"Well {well_id} not found")
+    return w
 
 
 @router.get("/health")
@@ -36,8 +69,8 @@ def health_check():
 
 
 @router.get("/wells/kpis")
-def get_fleet_kpis():
-    wells = get_all_wells()
+def get_fleet_kpis(field: str | None = None):
+    wells = [w for w in get_all_wells() if not field or w["field"].lower() == field.lower()]
     total = len(wells)
     healthy = sum(1 for w in wells if w["status"] == "healthy")
     warning = sum(1 for w in wells if w["status"] == "warning")
@@ -60,183 +93,109 @@ def get_fleet_kpis():
 
 @router.get("/wells")
 def list_wells(
-    status: Optional[str] = Query(None, description="healthy, warning, or failed"),
-    basin: Optional[str] = Query(None),
-    search: Optional[str] = Query(None),
+    status: str | None = Query(None, description="healthy, warning, or failed"),
+    basin: str | None = Query(None),
+    search: str | None = Query(None),
+    field: str | None = Query(None, description="Geleki, Lakwa or Lakhmani"),
 ):
-    wells = get_all_wells()
     results = []
-
-    for w in wells:
+    for w in get_all_wells():
         if status and status.lower() != "all" and w["status"].lower() != status.lower():
             continue
         if basin and basin.lower() not in w["basin"].lower():
+            continue
+        if field and field.lower() not in ("all", w["field"].lower()):
             continue
         if search:
             s = search.lower()
             if s not in w["name"].lower() and s not in w["id"].lower() and s not in w["formation"].lower():
                 continue
-
-        # Return lightweight summary for map & list (exclude large 730d history)
-        results.append({
-            "id": w["id"],
-            "name": w["name"],
-            "coordinates": w["coordinates"],
-            "basin": w["basin"],
-            "formation": w["formation"],
-            "lift_type": w["lift_type"],
-            "status": w["status"],
-            "current_metrics": w["current_metrics"],
-            "telemetry_summary": w.get("telemetry_summary", {}),
-            "recent_workovers_count": len(w.get("workovers", [])),
-        })
-
+        # Lightweight summary for map & list (no workovers / history)
+        results.append({k: w.get(k) for k in SUMMARY_KEYS})
     return results
 
 
 @router.get("/wells/{well_id}")
 def get_well_detail(well_id: str):
-    wells = get_all_wells()
-    for w in wells:
-        if w["id"].upper() == well_id.upper():
-            return {
-                "id": w["id"],
-                "name": w["name"],
-                "coordinates": w["coordinates"],
-                "basin": w["basin"],
-                "formation": w["formation"],
-                "lift_type": w["lift_type"],
-                "status": w["status"],
-                "current_metrics": w["current_metrics"],
-                "telemetry_summary": w.get("telemetry_summary", {}),
-                "workovers": w.get("workovers", []),
-                "reports": w.get("reports", {}),
-            }
-    raise HTTPException(status_code=404, detail=f"Well {well_id} not found")
+    w = _well_or_404(well_id)
+    out = {k: w.get(k) for k in SUMMARY_KEYS if k != "recent_workovers_count"}
+    out["workovers"] = w.get("workovers", [])
+    out["reports"] = w.get("reports", {})
+    return out
 
 
 @router.get("/wells/{well_id}/reports")
 def get_well_reports(well_id: str):
-    wells = get_all_wells()
-    for w in wells:
-        if w["id"].upper() == well_id.upper():
-            return w.get("reports", {})
-    raise HTTPException(status_code=404, detail=f"Well {well_id} not found")
+    return _well_or_404(well_id).get("reports", {})
 
 
 @router.get("/wells/{well_id}/reports/{report_type}")
 def get_well_specific_report(well_id: str, report_type: str):
-    wells = get_all_wells()
     valid_keys = {
         "completion": "completion_report",
         "workover": "daily_workover_report",
         "bhp": "bottomhole_pressure_survey",
         "lab": "water_and_scale_lab_report",
     }
-    for w in wells:
-        if w["id"].upper() == well_id.upper():
-            reports = w.get("reports", {})
-            target_key = valid_keys.get(report_type.lower(), report_type.lower())
-            if target_key in reports:
-                return reports[target_key]
-            raise HTTPException(
-                status_code=404,
-                detail=f"Report type '{report_type}' not found for well {well_id}. Available: {list(reports.keys())}",
-            )
-    raise HTTPException(status_code=404, detail=f"Well {well_id} not found")
+    reports = _well_or_404(well_id).get("reports", {})
+    target_key = valid_keys.get(report_type.lower(), report_type.lower())
+    if target_key in reports:
+        return reports[target_key]
+    raise HTTPException(
+        status_code=404,
+        detail=f"Report type '{report_type}' not found for well {well_id}. Available: {list(reports.keys())}",
+    )
 
 
 @router.get("/wells/{well_id}/history")
 def get_well_history(
     well_id: str,
-    range: str = Query("2y", description="Time range: 30d, 6m, 1y, or 2y"),
+    range: str = Query("2y", description="Time range: 30d, 6m, 1y, 2y, 3y or 5y"),
 ):
-    wells = get_all_wells()
-    target = None
-    for w in wells:
-        if w["id"].upper() == well_id.upper():
-            target = w
-            break
-
-    if not target:
-        raise HTTPException(status_code=404, detail=f"Well {well_id} not found")
-
-    full_history = target.get("history_730d", [])
-    if range == "30d":
-        return full_history[-30:]
-    elif range == "6m":
-        return full_history[-180:]
-    elif range == "1y":
-        return full_history[-365:]
-    return full_history
+    _well_or_404(well_id)
+    if range not in HISTORY_RANGES:
+        raise HTTPException(status_code=422, detail=f"range must be one of {list(HISTORY_RANGES)}")
+    return get_repository().get_history(well_id, range)
 
 
 @router.get("/wells/{well_id}/workovers")
 def get_well_workovers(well_id: str):
-    wells = get_all_wells()
-    for w in wells:
-        if w["id"].upper() == well_id.upper():
-            return w.get("workovers", [])
-    raise HTTPException(status_code=404, detail=f"Well {well_id} not found")
+    return _well_or_404(well_id).get("workovers", [])
 
 
 @router.post("/wells/{well_id}/chat")
 def chat_with_well(well_id: str, request: ChatRequest):
-    wells = get_all_wells()
-    target = None
-    for w in wells:
-        if w["id"].upper() == well_id.upper():
-            target = w
-            break
-
-    if not target:
-        raise HTTPException(status_code=404, detail=f"Well {well_id} not found")
-
-    result = chat_with_well_agent(
-        target, request.message, language=request.language or "english"
-    )
-    return result
+    target = _well_or_404(well_id)
+    return chat_with_well_agent(target, request.message, language=request.language or "english")
 
 
 @router.post("/wells/{well_id}/audio")
 def chat_with_well_audio(well_id: str, request: AudioMessageRequest):
-    wells = get_all_wells()
-    target = None
-    for w in wells:
-        if w["id"].upper() == well_id.upper():
-            target = w
-            break
-
-    if not target:
-        raise HTTPException(status_code=404, detail=f"Well {well_id} not found")
-
-    import base64
+    target = _well_or_404(well_id)
     try:
         audio_bytes = base64.b64decode(request.audio_base64)
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"Invalid base64 audio: {e}")
 
-    result = chat_with_well_agent_audio(
+    return chat_with_well_agent_audio(
         target,
         audio_bytes,
         mime_type=request.mime_type or "audio/webm",
         language=request.language or "english",
     )
-    return result
 
 
 @router.websocket("/wells/{well_id}/live")
 async def well_live_websocket(websocket: WebSocket, well_id: str):
     await websocket.accept()
-    wells = get_all_wells()
-    target = None
-    for w in wells:
-        if w["id"].upper() == well_id.upper():
-            target = w
-            break
+    try:
+        target = get_repository().get_well(well_id)
+        error = None if target else f"Well {well_id} not found"
+    except RetiredWellId:
+        target, error = None, RETIRED_DETAIL
 
     if not target:
-        await websocket.send_json({"type": "error", "error": f"Well {well_id} not found"})
+        await websocket.send_json({"type": "error", "error": error})
         await websocket.close()
         return
 
@@ -281,85 +240,41 @@ async def well_live_websocket(websocket: WebSocket, well_id: str):
 
 @router.post("/wells/{well_id}/recommendations")
 def get_recommendation(well_id: str):
-    wells = get_all_wells()
-    target = None
-    for w in wells:
-        if w["id"].upper() == well_id.upper():
-            target = w
-            break
-
-    if not target:
-        raise HTTPException(status_code=404, detail=f"Well {well_id} not found")
-
-    rec = generate_structured_recommendation(target)
+    target = _well_or_404(well_id)
     return {
         "well_id": target["id"],
         "well_name": target["name"],
         "status": target["status"],
-        "recommendation": rec,
+        "recommendation": generate_structured_recommendation(target),
     }
 
 
 @router.get("/field/infrastructure")
-def get_field_infrastructure():
-    """Returns Geleki Field processing facilities (GGS-1, GGS-2, GGS-3, CDP) and trunk lines."""
-    return {
-        "field_name": "Geleki Oil Field (Assam Asset, ONGC)",
-        "center_coordinates": {"lat": 26.775, "lng": 94.690},
-        "gathering_stations": [
-            {
-                "id": "GGS-01",
-                "name": "Gas Gathering Station 1 (Geleki South)",
-                "coordinates": {"lat": 26.762, "lng": 94.675},
-                "capacity_bopd": 6000,
-                "compressor_capacity_mmscfd": 1.2,
-                "serviced_wells": ["GLK-101", "GLK-102", "GLK-105", "GLK-112", "GLK-120"],
-            },
-            {
-                "id": "GGS-02",
-                "name": "Gas Gathering Station 2 (Geleki Central)",
-                "coordinates": {"lat": 26.778, "lng": 94.695},
-                "capacity_bopd": 8500,
-                "compressor_capacity_mmscfd": 2.0,
-                "serviced_wells": ["GLK-103", "GLK-104", "GLK-108", "GLK-115", "GLK-125"],
-            },
-            {
-                "id": "GGS-03",
-                "name": "Gas Gathering Station 3 (Geleki North/Barail)",
-                "coordinates": {"lat": 26.792, "lng": 94.710},
-                "capacity_bopd": 5500,
-                "compressor_capacity_mmscfd": 1.0,
-                "serviced_wells": ["GLK-106", "GLK-107", "GLK-110", "GLK-130", "GLK-145"],
-            },
-            {
-                "id": "CDP-01",
-                "name": "Central Desalting & Effluent Treatment Plant (CDP)",
-                "coordinates": {"lat": 26.770, "lng": 94.685},
-                "capacity_bopd": 20000,
-                "water_handling_bwpd": 45000,
-            },
-        ],
-    }
+def get_field_infrastructure(field: str = Query("Geleki", description="Geleki, Lakwa or Lakhmani")):
+    """Processing facilities (GGS / CTF / ETP) and serviced wells for one field, from facility_master."""
+    match = next((f for f in FIELD_CONFIGS if f.lower() == field.lower()), None)
+    if match is None:
+        raise HTTPException(status_code=404, detail=f"Unknown field {field!r}; expected one of {list(FIELD_CONFIGS)}")
+    return get_repository().field_infrastructure(match)
 
 
 @router.get("/wells/{well_id}/export")
 def export_well_dossier(well_id: str):
     """Exports full engineering dossier and telemetry archive for a well."""
-    wells = get_all_wells()
-    for w in wells:
-        if w["id"].upper() == well_id.upper():
-            return {
-                "well_id": w["id"],
-                "well_name": w["name"],
-                "field": "Geleki Field, Assam (ONGC)",
-                "formation": w["formation"],
-                "status": w["status"],
-                "coordinates": w["coordinates"],
-                "current_metrics": w["current_metrics"],
-                "telemetry_summary": w.get("telemetry_summary", {}),
-                "workovers": w.get("workovers", []),
-                "reports": w.get("reports", {}),
-                "export_timestamp": "2026-09-27T16:11:00Z",
-            }
-    raise HTTPException(status_code=404, detail=f"Well {well_id} not found")
-
+    w = _well_or_404(well_id)
+    cfg = FIELD_CONFIGS[w["field"]]
+    return {
+        "well_id": w["id"],
+        "well_name": w["name"],
+        "field": f"{cfg.field} Field, Assam ({cfg.asset} Asset)",
+        "formation": w["formation"],
+        "status": w["status"],
+        "coordinates": w["coordinates"],
+        "current_metrics": w["current_metrics"],
+        "telemetry_summary": w.get("telemetry_summary", {}),
+        "workovers": w.get("workovers", []),
+        "reports": w.get("reports", {}),
+        "export_timestamp": as_of_timestamp(),
+        "as_of": w.get("as_of"),
+        "health_rule": w.get("health_rule"),
+    }

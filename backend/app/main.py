@@ -1,4 +1,5 @@
 import os
+
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -6,9 +7,10 @@ load_dotenv()
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
-from app.api.wells import router as wells_router
+
 from app.api.live import router as live_router  # Stage U: WS /ws/live
-from app.services.data_generator import get_all_wells
+from app.api.wells import router as wells_router
+from app.data_access.repository import get_repository
 
 app = FastAPI(
     title="WellPulse API",
@@ -43,7 +45,7 @@ app.include_router(live_router)  # Stage U: WS /ws/live (SDD §11.4)
 @app.on_event("startup")
 def startup_event():
     print("[*] WellPulse Backend Initializing...")
-    wells = get_all_wells()
+    wells = get_repository().list_wells()  # warm the parquet repository (SDD §5.7)
     print(f"[✓] WellPulse Backend Ready with {len(wells)} active well assets.")
 
 

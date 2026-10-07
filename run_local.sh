@@ -23,10 +23,10 @@ command -v npm >/dev/null 2>&1 || { echo "[!] Error: npm is required."; exit 1; 
 echo "[*] Syncing backend environment with uv (uv.lock)..."
 (cd "${BACKEND_DIR}" && uv sync --frozen)
 
-# 3. Ensure synthetic dataset is generated
-if [ ! -f "${BACKEND_DIR}/app/data/wells_data.json" ]; then
-    echo "[*] Generating synthetic 24-month well telemetry..."
-    (cd "${BACKEND_DIR}" && uv run python -m app.services.data_generator)
+# 3. Ensure the v0.4 landing dataset exists (committed; regenerate only if missing, D-18)
+if [ ! -f "${BACKEND_DIR}/app/data/landing/asset/field_targets.parquet" ]; then
+    echo "[*] Generating synthetic landing data (Geleki, Lakwa, Lakhmani; 2021-10-01..2026-09-30)..."
+    (cd "${BACKEND_DIR}" && uv run python -m app.analytics.generator.generate --field all --start 2021-10-01 --end 2026-09-30)
 fi
 
 # 4. Check Frontend dependencies

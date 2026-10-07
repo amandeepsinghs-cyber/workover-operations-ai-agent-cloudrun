@@ -76,8 +76,8 @@ Feature: Geospatial Well Health Prioritization and Triage
     Examples:
       | field    | total   |
       | Geleki   | 142     |
-      | Lakwa    | «160»   |
-      | Lakhmani | «110»   |
+      | Lakwa    | 160     |
+      | Lakhmani | 110     |
 
   @BDD-B01-S02 @ui @regression
   Scenario Outline: Filter wellheads by operational health status
@@ -130,7 +130,7 @@ Feature: Well Selection and Telemetry Drill-Down
       | Tubing Pressure        | THP in ksc |
       | Casing Pressure        | CHP in ksc |
       | Artificial Lift Type   | text       |
-    And the production timeseries chart renders «1819 ± 0» historical daily points covering 2021-10-01 to as_of 2026-09-23
+    And the production timeseries chart renders 1819 historical daily points covering 2021-10-01 to as_of 2026-09-23
     And the user can toggle the time range between "1 Month", "6 Months", "1 Year", and "5 Years"
 
   @BDD-B02-S02 @ui @api @regression
@@ -337,7 +337,7 @@ Feature: Decline root-cause factor attribution
     Then the response status is 200
     And the waterfall components sum to total lost oil within 0.5%
     And the largest factor class is "HUMAN_PROCESS"
-    And HUMAN_PROCESS includes "WAIT_ON_RIG" of «41 ± 0» days and "WAIT_ON_MATERIAL" of «12 ± 0» days
+    And HUMAN_PROCESS includes "WAIT_ON_RIG" of 41 days and "WAIT_ON_MATERIAL" of 12 days
     And "EQUIPMENT" contains sub-factor "PUMP_WEAR"
 
   @BDD-F01-S02 @ws @voice @demo
@@ -351,7 +351,7 @@ Feature: Decline root-cause factor attribution
   @BDD-F01-S03 @api
   Scenario: Pure reservoir decline is uncontrollable
     When I GET /api/wells/LKM-090/attribution?window_days=180
-    Then "SUBSURFACE" accounts for «≥ 80%» of lost oil
+    Then "SUBSURFACE" accounts for «≥ 80%» of lost oil  # pinned at Gate P (TC-019 output; see pinned_values.md §8)
     And the controllable share is «≤ 15%»
     And the response flags "NO_OPERATIONAL_ACTION_WOULD_HAVE_PREVENTED"
 
@@ -372,7 +372,7 @@ Feature: Decline root-cause factor attribution
   Scenario: Field-level attribution rolls up from wells
     When I GET /api/fields/Lakwa/attribution?window_days=90
     Then the field total equals the sum of its wells' totals within 0.5%
-    And the controllable share (EQUIPMENT + OPERATIONAL + HUMAN_PROCESS) is «≥ 40%»
+    And the controllable share (EQUIPMENT + OPERATIONAL + HUMAN_PROCESS) is «≥ 40%»  # pinned at Gate P (TC-019 output)
     When I open the well drawer for LKW-047 and the "Decline causes" tab
     Then the waterfall bars equal the API components
 ```
@@ -396,8 +396,8 @@ Feature: Well-health screening across fields
     Examples:
       | field    | total |
       | Geleki   | 142   |
-      | Lakwa    | «160» |
-      | Lakhmani | «110» |
+      | Lakwa    | 160   |
+      | Lakhmani | 110   |
 
   @BDD-F02-S02 @api @regression
   Scenario: Geleki regression against ADK v0.3.0 trigger states
@@ -534,7 +534,7 @@ Feature: Asset → field → cluster → well hierarchy
   @BDD-F05-S01 @api @demo
   Scenario: List fields and clusters
     When I GET /api/fields
-    Then the response lists Geleki (3 clusters, 142 wells), Lakwa (3 clusters, «160» wells), Lakhmani (2 clusters, «110» wells)
+    Then the response lists Geleki (3 clusters, 142 wells), Lakwa (3 clusters, 160 wells), Lakhmani (2 clusters, 110 wells)
 
   @BDD-F05-S02 @ui @demo
   Scenario: Field selector drives the map
@@ -670,7 +670,7 @@ Feature: Real-time voice with Gemini Live
 
 ### F-08 · Synthetic data expansion (replaces 50-well JSON)
 
-*Anchor: T1 — "generate more data … two more clusters … Lakwa and Lakhmani … build those wells as well". WS6 telemetry list. T2 "everything needs to be generated". §8 "25 / 20 wells" is illustrative; D-2 sets «160» / «110». Stage N.*
+*Anchor: T1 — "generate more data … two more clusters … Lakwa and Lakhmani … build those wells as well". WS6 telemetry list. T2 "everything needs to be generated". §8 "25 / 20 wells" is illustrative; D-2 sets 160 / 110 (pinned at Gate N, `docs/pinned_values.md`). Stage N.*
 
 ```gherkin
 Feature: Synthetic data for three fields
@@ -696,8 +696,8 @@ Feature: Synthetic data for three fields
 
   @BDD-F08-S04 @data
   Scenario: Fixture wells hit their stories
-    Then LKW-047 has WAIT_ON_RIG «41» days and WAIT_ON_MATERIAL «12» days in its 180-day window
-    And LKM-090's offsets have decline residuals within «± 5 pp» of LKM-090's
+    Then LKW-047 has WAIT_ON_RIG 41 days and WAIT_ON_MATERIAL 12 days in its 180-day window
+    And LKM-090's offsets have decline residuals within ± 5 pp of LKM-090's (pinned max 0.6 pp)
 
   @BDD-F08-S05 @data
   Scenario: Telemetry columns and window
@@ -726,7 +726,7 @@ Feature: Field performance for the asset manager
   Scenario: Which field is not performing
     When I say "Which field is not performing, and why?"
     Then a tool_call for "compare_fields" with asset "ASSAM_ASSET" is emitted
-    And fields are ranked by gap to target with Lakwa worst at «−18% ± 3 pp»
+    And fields are ranked by gap to target with Lakwa worst at −17.6% (QTD 2026-07-01..AS_OF; pinned at Gate N)
     And the top driver named is a controllable factor class
 
   @BDD-F09-S02 @ui
@@ -1286,4 +1286,4 @@ These verbatim asks were missing or weak in the prior ADK BDD and are now covere
 | WS5 "Voice/Multimodal … hands-free" | Push-to-talk only; image input undefined | F07-S08 (open-mic option; audio-only in v0.4) |
 | §4 Turn 5 "reservoir pressure check … IPR" (illustrative) | No pressure evidence in the data | F13-S05 (`pressure_surveys` in the diagnostic-fit row) |
 
-Conflicts resolved against verbatim (not gaps): §4 ₹ cost / NPV / payback → cost band + rig-days, ranked by deferred barrels × p_success ÷ rig-days (D-1, SDD §9.1); §8 "25 / 20 wells" → «160» / «110» (D-2); WS2 three health categories → four TC-020 buckets (SDD §6.3); WS5 "Multimodal" → audio-only in v0.4; V§5 Vertex AI Search → TF-IDF in v0.4, Vertex AI Search optional later (D-17).
+Conflicts resolved against verbatim (not gaps): §4 ₹ cost / NPV / payback → cost band + rig-days, ranked by deferred barrels × p_success ÷ rig-days (D-1, SDD §9.1); §8 "25 / 20 wells" → 160 / 110 (D-2); WS2 three health categories → four TC-020 buckets (SDD §6.3); WS5 "Multimodal" → audio-only in v0.4; V§5 Vertex AI Search → TF-IDF in v0.4, Vertex AI Search optional later (D-17).

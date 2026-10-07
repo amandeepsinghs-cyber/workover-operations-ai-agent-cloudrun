@@ -1,0 +1,49 @@
+# IC-01..IC-15 <-> job_catalogue.job_code (SDD §8.1, K-2). Written from
+# app.analytics.generator.catalogue.IC_MAP / IC_LABELS at Stage N; that module is the source of truth.
+# Stage Q adds archetype aliases (e.g. "ESP Replacement" -> IC-08) for TC-021.
+classes:
+  IC-01:
+    label: "SRP pump change"
+    job_codes: [PUMP_OVERHAUL]
+  IC-02:
+    label: "Rod string repair"
+    job_codes: [ROD_REPLACE]
+  IC-03:
+    label: "Tubing leak repair"
+    job_codes: [TUBING_REPLACE]
+  IC-04:
+    label: "Wax removal / control"
+    job_codes: [WAX_SCRAPE, WAX_HOTOIL, WAX_SOLVENT, WAX_INHIBITOR, WAX_HEATER]
+  IC-05:
+    label: "Scale removal / inhibition"
+    job_codes: [SCALE_ACID_BULLHEAD, SCALE_INHIBITOR]
+  IC-06:
+    label: "Sand cleanout / control"
+    job_codes: [SAND_CLEANOUT, SAND_CONTROL]
+  IC-07:
+    label: "Gas-lift valve change"
+    job_codes: [GLV_REPLACE]
+  IC-08:
+    label: "Lift optimisation / conversion"
+    job_codes: [LIFT_OPTIM, GAS_SEP_INSTALL, LIFT_CONVERSION]
+  IC-09:
+    label: "Matrix stimulation (acid / frac)"
+    job_codes: [MATRIX_ACID, HYDRAULIC_FRAC]
+  IC-10:
+    label: "Perforation work (re-perforation)"
+    job_codes: [RE_PERFORATION, ADD_PERFORATION]
+  IC-11:
+    label: "Water shut-off squeeze"
+    job_codes: [CEMENT_SQUEEZE, POLYMER_GEL]
+  IC-12:
+    label: "Zonal isolation"
+    job_codes: [STRADDLE_PACKER, ZONE_TRANSFER]
+  IC-13:
+    label: "Coning control (choke back)"
+    job_codes: [CHOKE_BACK]
+  IC-14:
+    label: "Surface and integrity repair"
+    job_codes: [SURFACE_REPAIR, CASING_REPAIR]
+  IC-15:
+    label: "No job justified / terminal"
+    job_codes: [NO_JOB_JUSTIFIED, PLUG_ABANDON]

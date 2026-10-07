@@ -25,7 +25,7 @@ def build_well_context(well: Dict[str, Any]) -> str:
     wo_lines = []
     for wo in workovers:
         wo_lines.append(
-            f"- [{wo['date']}] {wo['type']} by {wo['contractor']} | Cost: ${wo['cost_usd']:,} | "
+            f"- [{wo['date']}] {wo['type']} by {wo['contractor']} | Cost band: {wo['cost_band']} ({wo['rig_days']} rig-days) | "
             f"Outcome: {wo['outcome']} | Flow Impact: +{wo['flow_delta_bopd']} BOPD\n"
             f"  Details: {wo['description']}"
         )
@@ -80,11 +80,11 @@ def build_well_context(well: Dict[str, Any]) -> str:
         )
 
     context = f"""
-=== GELEKI FIELD ASSET PROFILE: {well['name']} ({well['id']}) ===
+=== {str(well.get('field', 'Geleki')).upper()} FIELD ASSET PROFILE: {well['name']} ({well['id']}) ===
 - Operator: ONGC (Assam Asset, Sivasagar)
-- Field Type: Mature Brownfield (Producing since ~1968)
+- Field Type: Mature Brownfield
 - Basin: Assam-Arakan Basin | Formation: {well['formation']}
-- Artificial Lift: {well['lift_type']} (Connected to Geleki Gas Gathering Station Network)
+- Artificial Lift: {well['lift_type']} (Connected to {well.get('field', 'Geleki')} Group Gathering Station {well.get('cluster_id') or ''})
 - Location Coordinates: Lat {well['coordinates']['lat']}°N, Lng {well['coordinates']['lng']}°E
 
 === DIAGNOSTIC STATUS & FAILURE SUMMARY ===
@@ -104,7 +104,7 @@ def build_well_context(well: Dict[str, Any]) -> str:
 - Minimum Production: {summary.get('min_oil_bopd', 'N/A')} BOPD
 - 24-Month Average Flow: {summary.get('avg_oil_bopd', 'N/A')} BOPD
 - Total Interventions: {summary.get('total_workovers', 0)}
-- Cumulative Workover Expenditure: ${summary.get('total_workover_spend_usd', 0):,}
+- Workover Cost-Band Mix: {summary.get('cost_band_mix', {})} | Total Rig-Days: {summary.get('total_rig_days', 0)}
 
 === CHRONOLOGICAL WORKOVER & INTERVENTION LOG ===
 {wo_text}
@@ -175,7 +175,8 @@ def query_local_petroleum_expert(
     drawdown = bhp.get("drawdown_psi", sbhp - fbhp)
     fluid_level = bhp.get("sonolog_fluid_level_m", 1300.0)
     tds = lab.get("total_dissolved_solids_tds_mg_l", 15500)
-    total_spend = sum(w["cost_usd"] for w in workovers)
+    total_rig_days = round(sum(w.get("rig_days", 0.0) for w in workovers), 1)
+    band_mix = summary_band_mix(workovers)
 
     # 1. Supervising Engineer, Rig, Shift Logs, or Tagged Wax/Sand Depth
     if any(k in user_lower for k in ["supervising", "supervisor", "engineer", "rig", "shift log", "hourly", "tagged", "depth", "who ran", "who worked", "who supervised", "what rig", "kisne", "kya depth"]):
@@ -261,17 +262,17 @@ def query_local_petroleum_expert(
             if lang == "hinglish":
                 text_response = (
                     f"{well['name']} pe last operation {last_wo['type']} tha jo {last_wo['date']} ko {last_wo['contractor']} ne kiya. "
-                    f"Job cost ${last_wo['cost_usd']:,} rahi aur successful execution ke baad production {flow_gain} BOPD badh gaya."
+                    f"Job {last_wo['cost_band']} cost band ki thi ({last_wo['rig_days']} rig-days) aur execution ke baad production {flow_gain} BOPD badh gaya."
                 )
             elif lang == "hindi":
                 text_response = (
                     f"{well['name']} पर अंतिम कार्य {last_wo['date']} को {last_wo['type']} था। "
-                    f"इस पर ${last_wo['cost_usd']:,} का खर्च आया और उत्पादन में {flow_gain} बीओपीडी का इजाफा हुआ।"
+                    f"यह {last_wo['cost_band']} कॉस्ट बैंड का काम था ({last_wo['rig_days']} रिग-दिवस) और उत्पादन में {flow_gain} बीओपीडी का इजाफा हुआ।"
                 )
             else:
                 text_response = (
                     f"The most recent intervention on {well['name']} was a {last_wo['type']} on {last_wo['date']} by {last_wo['contractor']}. "
-                    f"At a cost of ${last_wo['cost_usd']:,}, it successfully delivered a {flow_gain} BOPD net production gain."
+                    f"It was a {last_wo['cost_band']} cost-band job ({last_wo['rig_days']} rig-days) and delivered a {flow_gain} BOPD net production change."
                 )
         else:
             text_response = (
@@ -340,18 +341,18 @@ def query_local_petroleum_expert(
         last_name = last_wo["type"] if last_wo else "routine maintenance"
         if lang == "hinglish":
             text_response = (
-                f"Pichle 24 mahino mein {well['name']} pe kul ${total_spend:,} kharch hua hai across {len(workovers)} operations. "
-                f"Isme sabse bada kharcha {last_name} ka tha."
+                f"{well['name']} pe {len(workovers)} operations hue hain, cost-band mix {band_mix} aur kul {total_rig_days} rig-days. "
+                f"Sabse recent job {last_name} thi."
             )
         elif lang == "hindi":
             text_response = (
-                f"पिछले 24 महीनों में {well['name']} पर कुल ${total_spend:,} का खर्च हुआ है {len(workovers)} ऑपरेशन्स में। "
-                f"सबसे मुख्य खर्च {last_name} पर हुआ।"
+                f"{well['name']} पर {len(workovers)} ऑपरेशन्स हुए हैं, कॉस्ट-बैंड मिश्रण {band_mix} और कुल {total_rig_days} रिग-दिवस। "
+                f"सबसे हालिया काम {last_name} था।"
             )
         else:
             text_response = (
-                f"Total intervention spend on {well['name']} over the last 24 months is ${total_spend:,} across {len(workovers)} jobs, "
-                f"led primarily by the {last_name}."
+                f"{well['name']} has {len(workovers)} recorded interventions with a cost-band mix of {band_mix} "
+                f"and {total_rig_days} total rig-days; the most recent was the {last_name}."
             )
 
     # 8. General Operational Status & Query Handling
@@ -388,6 +389,27 @@ def query_local_petroleum_expert(
     }
 
 
+def summary_band_mix(workovers: List[Dict[str, Any]]) -> str:
+    mix = {"LOW": 0, "MED": 0, "HIGH": 0}
+    for w in workovers:
+        mix[w.get("cost_band", "MED")] = mix.get(w.get("cost_band", "MED"), 0) + 1
+    return " / ".join(f"{k} {v}" for k, v in mix.items())
+
+
+_BAND_ORDER = {"LOW": 0, "MED": 1, "HIGH": 2}
+
+
+def _catalogue_effort(job_codes: tuple) -> Dict[str, Any]:
+    """Cost band (highest of the jobs) and rig-days (sum of est_days of rig jobs) from job_catalogue (D-1)."""
+    from app.data_access.repository import get_repository
+
+    repo = get_repository()
+    jobs = [j for j in (repo.catalogue_job(c) for c in job_codes) if j is not None]
+    band = max((str(j["cost_band"]) for j in jobs), key=lambda b: _BAND_ORDER.get(b, 1), default="MED")
+    rig_days = round(sum(float(j["est_days"]) for j in jobs if bool(j["requires_rig"])), 1)
+    return {"cost_band": band, "rig_days": rig_days, "catalogue_job_codes": list(job_codes)}
+
+
 def generate_structured_recommendation(well: Dict[str, Any]) -> Dict[str, Any]:
     """Generates structured engineering recommendations for Geleki brownfield wells."""
     status = well["status"]
@@ -398,9 +420,8 @@ def generate_structured_recommendation(well: Dict[str, Any]) -> Dict[str, Any]:
             "title": f"Mobilize ONGC Workover Rig & Sand Cleanout ({formation})",
             "urgency": "Immediate (Within 48 hrs)",
             "urgency_badge": "critical",
-            "estimated_cost_usd": 68000,
+            **_catalogue_effort(('SAND_CLEANOUT', 'GLV_REPLACE')),
             "projected_flow_uplift_bopd": 85.0,
-            "estimated_payback_days": 22,
             "action_items": [
                 "Mobilize ONGC workover rig from Nazira base to pull tubing and unseat stuck assembly.",
                 "Run coiled tubing with nitrogen foam to circulate out bridged Tipam formation sand.",
@@ -414,9 +435,8 @@ def generate_structured_recommendation(well: Dict[str, Any]) -> Dict[str, Any]:
             "title": "Hot Oil Paraffin Treatment & Water Shut-Off (WSO)",
             "urgency": "High Priority (Within 10 Days)",
             "urgency_badge": "warning",
-            "estimated_cost_usd": 28000,
+            **_catalogue_effort(('WAX_HOTOIL', 'POLYMER_GEL')),
             "projected_flow_uplift_bopd": 45.0,
-            "estimated_payback_days": 16,
             "action_items": [
                 "Circulate 70 bbl heated lease crude (85°C) with xylene-based wax solvent to dissolve tubing deposition.",
                 "Perform mechanical wireline scraper run to gauge tubing drift ID.",
@@ -430,9 +450,8 @@ def generate_structured_recommendation(well: Dict[str, Any]) -> Dict[str, Any]:
             "title": "Continuous Gas Lift Tuning & Flowline Dosing (Geleki GGS)",
             "urgency": "Routine Asset Optimization",
             "urgency_badge": "healthy",
-            "estimated_cost_usd": 7500,
+            **_catalogue_effort(('LIFT_OPTIM',)),
             "projected_flow_uplift_bopd": 15.0,
-            "estimated_payback_days": 12,
             "action_items": [
                 "Calibrate gas lift injection pressure regulator to 820 psi from GGS header.",
                 "Dose continuous pour-point depressant (PPD) and wax inhibitor at wellhead chemical injection skid.",
@@ -506,14 +525,14 @@ def chat_with_well_agent(
         lang_instruction = {
             "hinglish": (
                 "Speak in natural, conversational Hinglish (a fluid blend of Hindi and English as spoken by ONGC petroleum engineers in Assam, "
-                "e.g. 'GLK-101 abhi warning state mein hai kyunki water cut 84% tak badh gaya hai... Er. R. K. Gogoi ne last workover mein 1,450m pe wax bridge clean kiya tha. "
+                "e.g. 'GK-129 abhi warning state mein hai kyunki water cut 84% tak badh gaya hai... Er. R. K. Gogoi ne last workover mein 1,450m pe wax bridge clean kiya tha. "
                 "Immediate hot oil flush recommend karta hoon.'). Keep tone direct, collegial, and authoritative."
             ),
             "english": "Speak in crisp, professional, operational petroleum engineering English.",
             "hindi": "Speak in clean, natural, professional Hindi in proper Devanagari script (स्पष्ट एवं शुद्ध देवनागरी हिंदी). Write smoothly and clearly in Devanagari.",
         }.get((language or "hinglish").lower(), "Speak in natural, conversational Hinglish.")
 
-        prompt = f"""You are WellPulse Copilot, a senior ONGC petroleum and reservoir engineer in the Geleki Brownfield control room (Assam Asset, Sivasagar).
+        prompt = f"""You are WellPulse Copilot, a senior ONGC petroleum and reservoir engineer in the {well.get('field', 'Geleki')} field control room (Assam Asset, Sivasagar).
 You are answering a query from a field workover engineer at the wellsite regarding {well['name']}.
 
 Asset Context & Engineering Dossier for {well['name']}:
@@ -570,7 +589,7 @@ def chat_with_well_agent_audio(
             "hindi": "Speak in clean, natural, professional Hindi in proper Devanagari script (स्पष्ट एवं शुद्ध देवनागरी हिंदी). Write smoothly and clearly in Devanagari.",
         }.get((language or "english").lower(), "Speak in crisp, professional, operational petroleum engineering English.")
 
-        prompt = f"""You are WellPulse Voice Copilot, a senior ONGC petroleum and reservoir engineer in the Geleki Brownfield control room (Assam Asset, Sivasagar).
+        prompt = f"""You are WellPulse Voice Copilot, a senior ONGC petroleum and reservoir engineer in the {well.get('field', 'Geleki')} field control room (Assam Asset, Sivasagar).
 You are listening to an audio recording sent over the two-way field radio from a workover engineer at the wellsite regarding {well['name']}.
 
 Asset Context & Engineering Dossier for {well['name']}:

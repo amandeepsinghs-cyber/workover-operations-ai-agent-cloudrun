@@ -331,11 +331,6 @@
               "string"
             ]
           },
-          "job_cost_usd": {
-            "type": [
-              "number"
-            ]
-          },
           "operation_type": {
             "type": [
               "string"
@@ -377,7 +372,6 @@
           "date",
           "hourly_logs",
           "issuing_authority",
-          "job_cost_usd",
           "operation_type",
           "outcome_summary",
           "report_id",
@@ -552,8 +546,8 @@
   },
   "status": 200,
   "wells": [
-    "GLK-101",
-    "GLK-120",
-    "GLK-150"
+    "GK-129",
+    "LKW-047",
+    "LKM-061"
   ]
 }

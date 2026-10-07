@@ -152,7 +152,20 @@ export const WellReportsTab: React.FC<WellReportsTabProps> = ({ well }) => {
                   <span>•</span>
                   <span>Shift: {dwr.shift_hours}</span>
                   <span>•</span>
-                  <span className="text-emerald-400 font-semibold">Cost: ${dwr.job_cost_usd.toLocaleString()}</span>
+                  <span className="inline-flex items-center gap-1.5">
+                    <span
+                      className={`text-[9px] font-mono px-1.5 py-0.5 rounded font-semibold border ${
+                        dwr.cost_band === 'LOW'
+                          ? 'bg-emerald-950/60 text-emerald-300 border-emerald-700/60'
+                          : dwr.cost_band === 'MED'
+                          ? 'bg-amber-950/60 text-amber-300 border-amber-700/60'
+                          : 'bg-rose-950/60 text-rose-300 border-rose-700/60'
+                      }`}
+                    >
+                      {dwr.cost_band}
+                    </span>
+                    <span className="text-emerald-400 font-semibold">{dwr.rig_days} rig-days</span>
+                  </span>
                 </div>
               </div>
 

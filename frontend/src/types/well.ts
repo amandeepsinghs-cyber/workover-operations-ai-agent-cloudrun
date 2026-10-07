@@ -1,5 +1,7 @@
 export type WellStatus = 'healthy' | 'warning' | 'failed';
 
+export type CostBand = 'LOW' | 'MED' | 'HIGH';
+
 export interface WellCoordinates {
   lat: number;
   lng: number;
@@ -20,27 +22,45 @@ export interface TelemetrySummary {
   min_oil_bopd: number;
   avg_oil_bopd: number;
   total_workovers: number;
-  total_workover_spend_usd: number;
+  cost_band_mix: { LOW: number; MED: number; HIGH: number };
+  total_rig_days: number;
 }
 
 export interface WorkoverRecord {
   id: string;
   date: string;
   type: string;
-  cost_usd: number;
   contractor: string;
   description: string;
-  outcome: 'Success' | 'Partial' | 'Failed';
+  outcome: string;
   flow_delta_bopd: number;
+  cost_band: CostBand;
+  rig_days: number;
+  requires_rig: boolean;
+  equipment: string;
+  intervention_class: string;
+  intervention_label: string;
+  catalogue_job_code: string;
+  end_date?: string;
+  report_doc_id?: string | null;
 }
 
 export interface TelemetryPoint {
   date: string;
-  oil_bopd: number;
-  gas_mcfd: number;
-  water_cut_pct: number;
-  tubing_pressure_psi: number;
-  casing_pressure_psi: number;
+  oil_bopd: number | null;
+  gas_mcfd: number | null;
+  water_cut_pct: number | null;
+  tubing_pressure_psi: number | null;
+  casing_pressure_psi: number | null;
+  water_bwpd?: number | null;
+  liquid_blpd?: number | null;
+  gor_scf_bbl?: number | null;
+  wht_degc?: number | null;
+  gl_inj_rate_mscfd?: number | null;
+  gl_inj_pressure_psi?: number | null;
+  runtime_fraction?: number | null;
+  is_producing?: boolean;
+  downtime_reason?: string | null;
 }
 
 export interface WellSummary {
@@ -54,6 +74,13 @@ export interface WellSummary {
   current_metrics: CurrentMetrics;
   telemetry_summary: TelemetrySummary;
   recent_workovers_count: number;
+  field?: string;
+  cluster_id?: string;
+  health_bucket?: string;
+  health_reason?: string;
+  health_rule?: string;
+  as_of?: string;
+  current_metrics_date?: string | null;
 }
 
 export interface CasingString {
@@ -114,7 +141,8 @@ export interface DailyWorkoverReport {
   workover_rig: string;
   operation_type: string;
   contractor: string;
-  job_cost_usd: number;
+  cost_band: CostBand;
+  rig_days: number;
   shift_hours: string;
   hourly_logs: HourlyLog[];
   outcome_summary: string;
@@ -198,9 +226,9 @@ export interface Recommendation {
   title: string;
   urgency: string;
   urgency_badge: 'healthy' | 'warning' | 'critical';
-  estimated_cost_usd: number;
+  cost_band: CostBand;
   projected_flow_uplift_bopd: number;
-  estimated_payback_days: number;
+  rig_days: number;
   action_items: string[];
   risk_mitigation: string;
 }

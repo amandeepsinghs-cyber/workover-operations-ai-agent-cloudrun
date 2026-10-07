@@ -6,6 +6,7 @@
       "properties": {
         "casing_pressure_psi": {
           "type": [
+            "null",
             "number"
           ]
         },
@@ -16,21 +17,25 @@
         },
         "gas_mcfd": {
           "type": [
+            "null",
             "number"
           ]
         },
         "oil_bopd": {
           "type": [
+            "null",
             "number"
           ]
         },
         "tubing_pressure_psi": {
           "type": [
+            "null",
             "number"
           ]
         },
         "water_cut_pct": {
           "type": [
+            "null",
             "number"
           ]
         }
@@ -53,8 +58,8 @@
   },
   "status": 200,
   "wells": [
-    "GLK-101",
-    "GLK-120",
-    "GLK-150"
+    "GK-129",
+    "LKW-047",
+    "LKM-061"
   ]
 }

@@ -225,7 +225,7 @@ def _resolve(candidates: list[tuple[str, str]]) -> Callable[..., Any] | None:
 
 def _wells() -> list[dict[str, Any]]:
     # app.api.wells re-exports whatever data source the REST API uses, so voice == screen.
-    fn = _resolve([("app.api.wells", "get_all_wells"), ("app.services.data_generator", "get_all_wells")])
+    fn = _resolve([("app.api.wells", "get_all_wells")])
     if fn is None:
         raise RuntimeError("well data source unavailable")
     return list(fn())

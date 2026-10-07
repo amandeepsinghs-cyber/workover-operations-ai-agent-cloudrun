@@ -291,7 +291,7 @@ def test_tool_call_round_trip_uses_backend_functions(live_app, well_id):
     # The same numbers go to the model as to the UI (BDD-F07-S05).
     fr = fake.sessions[0].tool_responses[0]
     assert fr.id == "call-1" and fr.response["result"]["current_metrics"] == done[0]["result"]["current_metrics"]
-    from app.services.data_generator import get_all_wells
+    from app.api.wells import get_all_wells  # Stage N: the REST data seam (parquet repository)
 
     truth = next(w for w in get_all_wells() if w["id"] == well_id)
     assert fr.response["result"]["current_metrics"]["oil_bopd"] == truth["current_metrics"]["oil_bopd"]

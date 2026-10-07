@@ -2,7 +2,7 @@
 
 Usage (from ``backend/``)::
 
-    uv run python -m tests.golden.capture --wells GLK-101,GLK-120,GLK-150
+    uv run python -m tests.golden.capture --wells GK-129,LKW-047,LKM-061
 
 Writes ``tests/golden/<route_name>.schema.json`` for every route in
 ``tests/golden/routes.py`` plus the live websocket. Per-well routes merge the

@@ -30,16 +30,6 @@
               "array"
             ]
           },
-          "estimated_cost_usd": {
-            "type": [
-              "number"
-            ]
-          },
-          "estimated_payback_days": {
-            "type": [
-              "number"
-            ]
-          },
           "projected_flow_uplift_bopd": {
             "type": [
               "number"
@@ -68,8 +58,6 @@
         },
         "required": [
           "action_items",
-          "estimated_cost_usd",
-          "estimated_payback_days",
           "projected_flow_uplift_bopd",
           "risk_mitigation",
           "title",
@@ -112,8 +100,8 @@
   },
   "status": 200,
   "wells": [
-    "GLK-101",
-    "GLK-120",
-    "GLK-150"
+    "GK-129",
+    "LKW-047",
+    "LKM-061"
   ]
 }

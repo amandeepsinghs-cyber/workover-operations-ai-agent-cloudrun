@@ -1,6 +1,6 @@
 {
   "method": "GET",
-  "route": "/api/wells?status=all&basin=Assam&search=GLK",
+  "route": "/api/wells?status=all&basin=Assam&search=GK",
   "schema": {
     "items": {
       "properties": {
@@ -128,11 +128,6 @@
                 "number"
               ]
             },
-            "total_workover_spend_usd": {
-              "type": [
-                "number"
-              ]
-            },
             "total_workovers": {
               "type": [
                 "number"
@@ -143,7 +138,6 @@
             "avg_oil_bopd",
             "min_oil_bopd",
             "peak_oil_bopd",
-            "total_workover_spend_usd",
             "total_workovers"
           ],
           "type": [

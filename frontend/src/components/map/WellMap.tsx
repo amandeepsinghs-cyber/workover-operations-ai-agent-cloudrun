@@ -160,7 +160,7 @@ export const WellMap: React.FC<WellMapProps> = ({
       }
 
       const size = isSelected ? 32 : 24;
-      const wellNumber = well.id.replace('GLK-', '');
+      const wellNumber = well.id.split('-').pop();
 
       // Custom Tagged Pin with Well Name Header Badge and Oil Derrick Icon
       const customIcon = L.divIcon({

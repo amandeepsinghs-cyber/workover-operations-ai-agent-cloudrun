@@ -9,11 +9,6 @@
             "string"
           ]
         },
-        "cost_usd": {
-          "type": [
-            "number"
-          ]
-        },
         "date": {
           "type": [
             "string"
@@ -47,7 +42,6 @@
       },
       "required": [
         "contractor",
-        "cost_usd",
         "date",
         "description",
         "flow_delta_bopd",
@@ -65,8 +59,8 @@
   },
   "status": 200,
   "wells": [
-    "GLK-101",
-    "GLK-120",
-    "GLK-150"
+    "GK-129",
+    "LKW-047",
+    "LKM-061"
   ]
 }
