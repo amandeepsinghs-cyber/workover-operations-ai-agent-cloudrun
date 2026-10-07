@@ -13,6 +13,8 @@ import {
 } from 'recharts';
 import { Calendar, TrendingDown, TrendingUp } from 'lucide-react';
 import { TelemetryPoint } from '../../types/well';
+import { assetApi, Envelope, ProductionSeries } from '../../api/asset';
+import { ProductionMarkersChart } from '../well/ProductionMarkersChart';
 
 interface TelemetryChartsProps {
   wellId: string;
@@ -22,6 +24,12 @@ export const TelemetryCharts: React.FC<TelemetryChartsProps> = ({ wellId }) => {
   const [timeRange, setTimeRange] = useState<'30d' | '6m' | '1y' | '2y'>('1y');
   const [data, setData] = useState<TelemetryPoint[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
+
+  // Production history with interventions & WS-6 telemetry state
+  const [prodMonths, setProdMonths] = useState<24 | 36 | 60>(36);
+  const [prodEnvelope, setProdEnvelope] = useState<Envelope<ProductionSeries> | null>(null);
+  const [prodLoading, setProdLoading] = useState<boolean>(true);
+  const [prodError, setProdError] = useState<string | null>(null);
 
   useEffect(() => {
     let isMounted = true;
@@ -45,11 +53,42 @@ export const TelemetryCharts: React.FC<TelemetryChartsProps> = ({ wellId }) => {
     };
   }, [wellId, timeRange]);
 
+  useEffect(() => {
+    let isMounted = true;
+    setProdLoading(true);
+    setProdError(null);
+
+    assetApi
+      .wellProduction(wellId, prodMonths)
+      .then((env) => {
+        if (isMounted) {
+          setProdEnvelope(env);
+          setProdLoading(false);
+        }
+      })
+      .catch((err) => {
+        if (isMounted) {
+          setProdError(err instanceof Error ? err.message : String(err));
+          setProdLoading(false);
+        }
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [wellId, prodMonths]);
+
   const ranges: { label: string; value: '30d' | '6m' | '1y' | '2y' }[] = [
     { label: '30 Days', value: '30d' },
     { label: '6 Months', value: '6m' },
     { label: '1 Year', value: '1y' },
     { label: '2 Years', value: '2y' },
+  ];
+
+  const prodRanges: { label: string; value: 24 | 36 | 60 }[] = [
+    { label: '2y', value: 24 },
+    { label: '3y', value: 36 },
+    { label: '5y', value: 60 },
   ];
 
   return (
@@ -251,6 +290,65 @@ export const TelemetryCharts: React.FC<TelemetryChartsProps> = ({ wellId }) => {
           </div>
         </div>
       )}
+
+      {/* Production history with interventions & WS-6 telemetry */}
+      <div className="pt-6 border-t border-border space-y-4">
+        {/* Header & 2y / 3y / 5y selector */}
+        <div className="flex items-center justify-between border-b border-border pb-3">
+          <div className="flex items-center gap-2 text-xs font-mono text-textMuted">
+            <Calendar className="w-3.5 h-3.5 text-accent" />
+            <span className="font-bold text-white uppercase">
+              Production history with interventions & WS-6 telemetry
+            </span>
+          </div>
+          <div className="flex items-center gap-1 bg-[#0d1117] border border-border p-1 rounded-lg">
+            {prodRanges.map((r) => (
+              <button
+                key={r.value}
+                onClick={() => setProdMonths(r.value)}
+                className={`text-xs px-2.5 py-1 rounded font-mono transition-colors ${
+                  prodMonths === r.value
+                    ? 'bg-surface text-white font-semibold border border-border shadow-sm'
+                    : 'text-textMuted hover:text-white'
+                }`}
+              >
+                {r.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Loading / Error / Data Envelope */}
+        {prodLoading ? (
+          <div className="h-40 flex items-center justify-center text-textMuted text-xs font-mono bg-[#0d1117] border border-border rounded-lg p-4">
+            <span className="animate-spin mr-2">◌</span> Loading Production History & WS-6 Telemetry...
+          </div>
+        ) : prodError ? (
+          <div className="bg-[#0d1117] border border-rose-900/60 rounded-lg p-4 text-xs font-mono text-rose-400">
+            Error loading production history: {prodError}
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {prodEnvelope && prodEnvelope.status !== 'OK' && (
+              <div className="bg-amber-950/40 border border-amber-700/60 rounded-lg p-3 text-xs font-mono text-amber-300">
+                Status: {prodEnvelope.status} {prodEnvelope.message ? `— ${prodEnvelope.message}` : ''}
+              </div>
+            )}
+            {prodEnvelope?.data ? (
+              <ProductionMarkersChart data={prodEnvelope.data} showTelemetry />
+            ) : (
+              <div className="text-xs font-mono text-textMuted bg-[#0d1117] border border-border rounded-lg p-4">
+                No production series data available.
+              </div>
+            )}
+            {prodEnvelope?.provenance && (
+              <div className="text-[10px] font-mono text-textMuted/60 text-right">
+                {prodEnvelope.provenance.tool_id} · as of {prodEnvelope.provenance.as_of}
+              </div>
+            )}
+          </div>
+        )}
+      </div>
     </div>
   );
 };

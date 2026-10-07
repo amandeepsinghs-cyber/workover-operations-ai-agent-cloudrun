@@ -2,27 +2,38 @@ import React, { useEffect, useRef, useState } from 'react';
 import L from 'leaflet';
 import { WellSummary, FieldInfrastructure, GatheringStation } from '../../types/well';
 import { Globe, Layers, Network, Building2, Maximize2, Minimize2, X } from 'lucide-react';
+import { assetApi, FieldFilter, WellMapData, GeoJSONFeature } from '../../api/asset';
 
 interface WellMapProps {
   wells: WellSummary[];
   selectedWellId: string | null;
   onSelectWell: (wellId: string) => void;
+  /** Stage T: field filter ('ALL' = whole asset). Defaults to 'ALL'. */
+  field?: FieldFilter;
 }
+
+/** Central processing facility (CDP / CTF) — uses facility_master `type` when present. */
+const isCentralFacility = (s: GatheringStation): boolean =>
+  (s as GatheringStation & { type?: string }).type === 'CDP' || s.id.startsWith('CDP');
 
 export const WellMap: React.FC<WellMapProps> = ({
   wells,
   selectedWellId,
   onSelectWell,
+  field = 'ALL',
 }) => {
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<L.Map | null>(null);
   const tileLayerGroupRef = useRef<L.LayerGroup | null>(null);
   const infraLayerGroupRef = useRef<L.LayerGroup | null>(null);
+  const boundaryLayerGroupRef = useRef<L.LayerGroup | null>(null);
   const markersRef = useRef<{ [id: string]: L.Marker }>({});
   const [mapStyle, setMapStyle] = useState<'satellite' | 'dark'>('satellite');
   const [showFlowlines, setShowFlowlines] = useState<boolean>(true);
   const [isFullscreen, setIsFullscreen] = useState<boolean>(false);
   const [infrastructure, setInfrastructure] = useState<FieldInfrastructure | null>(null);
+  const [mapData, setMapData] = useState<WellMapData | null>(null);
+  const fieldLabel = field === 'ALL' ? 'Assam Asset' : field;
 
   // Resize Leaflet Map when toggling Fullscreen
   useEffect(() => {
@@ -45,32 +56,62 @@ export const WellMap: React.FC<WellMapProps> = ({
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [isFullscreen]);
 
-  // Fetch Geleki Field Infrastructure (GGS stations, CDP)
+  // Stage T: fetch TC-016 v2 map payload (boundaries, GGS polygons, bbox) for the selected field(s),
+  // then the facility network for every field in scope (merged when field = ALL).
   useEffect(() => {
-    fetch('/api/field/infrastructure')
-      .then((res) => res.json())
-      .then((data: FieldInfrastructure) => {
-        setInfrastructure(data);
+    let cancelled = false;
+    assetApi
+      .wellMap(field)
+      .then((env) => {
+        if (cancelled) return;
+        const md = env.data;
+        setMapData(md);
+        const fields = md && md.fields.length ? md.fields : field === 'ALL' ? [] : [field];
+        return Promise.all(
+          fields.map((f) =>
+            fetch(`/api/field/infrastructure?field=${encodeURIComponent(f)}`).then((res) =>
+              res.ok ? (res.json() as Promise<FieldInfrastructure>) : null,
+            ),
+          ),
+        ).then((infras) => {
+          if (cancelled) return;
+          const ok = infras.filter((x): x is FieldInfrastructure => !!x);
+          if (!ok.length) {
+            setInfrastructure(null);
+            return;
+          }
+          setInfrastructure({
+            field_name: ok.map((i) => i.field_name).join(' + '),
+            center_coordinates: ok[0].center_coordinates,
+            gathering_stations: ok.flatMap((i) => i.gathering_stations),
+          });
+        });
       })
       .catch((err) => {
-        console.warn('Field infrastructure fetch failed, using fallback:', err);
+        console.warn('Field map / infrastructure fetch failed:', err);
       });
-  }, []);
+    return () => {
+      cancelled = true;
+    };
+  }, [field]);
 
   // Initialize Leaflet Map
   useEffect(() => {
     if (!mapContainerRef.current || mapInstanceRef.current) return;
 
-    // Centered on Geleki Oil Field (Sivasagar, Assam, India)
+    // Initial view; re-fitted to the API bbox once /api/fields/map returns
     const map = L.map(mapContainerRef.current, {
-      center: [26.775, 94.690],
-      zoom: 12,
+      center: [26.9, 94.7],
+      zoom: 10,
       zoomControl: true,
       attributionControl: false,
     });
 
     const tileGroup = L.layerGroup().addTo(map);
     tileLayerGroupRef.current = tileGroup;
+
+    const boundaryGroup = L.layerGroup().addTo(map);
+    boundaryLayerGroupRef.current = boundaryGroup;
 
     const infraGroup = L.layerGroup().addTo(map);
     infraLayerGroupRef.current = infraGroup;
@@ -82,6 +123,49 @@ export const WellMap: React.FC<WellMapProps> = ({
       mapInstanceRef.current = null;
     };
   }, []);
+
+  // Stage T: field boundaries + GGS cluster polygons (synthetic, data-derived geometry), fit to bbox
+  useEffect(() => {
+    const map = mapInstanceRef.current;
+    const group = boundaryLayerGroupRef.current;
+    if (!map || !group) return;
+    group.clearLayers();
+    if (!mapData) return;
+    mapData.boundaries.forEach((b) => {
+      let gj: unknown = b.geojson;
+      if (typeof gj === 'string') {
+        try {
+          gj = JSON.parse(gj);
+        } catch {
+          return;
+        }
+      }
+      if (!gj) return;
+      const layer = L.geoJSON(gj as GeoJSON.GeoJsonObject, {
+        filter: (f) => !f.properties || f.properties.kind !== 'CLUSTER_POLYGON',
+        style: { color: '#e6edf3', weight: 2, opacity: 0.8, fillOpacity: 0.03, dashArray: '6 4' },
+      });
+      layer.bindTooltip(`${b.field} field boundary${b.is_synthetic_geometry ? ' (synthetic)' : ''}`, { sticky: true });
+      group.addLayer(layer);
+    });
+    mapData.cluster_polygons.forEach((f: GeoJSONFeature) => {
+      const layer = L.geoJSON(f as unknown as GeoJSON.GeoJsonObject, {
+        style: { color: '#f59e0b', weight: 1.5, opacity: 0.9, fillOpacity: 0.07 },
+      });
+      layer.bindTooltip(`${f.properties.name || f.properties.cluster_id} (${f.properties.field})`, { sticky: true });
+      group.addLayer(layer);
+    });
+    const bb = mapData.bbox;
+    if (bb && bb.min_lat != null && bb.max_lat != null && bb.min_lng != null && bb.max_lng != null) {
+      map.fitBounds(
+        [
+          [bb.min_lat, bb.min_lng],
+          [bb.max_lat, bb.max_lng],
+        ],
+        { padding: [24, 24] },
+      );
+    }
+  }, [mapData]);
 
   // Update Tile Layers when mapStyle changes
   useEffect(() => {
@@ -287,12 +371,20 @@ export const WellMap: React.FC<WellMapProps> = ({
 
     if (!infrastructure || !showFlowlines) return;
 
-    const cdpStation = infrastructure.gathering_stations.find((s) => s.id.startsWith('CDP'));
+    const centralStations = infrastructure.gathering_stations.filter(isCentralFacility);
+    const nearestCentral = (s: GatheringStation): GatheringStation | undefined =>
+      centralStations.reduce<GatheringStation | undefined>((best, c) => {
+        const d = (c.coordinates.lat - s.coordinates.lat) ** 2 + (c.coordinates.lng - s.coordinates.lng) ** 2;
+        if (!best) return c;
+        const bd = (best.coordinates.lat - s.coordinates.lat) ** 2 + (best.coordinates.lng - s.coordinates.lng) ** 2;
+        return d < bd ? c : best;
+      }, undefined);
 
-    // 1. Render Trunk Flowlines from GGS stations to Central Desalting Plant (CDP)
-    if (cdpStation) {
+    // 1. Render Trunk Flowlines from GGS stations to their (nearest) central facility (CDP / CTF)
+    if (centralStations.length) {
       infrastructure.gathering_stations.forEach((station) => {
-        if (!station.id.startsWith('CDP')) {
+        const cdpStation = nearestCentral(station);
+        if (!isCentralFacility(station) && cdpStation) {
           const trunkLine = L.polyline(
             [
               [station.coordinates.lat, station.coordinates.lng],
@@ -352,7 +444,7 @@ export const WellMap: React.FC<WellMapProps> = ({
 
     // 3. Render Gathering Station (GGS) & CDP Facility Markers
     infrastructure.gathering_stations.forEach((station) => {
-      const isCDP = station.id.startsWith('CDP');
+      const isCDP = isCentralFacility(station);
       const facilityColor = isCDP ? '#06b6d4' : '#f59e0b';
       const facilityBg = isCDP ? 'rgba(6, 182, 212, 0.25)' : 'rgba(245, 158, 11, 0.25)';
 
@@ -486,7 +578,7 @@ export const WellMap: React.FC<WellMapProps> = ({
         <div className="absolute top-3 left-3 z-[400] flex items-center gap-3 bg-surface/95 backdrop-blur-md border border-border px-4 py-2 rounded-lg shadow-2xl font-mono text-xs">
           <div className="flex items-center gap-2">
             <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-            <span className="font-bold text-white tracking-wide">GELEKI FIELD GIS • FULLSCREEN</span>
+            <span className="font-bold text-white tracking-wide">{fieldLabel.toUpperCase()} GIS • FULLSCREEN</span>
           </div>
           <span className="text-border">|</span>
           <span className="text-textMuted text-[11px]">
@@ -509,7 +601,7 @@ export const WellMap: React.FC<WellMapProps> = ({
       <div className="absolute top-3 right-3 z-[400] flex items-center gap-1.5 bg-surface/90 backdrop-blur-md border border-border p-1 rounded-lg shadow-xl font-mono text-xs">
         <button
           onClick={() => setShowFlowlines(!showFlowlines)}
-          title="Toggle Geleki Field Flowline Network & GGS Gathering Stations"
+          title={`Toggle ${fieldLabel} Flowline Network & GGS Gathering Stations`}
           className={`flex items-center gap-1.5 px-2.5 py-1 rounded transition-colors ${
             showFlowlines
               ? 'bg-emerald-600 text-white font-bold shadow-sm'
@@ -569,7 +661,7 @@ export const WellMap: React.FC<WellMapProps> = ({
       {/* Map Legend Overlay */}
       <div className="absolute bottom-4 left-4 z-[400] bg-surface/90 backdrop-blur-md border border-border px-3 py-2.5 rounded-lg text-xs font-mono shadow-xl max-w-xs">
         <div className="text-[10px] text-textMuted uppercase font-bold tracking-wider mb-2">
-          Geleki Production & Infrastructure
+          {fieldLabel} Production & Infrastructure
         </div>
         <div className="flex flex-col gap-1.5">
           <div className="flex items-center gap-2">
@@ -591,7 +683,7 @@ export const WellMap: React.FC<WellMapProps> = ({
           </div>
           <div className="flex items-center gap-2">
             <span className="w-2.5 h-2.5 rounded bg-cyan-500 border border-cyan-300"></span>
-            <span className="text-textMain text-[11px]">Central Desalting Plant (CDP)</span>
+            <span className="text-textMain text-[11px]">Central Facility (CDP / CTF)</span>
           </div>
           <div className="flex items-center gap-2">
             <span className="w-5 h-0.5 border-t border-dashed border-sky-400"></span>

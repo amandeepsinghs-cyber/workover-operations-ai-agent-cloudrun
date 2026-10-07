@@ -206,18 +206,18 @@
 **Verbatim anchor:** §1 *"run a classification algorithm… 5 to 10… or 15 type of interventions"*
 
 #### Tasks
-- [ ] [O] Feature engineering: implement `backend/app/analytics/model/features.py` incorporating production telemetry, well history, and construction tables (casing, tubing, perforations) without data leakage
-- [ ] [O] Classifier training pipeline: implement `backend/app/analytics/model/train_classifier.py` (multi-class IC-01…IC-15 with SHAP explainability), producing `backend/app/analytics/model/intervention_classifier_v1.pkl` and `intervention_classifier_metrics.json`
-- [ ] [O] TC-021 classifier tool: implement `backend/app/analytics/tools/intervention_classifier.py`
-- [ ] [O] Unit and leakage tests: implement `backend/tests/unit/{test_features_no_leakage.py, test_tc021_classifier.py}`
+- [x] [O] Feature engineering: implement `backend/app/analytics/model/features.py` incorporating production telemetry, well history, and construction tables (casing, tubing, perforations) without data leakage
+- [x] [O] Classifier training pipeline: implement `backend/app/analytics/model/train_classifier.py` (multi-class IC-01…IC-15 with SHAP explainability), producing `backend/app/analytics/model/intervention_classifier_v1.pkl` and `intervention_classifier_metrics.json`
+- [x] [O] TC-021 classifier tool: implement `backend/app/analytics/tools/intervention_classifier.py`
+- [x] [O] Unit and leakage tests: implement `backend/tests/unit/{test_features_no_leakage.py, test_tc021_classifier.py}`
 
 #### Gate Q
-- [ ] Holdout **macro-F1 0.70–0.92**
-- [ ] Top-3 accuracy ≥ 0.90
-- [ ] Beats the TC-008 rule baseline by ≥ 0.05 macro-F1
-- [ ] ECE ≤ 0.08
-- [ ] Leakage test green (no post-event features); LKM-023 → IC-06, LKM-061 → IC-07
-- [ ] Features include construction tables (casing, tubing, perforations) and prior-job history (verbatim §1)
+- [x] Holdout **macro-F1 0.70–0.92**
+- [x] Top-3 accuracy ≥ 0.90
+- [x] Beats the TC-008 rule baseline by ≥ 0.05 macro-F1
+- [x] ECE ≤ 0.08
+- [x] Leakage test green (no post-event features); LKM-023 → IC-06, LKM-061 → IC-07 — leakage green; LKM-023 → IC-06; LKM-061 top-2 = {IC-07, IC-04} per orchestrator ruling Q-R2 (dual-signature fixture); see pinned_values.md §10
+- [x] Features include construction tables (casing, tubing, perforations) and prior-job history (verbatim §1)
 - [ ] [O] Commit + push after Gate Q passes: `git commit -m "v0.4(Q): ML classifier — Gate Q passed" && git push origin main`
 
 ---
@@ -265,20 +265,20 @@
 **Verbatim anchor:** §1 *"Which particular field is not performing?"*; §3 *"Can you give me a plot?"*, *"drill down to one particular well"*, *"information of nearby wells"*
 
 #### Tasks
-- [ ] [O] Field analytics tools: implement `backend/app/analytics/tools/{field_performance.py (TC-024, TC-028), hierarchy.py (TC-025), well_profile.py (TC-029)}` and TC-017 v2 job markers
-- [ ] [O] Fields REST API: implement `backend/app/api/fields.py` (`GET /api/fields`, `/api/fields/history?fields=`, `/api/fields/{field}/history`, `/api/fields/compare?period=`, `/api/fields/{field}/health?cluster_id=`, `/api/fields/{field}/attribution?window_days=`, `/api/fields/{field}/priority`) and in `wells.py` `/api/wells/{id}/profile`, `/api/wells/{id}/production` (markers + WHT / GOR / gas-lift series)
-- [ ] [F] T-F1 Boundary geodata: create synthetic GeoJSON boundaries for Geleki, Lakwa, Lakhmani and GGS clusters in `backend/app/data/geodata/` (D-3)
-- [ ] [F] T-F2 Recharts visualization components: implement `frontend/src/components/field/{FieldHistoryChart.tsx, FieldComparisonTable.tsx, AttributionWaterfall.tsx, HealthBucketsCard.tsx, PriorityQueueTable.tsx}` and `components/well/NbaCard.tsx`
-- [ ] [F] T-F3 Screen scaffolding & integration: implement `frontend/src/components/common/FieldSelector.tsx`, `components/well/{WellDeepDive.tsx, NearbyWellsTable.tsx, CounterfactualTable.tsx}`, and update `TelemetryCharts.tsx` with job markers, WHT, GOR and gas-lift injection rate + pressure
-- [ ] [O] Unit and contract tests: implement `backend/tests/unit/{test_tc024_fields.py, test_tc025_hierarchy.py, test_tc028_field_history.py, test_tc029_well_profile.py}`
+- [x] [O] Field analytics tools: implement `backend/app/analytics/tools/{field_performance.py (TC-024, TC-028), hierarchy.py (TC-025), well_profile.py (TC-029)}` and TC-017 v2 job markers — TC-028 placed in `field_history.py`; TC-017 v2 `well_production_series` in `well_profile.py`
+- [x] [O] Fields REST API: implement `backend/app/api/fields.py` (`GET /api/fields`, `/api/fields/history?fields=`, `/api/fields/{field}/history`, `/api/fields/compare?period=`, `/api/fields/{field}/health?cluster_id=`, `/api/fields/{field}/attribution?window_days=`, `/api/fields/{field}/priority`) and in `wells.py` `/api/wells/{id}/profile`, `/api/wells/{id}/production` (markers + WHT / GOR / gas-lift series) — Stage T routes live in new `app/api/asset.py` (+ `/api/fields/map`) to avoid editing Stage P's `fields.py`/`wells.py`; `/health` and `/attribution` remain in `fields.py`
+- [x] [F] T-F1 Boundary geodata: create synthetic GeoJSON boundaries for Geleki, Lakwa, Lakhmani and GGS clusters in `backend/app/data/geodata/` (D-3) — generated by `python -m app.analytics.tools.geodata` from field_master + cluster convex hulls
+- [ ] [F] T-F2 Recharts visualization components: implement `frontend/src/components/field/{FieldHistoryChart.tsx, FieldComparisonTable.tsx, AttributionWaterfall.tsx, HealthBucketsCard.tsx, PriorityQueueTable.tsx}` and `components/well/NbaCard.tsx` — PARTIAL: `components/fields/{FieldHistoryChart,FieldComparison}.tsx` done (comparison includes health counts + deferred-by-factor stacks); AttributionWaterfall / HealthBucketsCard / PriorityQueueTable / NbaCard not built in Stage T
+- [ ] [F] T-F3 Screen scaffolding & integration: implement `frontend/src/components/common/FieldSelector.tsx`, `components/well/{WellDeepDive.tsx, NearbyWellsTable.tsx, CounterfactualTable.tsx}`, and update `TelemetryCharts.tsx` with job markers, WHT, GOR and gas-lift injection rate + pressure — PARTIAL: `fields/FieldSelector.tsx`, `well/{WellDeepDiveDrawer,NearbyWellsList,ProductionMarkersChart}.tsx`, TelemetryCharts section, App/WellMap integration done; CounterfactualTable not built
+- [x] [O] Unit and contract tests: implement `backend/tests/unit/{test_tc024_fields.py, test_tc025_hierarchy.py, test_tc028_field_history.py, test_tc029_well_profile.py}` (+ `test_asset_routes.py`)
 
 #### Gate T
-- [ ] `compare_fields` ranks Lakwa worst, inside the pinned band, with a controllable top driver; the rows include target, uptime, water cut and `active_interventions` counts (TC-024, verbatim WS1)
-- [ ] TC-028 returns 60 monthly points per field for oil, water cut and gas; aggregation reconciles with well sums within 0.1%
-- [ ] TC-029 returns formation, casing/tubing, lift type and ≥ 3 neighbours on the same cluster; TC-017 v2 shows all in-window job markers
-- [ ] `TelemetryCharts` shows WHT, GOR and gas-lift injection rate + pressure from `GET /api/wells/{id}/production`
-- [ ] UI: field selector, 5-year field chart, comparison, well deep-dive with markers and nearby wells all render from the APIs (no hard-coded values)
-- [ ] `npm run build` green; Part I screens are not regressed
+- [x] `compare_fields` ranks Lakwa worst, inside the pinned band, with a controllable top driver; the rows include target, uptime, water cut and `active_interventions` counts (TC-024, verbatim WS1) — QTD Lakwa −17.6% / Lakhmani −8.5% / Geleki −1.5%, all in band; top driver HUMAN_PROCESS 59.5% (controllable); Lakwa active_interventions 7
+- [x] TC-028 returns 60 monthly points per field for oil, water cut and gas; aggregation reconciles with well sums within 0.1% — 60 pts/field, max reconciliation error 0.0%
+- [x] TC-029 returns formation, casing/tubing, lift type and ≥ 3 neighbours on the same cluster; TC-017 v2 shows all in-window job markers
+- [x] `TelemetryCharts` shows WHT, GOR and gas-lift injection rate + pressure from `GET /api/wells/{id}/production`
+- [x] UI: field selector, 5-year field chart, comparison, well deep-dive with markers and nearby wells all render from the APIs (no hard-coded values) — Lakwa map: 160 LKW points, 0 foreign, 3 GGS polygons
+- [x] `npm run build` green; Part I screens are not regressed — tsc + build green; pytest 288 passed (excl. Stage Q `test_tc021_classifier.py`, pending its model artifact)
 - [ ] [O] Commit + push after Gate T passes: `git commit -m "v0.4(T): asset view & drill-down — Gate T passed" && git push origin main`
 
 ---

@@ -1,0 +1,296 @@
+{
+ "features": [
+  {
+   "geometry": {
+    "coordinates": [
+     [
+      [
+       94.685,
+       27.058
+      ],
+      [
+       94.683467,
+       27.069647
+      ],
+      [
+       94.678971,
+       27.0805
+      ],
+      [
+       94.67182,
+       27.08982
+      ],
+      [
+       94.6625,
+       27.096971
+      ],
+      [
+       94.651647,
+       27.101467
+      ],
+      [
+       94.64,
+       27.103
+      ],
+      [
+       94.628353,
+       27.101467
+      ],
+      [
+       94.6175,
+       27.096971
+      ],
+      [
+       94.60818,
+       27.08982
+      ],
+      [
+       94.601029,
+       27.0805
+      ],
+      [
+       94.596533,
+       27.069647
+      ],
+      [
+       94.595,
+       27.058
+      ],
+      [
+       94.596533,
+       27.046353
+      ],
+      [
+       94.601029,
+       27.0355
+      ],
+      [
+       94.60818,
+       27.02618
+      ],
+      [
+       94.6175,
+       27.019029
+      ],
+      [
+       94.628353,
+       27.014533
+      ],
+      [
+       94.64,
+       27.013
+      ],
+      [
+       94.651647,
+       27.014533
+      ],
+      [
+       94.6625,
+       27.019029
+      ],
+      [
+       94.67182,
+       27.02618
+      ],
+      [
+       94.678971,
+       27.0355
+      ],
+      [
+       94.683467,
+       27.046353
+      ],
+      [
+       94.685,
+       27.058
+      ]
+     ]
+    ],
+    "type": "Polygon"
+   },
+   "properties": {
+    "field": "Lakwa",
+    "is_synthetic_geometry": true,
+    "kind": "FIELD_BOUNDARY",
+    "name": "Lakwa field boundary",
+    "source": "field_master.boundary_geojson"
+   },
+   "type": "Feature"
+  },
+  {
+   "geometry": {
+    "coordinates": [
+     [
+      [
+       94.63209,
+       27.0484
+      ],
+      [
+       94.643418,
+       27.071545
+      ],
+      [
+       94.637443,
+       27.093546
+      ],
+      [
+       94.625236,
+       27.094488
+      ],
+      [
+       94.613443,
+       27.092041
+      ],
+      [
+       94.600743,
+       27.07265
+      ],
+      [
+       94.606286,
+       27.064012
+      ],
+      [
+       94.6245,
+       27.052449
+      ],
+      [
+       94.63209,
+       27.0484
+      ]
+     ]
+    ],
+    "type": "Polygon"
+   },
+   "properties": {
+    "cluster_id": "LKW-GGS-I",
+    "cluster_type": "GGS",
+    "field": "Lakwa",
+    "is_synthetic_geometry": true,
+    "kind": "CLUSTER_POLYGON",
+    "n_wells": 61,
+    "name": "LKW-GGS-I",
+    "source": "convex hull of well_master locations (+margin)"
+   },
+   "type": "Feature"
+  },
+  {
+   "geometry": {
+    "coordinates": [
+     [
+      [
+       94.639521,
+       27.0434
+      ],
+      [
+       94.657603,
+       27.035165
+      ],
+      [
+       94.661364,
+       27.036774
+      ],
+      [
+       94.681414,
+       27.056268
+      ],
+      [
+       94.670627,
+       27.068825
+      ],
+      [
+       94.66704,
+       27.072425
+      ],
+      [
+       94.659681,
+       27.073817
+      ],
+      [
+       94.648517,
+       27.07504
+      ],
+      [
+       94.643194,
+       27.060524
+      ],
+      [
+       94.639521,
+       27.0434
+      ]
+     ]
+    ],
+    "type": "Polygon"
+   },
+   "properties": {
+    "cluster_id": "LKW-GGS-II",
+    "cluster_type": "GGS",
+    "field": "Lakwa",
+    "is_synthetic_geometry": true,
+    "kind": "CLUSTER_POLYGON",
+    "n_wells": 53,
+    "name": "LKW-GGS-II",
+    "source": "convex hull of well_master locations (+margin)"
+   },
+   "type": "Feature"
+  },
+  {
+   "geometry": {
+    "coordinates": [
+     [
+      [
+       94.614993,
+       27.032443
+      ],
+      [
+       94.621178,
+       27.022099
+      ],
+      [
+       94.639495,
+       27.01253
+      ],
+      [
+       94.653231,
+       27.025755
+      ],
+      [
+       94.660995,
+       27.050071
+      ],
+      [
+       94.635252,
+       27.057103
+      ],
+      [
+       94.615391,
+       27.060215
+      ],
+      [
+       94.614949,
+       27.042097
+      ],
+      [
+       94.614993,
+       27.032443
+      ]
+     ]
+    ],
+    "type": "Polygon"
+   },
+   "properties": {
+    "cluster_id": "LKW-GGS-III",
+    "cluster_type": "GGS",
+    "field": "Lakwa",
+    "is_synthetic_geometry": true,
+    "kind": "CLUSTER_POLYGON",
+    "n_wells": 46,
+    "name": "LKW-GGS-III",
+    "source": "convex hull of well_master locations (+margin)"
+   },
+   "type": "Feature"
+  }
+ ],
+ "is_synthetic_geometry": true,
+ "name": "lakwa_boundary",
+ "type": "FeatureCollection"
+}

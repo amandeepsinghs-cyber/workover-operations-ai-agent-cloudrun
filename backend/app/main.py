@@ -44,6 +44,8 @@ app.include_router(wells_router, prefix="/api")
 app.include_router(docs_router, prefix="/api")  # Stage O: /api/docs/*, /api/wells/{id}/documents
 app.include_router(live_router)  # Stage U: WS /ws/live (SDD §11.4)
 app.include_router(fields_router, prefix="/api")  # Stage P: /api/fields/{f}/health|attribution, /api/wells/{id}/attribution
+from app.api.asset import router as asset_router  # noqa: E402  Stage T: /api/fields*, /api/wells/{id}/profile|production
+app.include_router(asset_router, prefix="/api")
 
 
 @app.on_event("startup")

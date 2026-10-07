@@ -5,6 +5,13 @@ import { WellDetails } from './components/telemetry/WellDetails';
 import { VoiceAgentPanel } from './components/agent/VoiceAgentPanel';
 import { FleetKPIs, WellDetail, WellSummary } from './types/well';
 import { AlertCircle, Layers, MapPin, Search } from 'lucide-react';
+import { assetApi, FieldFilter, Hierarchy } from './api/asset';
+import { FieldSelector } from './components/fields/FieldSelector';
+import { FieldHistoryChart } from './components/fields/FieldHistoryChart';
+import { FieldComparison } from './components/fields/FieldComparison';
+import { WellDeepDiveDrawer } from './components/well/WellDeepDiveDrawer';
+
+type ScreenTab = 'map' | 'field_history' | 'field_compare';
 
 export function App() {
   const [wells, setWells] = useState<WellSummary[]>([]);
@@ -14,6 +21,11 @@ export function App() {
   const [selectedStatus, setSelectedStatus] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [isLoading, setIsLoading] = useState<boolean>(true);
+  // Stage T: multi-field navigation
+  const [fieldFilter, setFieldFilter] = useState<FieldFilter>('ALL');
+  const [hierarchy, setHierarchy] = useState<Hierarchy | null>(null);
+  const [screenTab, setScreenTab] = useState<ScreenTab>('map');
+  const [drawerWellId, setDrawerWellId] = useState<string | null>(null);
 
   // Fetch initial fleet data and KPIs
   useEffect(() => {
@@ -40,6 +52,24 @@ export function App() {
       });
   }, []);
 
+  // Stage T: asset → field → cluster hierarchy for the field selector
+  useEffect(() => {
+    assetApi
+      .fields()
+      .then((env) => setHierarchy(env.data))
+      .catch((err) => console.warn('Field hierarchy fetch failed:', err));
+  }, []);
+
+  // Stage T: KPI ribbon follows the field filter (BDD-F05-S02: equals /api/wells/kpis?field=)
+  useEffect(() => {
+    if (isLoading) return;
+    const url = fieldFilter === 'ALL' ? '/api/wells/kpis' : `/api/wells/kpis?field=${encodeURIComponent(fieldFilter)}`;
+    fetch(url)
+      .then((res) => res.json())
+      .then((k) => setKpis(k))
+      .catch((err) => console.warn('KPI fetch failed:', err));
+  }, [fieldFilter, isLoading]);
+
   // Fetch full details whenever selected well changes
   useEffect(() => {
     if (!selectedWellId) return;
@@ -54,9 +84,11 @@ export function App() {
       });
   }, [selectedWellId]);
 
-  // Filter wells by status and search query
+  // Filter wells by field, status and search query
   const filteredWells = useMemo(() => {
     return wells.filter((well) => {
+      const matchesField =
+        fieldFilter === 'ALL' || (well.field || '').toLowerCase() === fieldFilter.toLowerCase();
       const matchesStatus =
         selectedStatus === 'all' || well.status.toLowerCase() === selectedStatus.toLowerCase();
       const matchesSearch =
@@ -64,9 +96,33 @@ export function App() {
         well.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         well.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
         well.formation.toLowerCase().includes(searchQuery.toLowerCase());
-      return matchesStatus && matchesSearch;
+      return matchesField && matchesStatus && matchesSearch;
     });
-  }, [wells, selectedStatus, searchQuery]);
+  }, [wells, fieldFilter, selectedStatus, searchQuery]);
+
+  // Stage T: keep the selected well inside the chosen field
+  useEffect(() => {
+    if (fieldFilter === 'ALL' || !wells.length) return;
+    const current = wells.find((w) => w.id === selectedWellId);
+    if (current && (current.field || '').toLowerCase() === fieldFilter.toLowerCase()) return;
+    const inField = wells.filter((w) => (w.field || '').toLowerCase() === fieldFilter.toLowerCase());
+    const pick =
+      inField.find((w) => w.status === 'failed') || inField.find((w) => w.status === 'warning') || inField[0];
+    if (pick) setSelectedWellId(pick.id);
+  }, [fieldFilter, wells]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const mapTitle = fieldFilter === 'ALL' ? 'Assam Asset — all fields' : `${fieldFilter} Field Assets`;
+  const tabBtn = (t: ScreenTab, label: string) => (
+    <button
+      key={t}
+      onClick={() => setScreenTab(t)}
+      className={`px-3 py-1 rounded transition-colors ${
+        screenTab === t ? 'bg-surface text-white font-semibold border border-border' : 'text-textMuted hover:text-white'
+      }`}
+    >
+      {label}
+    </button>
+  );
 
   return (
     <div className="flex flex-col h-screen w-screen bg-background overflow-hidden text-textMain">
@@ -79,10 +135,34 @@ export function App() {
         onSearchChange={setSearchQuery}
       />
 
+      {/* Stage T: field selector + screen tabs */}
+      <div className="h-10 px-4 border-b border-border flex items-center gap-4 bg-[#0d1117] text-xs font-mono shrink-0">
+        <FieldSelector value={fieldFilter} onChange={setFieldFilter} hierarchy={hierarchy} />
+        <span className="text-border">|</span>
+        <div className="flex items-center gap-1">
+          {tabBtn('map', 'Map & wells')}
+          {tabBtn('field_history', 'Field history (5y)')}
+          {tabBtn('field_compare', 'Field comparison')}
+        </div>
+      </div>
+
       {/* Main Multi-Pane View */}
       {isLoading ? (
         <div className="flex-1 flex items-center justify-center font-mono text-xs text-textMuted">
           <span className="animate-spin mr-2">◌</span> Initializing WellPulse Operations Core...
+        </div>
+      ) : screenTab === 'field_history' ? (
+        <div className="flex-1 overflow-y-auto p-4">
+          <FieldHistoryChart initialFields={fieldFilter === 'ALL' ? undefined : [fieldFilter]} />
+        </div>
+      ) : screenTab === 'field_compare' ? (
+        <div className="flex-1 overflow-y-auto p-4">
+          <FieldComparison
+            onSelectField={(f) => {
+              setFieldFilter(f);
+              setScreenTab('map');
+            }}
+          />
         </div>
       ) : (
         <div className="flex-1 flex overflow-hidden">
@@ -92,9 +172,19 @@ export function App() {
             <div className="h-10 px-4 border-b border-border/80 flex items-center justify-between bg-[#12161c] text-xs font-mono text-textMuted shrink-0">
               <span className="flex items-center gap-1.5 text-white font-semibold">
                 <MapPin className="w-3.5 h-3.5 text-accent" />
-                Geleki Field Assets ({filteredWells.length})
+                {mapTitle} ({filteredWells.length})
               </span>
-              <span className="text-[10px]">Click pin to inspect</span>
+              {selectedWellId ? (
+                <button
+                  onClick={() => setDrawerWellId(selectedWellId)}
+                  className="text-[10px] px-2 py-0.5 rounded border border-accent text-accent hover:bg-accent hover:text-white"
+                  title="Open well deep dive: history, interventions, construction, nearby wells"
+                >
+                  Deep dive {selectedWellId}
+                </button>
+              ) : (
+                <span className="text-[10px]">Click pin to inspect</span>
+              )}
             </div>
 
             {/* Map Canvas */}
@@ -103,6 +193,7 @@ export function App() {
                 wells={filteredWells}
                 selectedWellId={selectedWellId}
                 onSelectWell={setSelectedWellId}
+                field={fieldFilter}
               />
             </div>
 
@@ -173,6 +264,18 @@ export function App() {
             )}
           </section>
         </div>
+      )}
+
+      {/* Stage T: well deep-dive drawer */}
+      {drawerWellId && (
+        <WellDeepDiveDrawer
+          wellId={drawerWellId}
+          onClose={() => setDrawerWellId(null)}
+          onSelectWell={(id) => {
+            setDrawerWellId(id);
+            setSelectedWellId(id);
+          }}
+        />
       )}
     </div>
   );

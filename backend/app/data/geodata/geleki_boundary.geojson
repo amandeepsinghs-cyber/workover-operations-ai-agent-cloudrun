@@ -1,0 +1,308 @@
+{
+ "features": [
+  {
+   "geometry": {
+    "coordinates": [
+     [
+      [
+       94.893432,
+       26.962
+      ],
+      [
+       94.890726,
+       26.982559
+      ],
+      [
+       94.88279,
+       27.001716
+      ],
+      [
+       94.870167,
+       27.018167
+      ],
+      [
+       94.853716,
+       27.03079
+      ],
+      [
+       94.834559,
+       27.038726
+      ],
+      [
+       94.814,
+       27.041432
+      ],
+      [
+       94.793441,
+       27.038726
+      ],
+      [
+       94.774284,
+       27.03079
+      ],
+      [
+       94.757833,
+       27.018167
+      ],
+      [
+       94.74521,
+       27.001716
+      ],
+      [
+       94.737274,
+       26.982559
+      ],
+      [
+       94.734568,
+       26.962
+      ],
+      [
+       94.737274,
+       26.941441
+      ],
+      [
+       94.74521,
+       26.922284
+      ],
+      [
+       94.757833,
+       26.905833
+      ],
+      [
+       94.774284,
+       26.89321
+      ],
+      [
+       94.793441,
+       26.885274
+      ],
+      [
+       94.814,
+       26.882568
+      ],
+      [
+       94.834559,
+       26.885274
+      ],
+      [
+       94.853716,
+       26.89321
+      ],
+      [
+       94.870167,
+       26.905833
+      ],
+      [
+       94.88279,
+       26.922284
+      ],
+      [
+       94.890726,
+       26.941441
+      ],
+      [
+       94.893432,
+       26.962
+      ]
+     ]
+    ],
+    "type": "Polygon"
+   },
+   "properties": {
+    "field": "Geleki",
+    "is_synthetic_geometry": true,
+    "kind": "FIELD_BOUNDARY",
+    "name": "Geleki field boundary",
+    "source": "field_master.boundary_geojson"
+   },
+   "type": "Feature"
+  },
+  {
+   "geometry": {
+    "coordinates": [
+     [
+      [
+       94.797553,
+       26.971614
+      ],
+      [
+       94.790678,
+       26.963098
+      ],
+      [
+       94.789196,
+       26.957654
+      ],
+      [
+       94.789178,
+       26.951782
+      ],
+      [
+       94.792466,
+       26.943011
+      ],
+      [
+       94.794296,
+       26.941188
+      ],
+      [
+       94.800372,
+       26.940628
+      ],
+      [
+       94.820598,
+       26.954016
+      ],
+      [
+       94.824085,
+       26.959407
+      ],
+      [
+       94.818536,
+       26.969234
+      ],
+      [
+       94.816151,
+       26.970005
+      ],
+      [
+       94.797553,
+       26.971614
+      ]
+     ]
+    ],
+    "type": "Polygon"
+   },
+   "properties": {
+    "cluster_id": "GK-CENTRAL",
+    "cluster_type": "FAULT_BLOCK",
+    "field": "Geleki",
+    "is_synthetic_geometry": true,
+    "kind": "CLUSTER_POLYGON",
+    "n_wells": 54,
+    "name": "GK-CENTRAL",
+    "source": "convex hull of well_master locations (+margin)"
+   },
+   "type": "Feature"
+  },
+  {
+   "geometry": {
+    "coordinates": [
+     [
+      [
+       94.810014,
+       26.974692
+      ],
+      [
+       94.813332,
+       26.968398
+      ],
+      [
+       94.818178,
+       26.96351
+      ],
+      [
+       94.825972,
+       26.958434
+      ],
+      [
+       94.847741,
+       26.978307
+      ],
+      [
+       94.855876,
+       27.00416
+      ],
+      [
+       94.852941,
+       27.010974
+      ],
+      [
+       94.834582,
+       27.002906
+      ],
+      [
+       94.829408,
+       26.997685
+      ],
+      [
+       94.810014,
+       26.974692
+      ]
+     ]
+    ],
+    "type": "Polygon"
+   },
+   "properties": {
+    "cluster_id": "GK-NE",
+    "cluster_type": "FAULT_BLOCK",
+    "field": "Geleki",
+    "is_synthetic_geometry": true,
+    "kind": "CLUSTER_POLYGON",
+    "n_wells": 60,
+    "name": "GK-NE",
+    "source": "convex hull of well_master locations (+margin)"
+   },
+   "type": "Feature"
+  },
+  {
+   "geometry": {
+    "coordinates": [
+     [
+      [
+       94.763284,
+       26.929923
+      ],
+      [
+       94.75887,
+       26.915512
+      ],
+      [
+       94.788311,
+       26.928266
+      ],
+      [
+       94.793888,
+       26.934411
+      ],
+      [
+       94.796223,
+       26.937584
+      ],
+      [
+       94.792561,
+       26.947616
+      ],
+      [
+       94.788592,
+       26.949674
+      ],
+      [
+       94.767985,
+       26.934325
+      ],
+      [
+       94.763284,
+       26.929923
+      ]
+     ]
+    ],
+    "type": "Polygon"
+   },
+   "properties": {
+    "cluster_id": "GK-SW",
+    "cluster_type": "FAULT_BLOCK",
+    "field": "Geleki",
+    "is_synthetic_geometry": true,
+    "kind": "CLUSTER_POLYGON",
+    "n_wells": 28,
+    "name": "GK-SW",
+    "source": "convex hull of well_master locations (+margin)"
+   },
+   "type": "Feature"
+  }
+ ],
+ "is_synthetic_geometry": true,
+ "name": "geleki_boundary",
+ "type": "FeatureCollection"
+}

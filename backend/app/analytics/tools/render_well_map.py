@@ -9,7 +9,7 @@ Port of ADK v0.3.0 render_well_map with key architectural changes:
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field as dc_field
 from datetime import date
 from functools import lru_cache
 import json
@@ -25,6 +25,7 @@ from app.analytics.tools.common import (
 )
 from app.analytics.tools.health import classify_well_health
 from app.analytics.tools.hierarchy import resolve_field
+from app.analytics.tools.well_profile import _current_rates  # Stage T: same "current rate" basis as TC-029
 
 
 @dataclass(frozen=True)
@@ -35,6 +36,8 @@ class WellMap:
     facilities: list[dict]
     bbox: dict
     counts_by_color: dict
+    # Stage T (TC-016 v2): cluster / GGS polygons (synthetic, D-3) from app/data/geodata/<field>_boundary.geojson
+    cluster_polygons: list[dict] = dc_field(default_factory=list)
 
 
 @lru_cache(maxsize=16)
@@ -86,17 +89,22 @@ def render_well_map(
     if color_by not in ("health", "lift_type"):
         return unavailable("TC-016", params, t0, ["color_by"], f"Unsupported color_by '{color_by}'.")
 
+    if field is not None and str(field).strip().upper() in ("", "ALL"):
+        field = None  # TC-016 v2: "ALL" = every field
     if field is not None:
-        fld = resolve_field(field)
-        if fld is None:
-            return unavailable("TC-016", params, t0, ["field"], f"Unknown field '{field}'.")
-        target_fields = [fld]
+        target_fields = []
+        for part in str(field).split(","):  # TC-016 v2: comma list = multi-field map
+            fld = resolve_field(part.strip())
+            if fld is None:
+                return unavailable("TC-016", params, t0, ["field"], f"Unknown field '{part.strip()}'.")
+            if fld not in target_fields:
+                target_fields.append(fld)
     else:
         target_fields = sorted(list(FIELD_CONFIGS))
 
     wm = load_table("well_master")
     if field is not None:
-        wm = wm[wm["field"] == target_fields[0]]
+        wm = wm[wm["field"].isin(target_fields)]
     if cluster_id is not None:
         wm = wm[wm["cluster_id"] == cluster_id]
 
@@ -118,7 +126,13 @@ def render_well_map(
         "bucket": buckets.get(str(r["well_id"])),
         "highlighted": str(r["well_id"]) in highlight_set,
         "color_key": buckets.get(str(r["well_id"])) if color_by == "health" else str(r["lift_type"]),
+        "oil_bopd": _current_rates(str(r["well_id"]), as_of)["oil_bopd"],  # TC-016 v2 (size_by)
     } for _, r in wm.iterrows()]
+
+    from app.analytics.tools.geodata import cluster_polygons as _cluster_polygons
+
+    polys = [p for f in target_fields for p in _cluster_polygons(f)
+             if cluster_id is None or p["properties"].get("cluster_id") == cluster_id]
 
     all_b, all_f = _load_boundaries_cached(), _load_facilities_cached()
     boundaries = [b for b in all_b if b["field"] in target_fields]
@@ -143,5 +157,5 @@ def render_well_map(
     msg = f"Map of {len(points)} wells in {scope} coloured by {color_by}." + (f" ({'; '.join(notes)})." if notes else "")
 
     val = WellMap(fields=target_fields, points=points, boundaries=boundaries, facilities=facilities,
-                  bbox=bbox, counts_by_color=counts_by_color)
+                  bbox=bbox, counts_by_color=counts_by_color, cluster_polygons=polys)
     return ToolResult(ToolStatus.OK, val, [], msg, build_provenance("TC-016", params, t0))

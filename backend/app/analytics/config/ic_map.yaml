@@ -47,3 +47,16 @@ classes:
   IC-15:
     label: "No job justified / terminal"
     job_codes: [NO_JOB_JUSTIFIED, PLUG_ABANDON]
+# Stage Q (TC-021, BDD-F03-S06): V§2 WS-3 archetype names -> IC. ESP has no wells in this dataset.
+archetypes:
+  "GLV Replacement": IC-07
+  "Squeeze / Water Shut-off": IC-11
+  "Acid Stimulation": IC-09
+  "Sand Cleanout": IC-06
+  "Pump Replacement": IC-01
+  "Re-perforation": IC-10
+  "Tubing Leak Repair": IC-03
+  "ESP Replacement":
+    ic: IC-08
+    label: "Lift optimisation / conversion"
+    disclosure: "no ESP wells in this dataset (lift types SRP, GAS_LIFT, NATURAL, PCP)"

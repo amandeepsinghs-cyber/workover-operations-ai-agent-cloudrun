@@ -422,3 +422,108 @@ def _v_classify_well_health(field: str, cluster_id: str = "") -> dict[str, Any]:
         data["wells_total"] = len(data["wells"])
         data["wells"] = flagged[:10]  # voice payload: non-OK wells only, first 10
     return env
+
+
+# ---------------------------------------------------------------------------
+# Stage T: TC-024 / TC-028 / TC-029 (+ TC-017 v2 markers). Thin wrappers — the numbers come from the tools.
+# ``compare_fields`` re-registers the Stage U placeholder name (last registration wins) so the registry
+# count is unchanged; it now resolves to TC-024 directly instead of the lazy lookup path.
+# ---------------------------------------------------------------------------
+@register_voice_tool(
+    name="compare_fields",
+    description=(
+        "TC-024: which field is not performing? Ranks Geleki, Lakwa, Lakhmani by gap to target (period QTD, "
+        "MTD, YTD or L12M; default QTD) with actual vs target BOPD, uptime, water cut, health counts, active "
+        "interventions, rig / rigless candidates and the worst field's top loss driver (factor class, "
+        "controllable or not). Use for 'which field is underperforming', 'kaunsa field peeche hai'."
+    ),
+    action_kind="field_comparison",
+    personas={"ED", "ASSET_MANAGER"},
+)
+def _v_compare_fields_tc024(period: str = "QTD") -> dict[str, Any]:
+    from app.analytics.tools.field_performance import compare_fields
+
+    return compare_fields(period=(period or "QTD").upper()).envelope()
+
+
+@register_voice_tool(
+    name="field_production_history",
+    description=(
+        "TC-028: field-wise production history (default all three fields, 60 months to as-of): per field start "
+        "vs end oil BOPD and % change, gas start vs end, water-cut change (pp) and producing wells. Tell these "
+        "numbers first; the plot opens only if the user asks for it. Use for '5 year production field-wise', "
+        "'pichle paanch saal ka production'."
+    ),
+    action_kind="field_history_chart",
+    personas={"ED", "ASSET_MANAGER"},
+)
+def _v_field_production_history(fields: str = "", freq: str = "M") -> dict[str, Any]:
+    from app.analytics.tools.field_history import field_production_history
+
+    env = field_production_history(fields=fields or None, freq=(freq or "M").upper()).envelope()
+    data = env.get("data")
+    if isinstance(data, dict) and isinstance(data.get("series"), list):
+        data["series_rows"] = len(data["series"])
+        data.pop("series")  # voice payload: summary only (full monthly series is on screen / in the chart)
+    return env
+
+
+@register_voice_tool(
+    name="well_profile",
+    description=(
+        "TC-029 + TC-017: tell me about one well (e.g. 'GK-129'): zone / formation, lift type, casing and tubing "
+        "sizes, lithology, health bucket, current rate, decline residual, last test and pressure survey, the "
+        "interventions in the last `months` (24 / 36 / 60; job, date, outcome) and nearby wells in the same "
+        "cluster with bucket, rate and decline residual. Use for 'tell me more about this well', 'history', "
+        "'nearby wells', 'is well ke aas paas'."
+    ),
+    action_kind="well_profile",
+)
+def _v_well_profile(well_id: str, months: int = 36) -> dict[str, Any]:
+    from app.analytics.tools.well_profile import well_production_series, well_profile
+
+    env = well_profile(well_id).envelope()
+    data = env.get("data")
+    if isinstance(data, dict):
+        c = data.get("construction") or {}
+        data["construction"] = {
+            "casing": [{k: s.get(k) for k in ("string_type", "od_in", "grade", "shoe_m")} for s in c.get("casing", [])],
+            "tubing_size_in": c.get("tubing_size_in"), "casing_size_in": c.get("casing_size_in"),
+            "perfs": c.get("perfs", []),
+        }
+        prod = well_production_series(well_id, months=int(months or 36), metrics=["oil"],
+                                      overlay_decline_fit=False).envelope()
+        pd_ = prod.get("data") or {}
+        data["interventions_in_window"] = [
+            {k: m.get(k) for k in ("date", "job_code", "job_name", "outcome", "rig_days", "doc_id")}
+            for m in pd_.get("interventions", [])]
+        data["historical_interventions"] = pd_.get("historical_interventions", [])
+        data["history_window"] = {"months": pd_.get("months"), "start": pd_.get("window_start"),
+                                  "end": pd_.get("window_end")}
+    return env
+
+
+# ---------------------------------------------------------------------------
+# Stage Q: TC-021 ML intervention classifier (SDD §8, BDD-F03-S03/S06). Quality numbers come from
+# analytics/model/intervention_classifier_metrics.json via the tool, never from the prompt.
+# ---------------------------------------------------------------------------
+@register_voice_tool(
+    name="classify_intervention",
+    description=(
+        "TC-021: which of 15 intervention types (IC-01..IC-15) the ML model predicts for a well, with the top-3 "
+        "calibrated probabilities, the main driving signals (direction up/down) and the model's holdout quality. "
+        "Give well_id (e.g. 'LKM-023'). Leave well_id empty to get only the model-quality card (holdout macro-F1, "
+        "top-3 accuracy, rule-baseline macro-F1, synthetic-data disclosure). Use for 'what job does this well need', "
+        "'how good is this model / can I trust it', 'ESP replacement' (maps to IC-08; no ESP wells in the data), "
+        "'kaunsa intervention chahiye'."
+    ),
+    action_kind="intervention_classification",
+)
+def _v_classify_intervention(well_id: str = "", top_k: int = 3) -> dict[str, Any]:
+    from app.analytics.tools.intervention_classifier import classify_intervention, model_quality
+
+    if not well_id:
+        return model_quality().envelope()
+    env = classify_intervention(well_id=well_id.strip().upper(), top_k=int(top_k or 3)).envelope()
+    env["model_quality"] = model_quality().envelope().get("data")
+    return env

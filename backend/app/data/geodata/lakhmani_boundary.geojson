@@ -1,0 +1,232 @@
+{
+ "features": [
+  {
+   "geometry": {
+    "coordinates": [
+     [
+      [
+       94.74,
+       26.874
+      ],
+      [
+       94.738637,
+       26.884353
+      ],
+      [
+       94.734641,
+       26.894
+      ],
+      [
+       94.728284,
+       26.902284
+      ],
+      [
+       94.72,
+       26.908641
+      ],
+      [
+       94.710353,
+       26.912637
+      ],
+      [
+       94.7,
+       26.914
+      ],
+      [
+       94.689647,
+       26.912637
+      ],
+      [
+       94.68,
+       26.908641
+      ],
+      [
+       94.671716,
+       26.902284
+      ],
+      [
+       94.665359,
+       26.894
+      ],
+      [
+       94.661363,
+       26.884353
+      ],
+      [
+       94.66,
+       26.874
+      ],
+      [
+       94.661363,
+       26.863647
+      ],
+      [
+       94.665359,
+       26.854
+      ],
+      [
+       94.671716,
+       26.845716
+      ],
+      [
+       94.68,
+       26.839359
+      ],
+      [
+       94.689647,
+       26.835363
+      ],
+      [
+       94.7,
+       26.834
+      ],
+      [
+       94.710353,
+       26.835363
+      ],
+      [
+       94.72,
+       26.839359
+      ],
+      [
+       94.728284,
+       26.845716
+      ],
+      [
+       94.734641,
+       26.854
+      ],
+      [
+       94.738637,
+       26.863647
+      ],
+      [
+       94.74,
+       26.874
+      ]
+     ]
+    ],
+    "type": "Polygon"
+   },
+   "properties": {
+    "field": "Lakhmani",
+    "is_synthetic_geometry": true,
+    "kind": "FIELD_BOUNDARY",
+    "name": "Lakhmani field boundary",
+    "source": "field_master.boundary_geojson"
+   },
+   "type": "Feature"
+  },
+  {
+   "geometry": {
+    "coordinates": [
+     [
+      [
+       94.702915,
+       26.860835
+      ],
+      [
+       94.708904,
+       26.879201
+      ],
+      [
+       94.704769,
+       26.892257
+      ],
+      [
+       94.695905,
+       26.904055
+      ],
+      [
+       94.686945,
+       26.900559
+      ],
+      [
+       94.669564,
+       26.886436
+      ],
+      [
+       94.669059,
+       26.86571
+      ],
+      [
+       94.683959,
+       26.85833
+      ],
+      [
+       94.702915,
+       26.860835
+      ]
+     ]
+    ],
+    "type": "Polygon"
+   },
+   "properties": {
+    "cluster_id": "LKM-GGS-I",
+    "cluster_type": "GGS",
+    "field": "Lakhmani",
+    "is_synthetic_geometry": true,
+    "kind": "CLUSTER_POLYGON",
+    "n_wells": 67,
+    "name": "LKM-GGS-I",
+    "source": "convex hull of well_master locations (+margin)"
+   },
+   "type": "Feature"
+  },
+  {
+   "geometry": {
+    "coordinates": [
+     [
+      [
+       94.687865,
+       26.873301
+      ],
+      [
+       94.690577,
+       26.845433
+      ],
+      [
+       94.717581,
+       26.84786
+      ],
+      [
+       94.720243,
+       26.849372
+      ],
+      [
+       94.727832,
+       26.858726
+      ],
+      [
+       94.72378,
+       26.875645
+      ],
+      [
+       94.70841,
+       26.884668
+      ],
+      [
+       94.687865,
+       26.873301
+      ]
+     ]
+    ],
+    "type": "Polygon"
+   },
+   "properties": {
+    "cluster_id": "LKM-GGS-II",
+    "cluster_type": "GGS",
+    "field": "Lakhmani",
+    "is_synthetic_geometry": true,
+    "kind": "CLUSTER_POLYGON",
+    "n_wells": 43,
+    "name": "LKM-GGS-II",
+    "source": "convex hull of well_master locations (+margin)"
+   },
+   "type": "Feature"
+  }
+ ],
+ "is_synthetic_geometry": true,
+ "name": "lakhmani_boundary",
+ "type": "FeatureCollection"
+}

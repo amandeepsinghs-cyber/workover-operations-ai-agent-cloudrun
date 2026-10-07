@@ -123,3 +123,72 @@ Accepted by orchestrator: data-driven replaces hard-coded fixtures (integrity fi
   which brings the field-total join to the value in §4.
 - **N-D9** Health buckets shown in the UI are the interim rule INTERIM_N1 until TC-020 (Stage P).
 
+
+## 10. Stage Q — TC-021 intervention classifier (Gate Q, `AS_OF` 2026-09-23)
+
+Source: `backend/app/analytics/model/intervention_classifier_metrics.json` (written by
+`uv run python -m app.analytics.model.train_classifier --as-of 2026-09-23`; the agent reads quality numbers from
+that file only). Model `ic-hgb-v1`: HistGradientBoosting (`class_weight="balanced"`, lr 0.1, 15 leaves, L2 1.0)
+× 5 GroupKFold boosters, softmax temperature **1.187** fit on out-of-fold margins. 136 features
+(production 59, construction 33 incl. casing / tubing / perforations, history 44).
+
+**Verdict: Gate Q PASSED under orchestrator rulings (2026-10-07).** All metric bars pass on the in-scope holdout
+(Q-D1 accepted). LKM-061's criterion is top-2 = {IC-07, IC-04} by ruling Q-R2 (dual-signature fixture). The rulings
+were applied without retraining; the metrics JSON records them under `orchestrator_rulings`.
+
+| Gate Q item | Bar | Measured | Pass |
+|---|---|---|---|
+| Holdout macro-F1 (in scope, 544 jobs 2025-09-24..2026-09-23) | 0.70–0.92 | **0.7437** | ✅ |
+| Holdout top-3 accuracy | ≥ 0.90 | **0.9393** | ✅ |
+| TC-008 rule baseline macro-F1 (same rows) | — | **0.1887** (341/544 rows have no TC-005/TC-002 mechanism → IC-15) | |
+| macro-F1 − baseline | ≥ 0.05 | **+0.555** | ✅ |
+| ECE (top-label, 10 bins) | ≤ 0.08 | **0.0243** | ✅ |
+| Training support per class | ≥ 30 | min **63** (IC-13) | ✅ |
+| Leakage tests | green | 58 tests green (`test_features_no_leakage.py`) | ✅ |
+| LKM-023 → IC-06 | top-1 | **IC-06** (p 0.809) | ✅ |
+| LKM-061 (GLV + wax) | top-2 = {IC-07, IC-04} (ruling Q-R2; was top-1 IC-07) | IC-04 (p 0.526), IC-07 (p 0.464) | ✅ |
+
+Informational (disclosed in the metrics file, not the gate of record):
+
+| Population | n | macro-F1 | top-3 | ECE | rule baseline macro-F1 |
+|---|---|---|---|---|---|
+| Full holdout incl. Geleki frozen core | 792 | 0.5985 | 0.7803 | 0.1363 | 0.1485 |
+| Geleki frozen core only | 248 | 0.0734 | 0.4315 | 0.4347 | 0.0 |
+| Lakwa holdout | 387 | 0.7318 (present classes) | 0.938 | | 0.1776 |
+| Lakhmani holdout | 157 | 0.7482 (present classes) | 0.9427 | | 0.2009 |
+| Leave-Lakhmani-out (train GK+LKW, test LKM holdout) | 157 | 0.7318 | | | |
+
+Per-class holdout F1: IC-01 0.876 · IC-02 0.760 · IC-03 0.828 · IC-04 0.882 · IC-05 0.629 · IC-06 0.889 ·
+IC-07 0.832 · IC-08 0.846 · IC-09 0.618 · IC-10 0.628 · IC-11 0.725 · IC-12 0.653 · IC-13 0.571 ·
+IC-14 0.874 · IC-15 0.546. `LOW_CONFIDENCE` threshold 0.40 (fixed a priori): 7.9% of holdout rows fall
+below it; accuracy 0.828 at/above vs 0.233 below.
+
+Calibration attempts (all selected on an inner temporal split of the training period, never on the holdout):
+
+1. Isotonic, `ensemble=False` (SDD §8.2 literal) → holdout ECE **0.0993** (fail).
+2. Choose among isotonic/sigmoid `CalibratedClassifierCV` by inner ECE → isotonic `ensemble=False` again
+   (inner ECE 0.108) → holdout ECE 0.0993 (fail). The one-vs-rest isotonic + renormalisation was *under*-confident
+   (inner: mean confidence 0.68 vs accuracy 0.79).
+3. Temperature scaling added as a candidate → chosen (inner ECE 0.0464) → holdout ECE **0.0243** (pass). This
+   ensemble flips LKM-061 from IC-07 (attempts 1–2) to IC-04 (attempt 3). Not tuned further.
+
+Decisions:
+
+- **Q-D1 (scope), ACCEPTED by the orchestrator 2026-10-07.** Rows of the frozen v0.3.0 Geleki core (`field = Geleki` and `is_prepend = False`; 522 train,
+  248 holdout) are excluded from training and from the gate holdout, by provenance (`is_prepend` selects rows and
+  is never a feature). That core has no precursor signatures (N-D7), and its catalogue job is drawn at random from
+  the failure code (`catalogue.label_geleki_workovers`). The model scores 0.073 macro-F1 on it. TC-021 flags every
+  Geleki prediction `LOW_CONFIDENCE` + `OUTSIDE_TRAINING_SCOPE_GELEKI_CORE`. *The orchestrator may reject Q-D1;
+  the full-holdout result (0.5985) then fails the 0.70 floor.* Ruling: accepted; the full-holdout numbers stay
+  reported in the table above and in `holdout_full_including_geleki_core`.
+- **Q-R2 (LKM-061), orchestrator ruling 2026-10-07.** LKM-061 is designed as GLV (strength 1.0) + wax (0.8). Its Gate Q
+  criterion is therefore top-2 = {IC-07, IC-04} instead of top-1 IC-07. This is a ruling on the fixture definition,
+  not a tuning; the model was not retrained.
+- **Q-R3 (calibration), departure from SDD §8.2, accepted 2026-10-07.** Multi-class temperature scaling replaces
+  isotonic `CalibratedClassifierCV`, because one-vs-rest isotonic was under-confident (holdout ECE 0.0993).
+  SDD §8.2 is to be updated by the orchestrator.
+- **Q-D2 (explanations).** `shap` cannot be locked for this project: the py3.11 + darwin-x86 resolution split
+  needs llvmlite < 0.46. Exact path-dependent TreeSHAP is implemented in `tools/intervention_classifier.py`.
+  It is verified against brute-force Shapley values and is additive to the raw margin.
+- **Q-D3 (artefact paths).** Follows build.md / BDD: `analytics/model/intervention_classifier_v1.pkl` and
+  `intervention_classifier_metrics.json`.

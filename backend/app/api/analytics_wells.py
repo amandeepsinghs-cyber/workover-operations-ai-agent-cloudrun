@@ -25,3 +25,16 @@ def well_attribution(well_id: str, window_days: int = Query(180, ge=7, le=730)):
     if well_master_row(wid) is None:
         raise HTTPException(status_code=404, detail=f"Well {well_id} not found")
     return attribute_decline(well_id=wid, window_days=window_days).envelope()
+
+
+# Stage Q (additive): TC-021 ML intervention classifier (SDD §13.4, BDD-F03-S01/S02/S05).
+@router.get("/wells/{well_id}/classification")
+def well_classification(well_id: str, top_k: int = Query(3, ge=1, le=15)):
+    from app.analytics.tools.intervention_classifier import classify_intervention
+
+    wid = well_id.strip().upper()
+    if wid.startswith("GLK-"):
+        raise HTTPException(status_code=404, detail=RETIRED_DETAIL)
+    if well_master_row(wid) is None:
+        raise HTTPException(status_code=404, detail=f"Well {well_id} not found")
+    return classify_intervention(well_id=wid, top_k=top_k).envelope()
