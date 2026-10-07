@@ -88,6 +88,12 @@ def get_fleet_kpis(field: str | None = None):
         "total_oil_bopd": round(total_oil, 1),
         "total_gas_mcfd": round(total_gas, 1),
         "avg_water_cut_pct": avg_water_cut,
+        # Stage P (SDD §13.2): TC-020 bucket counts (healthy = PRODUCING_OK, warning = AT_RISK +
+        # UNDERPERFORMING, failed = NOT_PRODUCING); "ALL" when no ?field= filter.
+        "field": next((f for f in FIELD_CONFIGS if field and f.lower() == field.lower()), field) if field else "ALL",
+        "at_risk_count": sum(1 for w in wells if w.get("health_bucket") == "AT_RISK"),
+        "underperforming_count": sum(1 for w in wells if w.get("health_bucket") == "UNDERPERFORMING"),
+        "not_producing_count": sum(1 for w in wells if w.get("health_bucket") == "NOT_PRODUCING"),
     }
 
 
