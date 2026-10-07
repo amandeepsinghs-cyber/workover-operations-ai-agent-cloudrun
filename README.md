@@ -5,6 +5,25 @@ WellPulse is an industrial operations intelligence platform designed for mature 
 
 ---
 
+## Documentation (v0.4 doc set, v3.0.0)
+
+> The README below describes the shipped v0.3 baseline. The v0.4 expansion (3 fields, ML classifier, real Gemini Live, Lakehouse) is specified here:
+
+| Doc | Purpose |
+|---|---|
+| [`verbatim.md`](./verbatim.md) | Source of truth: the user's verbatim requirements |
+| [`docs/BRD.md`](./docs/BRD.md) | Business requirements, personas, success metrics |
+| [`docs/features.md`](./docs/features.md) | Feature catalogue F-01…F-19 with verbatim anchors |
+| [`docs/BDD.md`](./docs/BDD.md) | Gherkin acceptance scenarios (104) |
+| [`docs/SDD.md`](./docs/SDD.md) | Design; authoritative route table (§13) and layout (§4) |
+| [`docs/build.md`](./docs/build.md) | Stage-by-stage build commands and gates (M…W) |
+| [`docs/checklist.md`](./docs/checklist.md) | Live progress tracker |
+| [`docs/DELEGATION.md`](./docs/DELEGATION.md) | Orchestrator vs. Flash task split |
+| [`docs/EXECUTION_PLAN.md`](./docs/EXECUTION_PLAN.md) | Autonomous run policy, milestones MS-0…MS-13, git and failure rules |
+| [`docs/CONSISTENCY_REPORT.md`](./docs/CONSISTENCY_REPORT.md) | Doc-set alignment record and residual issues |
+
+---
+
 ## Architecture Overview
 
 ```
