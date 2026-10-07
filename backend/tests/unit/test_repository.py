@@ -223,12 +223,14 @@ def test_list_filter_field(client):
     assert all("GK" in w["id"] for w in data_search)
 
 
-def test_bigquery_backend_not_implemented(monkeypatch):
+def test_bigquery_backend_selected(monkeypatch):
+    """Stage X: DATA_BACKEND=bigquery builds a BigQueryRepository (client is lazy, so no network here)."""
+    from app.data_access.bigquery_repo import BigQueryRepository
+
     old = r._repo
     try:
         r._repo = None
         monkeypatch.setenv("DATA_BACKEND", "bigquery")
-        with pytest.raises(NotImplementedError):
-            r.get_repository()
+        assert isinstance(r.get_repository(), BigQueryRepository)
     finally:
         r._repo = old

@@ -1,0 +1,7 @@
+config {
+  type: "declaration",
+  database: "workover-operations-agentic-ai",
+  schema: "wellpulse_silver",
+  name: "well_master",
+  description: "SILVER well_master: typed, de-duplicated on (well_id); loaded by lakehouse/load/bronze_to_silver.py."
+}

@@ -1,0 +1,184 @@
+config {
+  type: "table",
+  description: "SQL feature store (train = serve) for the TC-021 intervention classifier; Stage Q features.py may add columns.",
+  bigquery: {
+    clusterBy: ["field", "intervention_class"]
+  },
+  columns: {
+    workover_id: "Unique intervention workover event identifier",
+    well_id: "Unique well identifier",
+    field: "Field name (e.g., Geleki, Lakwa, Lakhmani)",
+    cluster_id: "Cluster identifier",
+    start_date: "Intervention start date",
+    catalogue_job_code: "Standard catalogue job code (e.g., GLV_REPLACE, IC_01...)",
+    intervention_class: "High-level intervention classification (IC-01 to IC-15)",
+    is_rigless: "Boolean flag indicating rigless operation vs rig required",
+    rig_days: "Actual rig days or workover duration in days",
+    is_prepend: "Boolean flag for historical prepended interventions",
+    outcome: "Intervention outcome: SUCCESS, PARTIAL, FAILED, CENSORED, NO_ACTION, IN_PROGRESS",
+    uplift_bopd: "Post-job oil production rate uplift (BOPD)",
+    run_life_days: "Days the intervention held before subsequent failure or censoring",
+    is_censored: "Boolean flag indicating whether run life is right-censored",
+    lift_type: "Artificial lift type from well_master",
+    current_zone: "Active producing formation zone from well_master",
+    well_age_years: "Well age in years from completion_date to workover start_date",
+    pre90_oil_bopd: "Average oil rate (BOPD) on producing days in [start_date-90, start_date-1]",
+    pre90_wc_pct: "Volume-weighted water cut % in [start_date-90, start_date-1]",
+    pre90_gor: "Average GOR (SCF/BBL) in [start_date-90, start_date-1]",
+    pre90_thp_kgcm2: "Average tubing head pressure (kg/cm2) in [start_date-90, start_date-1]",
+    pre90_chp_kgcm2: "Average casing head pressure (kg/cm2) in [start_date-90, start_date-1]",
+    pre90_uptime_pct: "Average runtime percentage in [start_date-90, start_date-1]",
+    pre90_down_days: "Count of non-producing days in [start_date-90, start_date-1]",
+    pre30_oil_bopd: "Average oil rate (BOPD) on producing days in [start_date-30, start_date-1]",
+    oil_trend_ratio: "Ratio of pre30 oil rate to pre90 oil rate (SAFE_DIVIDE(pre30, pre90))",
+    prior_jobs: "Count of previous workovers on the same well prior to this start_date",
+    days_since_prior_job: "Days elapsed since the preceding workover start date on this well"
+  },
+  assertions: {
+    uniqueKey: ["workover_id"],
+    nonNull: ["workover_id"]
+  }
+}
+
+/**
+ * intervention_features.sqlx
+ *
+ * SQL feature store (train = serve) for the TC-021 intervention classifier.
+ * Evaluates all workover interventions with start_date <= as_of.
+ * Pre-intervention metrics are computed over trailing 90-day and 30-day windows from daily_production.
+ */
+
+WITH wh_filtered AS (
+  SELECT
+    wh.workover_id,
+    wh.well_id,
+    wh.start_date,
+    wh.catalogue_job_code,
+    wh.intervention_class,
+    wh.is_rigless,
+    wh.rig_days,
+    wh.is_prepend,
+    wh.outcome,
+    wh.uplift_bopd,
+    wh.run_life_days,
+    wh.is_censored,
+    COALESCE(wh.field, wm.field) AS field,
+    COALESCE(wh.cluster_id, wm.cluster_id) AS cluster_id,
+    wm.lift_type,
+    wm.current_zone,
+    SAFE_DIVIDE(DATE_DIFF(wh.start_date, wm.completion_date, DAY), 365.25) AS well_age_years,
+    COUNT(*) OVER (
+      PARTITION BY wh.well_id
+      ORDER BY wh.start_date ASC, wh.workover_id ASC
+      ROWS BETWEEN UNBOUNDED PRECEDING AND 1 PRECEDING
+    ) AS prior_jobs,
+    DATE_DIFF(
+      wh.start_date,
+      LAG(wh.start_date) OVER (
+        PARTITION BY wh.well_id
+        ORDER BY wh.start_date ASC, wh.workover_id ASC
+      ),
+      DAY
+    ) AS days_since_prior_job
+  FROM
+    ${ref("workover_history")} wh
+    LEFT JOIN ${ref("well_master")} wm ON wh.well_id = wm.well_id
+  WHERE
+    wh.start_date <= DATE('${dataform.projectConfig.vars.as_of}')
+),
+
+daily_restricted AS (
+  SELECT
+    well_id,
+    production_date,
+    oil_rate_bopd,
+    water_rate_bwpd,
+    gor_scf_bbl,
+    thp_kgcm2,
+    chp_kgcm2,
+    runtime_fraction,
+    is_producing
+  FROM
+    ${ref("daily_production")}
+  WHERE
+    production_date <= DATE('${dataform.projectConfig.vars.as_of}')
+),
+
+pre_job_daily AS (
+  SELECT
+    w.workover_id,
+    -- pre90 oil rate average on producing days in [start_date-90, start_date-1]
+    AVG(CASE
+      WHEN dp.production_date IS NOT NULL AND dp.is_producing IS TRUE
+      THEN dp.oil_rate_bopd
+    END) AS pre90_oil_bopd,
+    -- pre90 volume-weighted water cut: sum water / (sum oil + sum water) * 100
+    SAFE_DIVIDE(
+      SUM(CASE WHEN dp.is_producing IS TRUE THEN COALESCE(dp.water_rate_bwpd, 0.0) END),
+      SUM(CASE WHEN dp.is_producing IS TRUE THEN COALESCE(dp.oil_rate_bopd, 0.0) END) +
+      SUM(CASE WHEN dp.is_producing IS TRUE THEN COALESCE(dp.water_rate_bwpd, 0.0) END)
+    ) * 100.0 AS pre90_wc_pct,
+    -- pre90 GOR average on producing days
+    AVG(CASE
+      WHEN dp.production_date IS NOT NULL AND dp.is_producing IS TRUE
+      THEN dp.gor_scf_bbl
+    END) AS pre90_gor,
+    -- pre90 THP
+    AVG(CASE WHEN dp.production_date IS NOT NULL THEN dp.thp_kgcm2 END) AS pre90_thp_kgcm2,
+    -- pre90 CHP
+    AVG(CASE WHEN dp.production_date IS NOT NULL THEN dp.chp_kgcm2 END) AS pre90_chp_kgcm2,
+    -- pre90 uptime %
+    AVG(CASE
+      WHEN dp.production_date IS NOT NULL
+      THEN COALESCE(dp.runtime_fraction, 0.0)
+    END) * 100.0 AS pre90_uptime_pct,
+    -- pre90 down days
+    COUNTIF(dp.production_date IS NOT NULL AND NOT COALESCE(dp.is_producing, FALSE)) AS pre90_down_days,
+    -- pre30 oil rate average on producing days in [start_date-30, start_date-1]
+    AVG(CASE
+      WHEN dp.production_date >= DATE_SUB(w.start_date, INTERVAL 30 DAY)
+        AND dp.is_producing IS TRUE
+      THEN dp.oil_rate_bopd
+    END) AS pre30_oil_bopd
+  FROM
+    wh_filtered w
+    LEFT JOIN daily_restricted dp
+      ON w.well_id = dp.well_id
+      AND dp.production_date >= DATE_SUB(w.start_date, INTERVAL 90 DAY)
+      AND dp.production_date <= DATE_SUB(w.start_date, INTERVAL 1 DAY)
+  GROUP BY
+    w.workover_id
+)
+
+SELECT
+  w.workover_id,
+  w.well_id,
+  w.field,
+  w.cluster_id,
+  w.start_date,
+  w.catalogue_job_code,
+  w.intervention_class,
+  w.is_rigless,
+  w.rig_days,
+  w.is_prepend,
+  w.outcome,
+  w.uplift_bopd,
+  w.run_life_days,
+  w.is_censored,
+  w.lift_type,
+  w.current_zone,
+  w.well_age_years,
+  p.pre90_oil_bopd,
+  p.pre90_wc_pct,
+  p.pre90_gor,
+  p.pre90_thp_kgcm2,
+  p.pre90_chp_kgcm2,
+  p.pre90_uptime_pct,
+  p.pre90_down_days,
+  p.pre30_oil_bopd,
+  SAFE_DIVIDE(p.pre30_oil_bopd, p.pre90_oil_bopd) AS oil_trend_ratio,
+  w.prior_jobs,
+  w.days_since_prior_job
+FROM
+  wh_filtered w
+  JOIN pre_job_daily p ON w.workover_id = p.workover_id

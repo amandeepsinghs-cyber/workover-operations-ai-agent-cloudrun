@@ -1,7 +1,7 @@
 """``WellRepository`` protocol and the process-wide repository accessor (SDD §5.7).
 
 ``DATA_BACKEND`` selects the implementation: ``parquet`` (default, D-11 local) reads the Stage N
-landing files; ``bigquery`` is reserved for Stage X and raises ``NotImplementedError`` until then.
+landing files; ``bigquery`` (Stage X) reads the same frames from ``wellpulse_silver`` (``bigquery_repo.py``).
 """
 
 from __future__ import annotations
@@ -33,7 +33,12 @@ def get_repository() -> WellRepository:
         if _repo is None:
             backend = os.environ.get("DATA_BACKEND", "parquet").strip().lower()
             if backend == "bigquery":
-                raise NotImplementedError("DATA_BACKEND=bigquery is implemented in Stage X")
+                from .bigquery_repo import (
+                    BigQueryRepository,  # Stage X; lazy so parquet needs no GCP libs
+                )
+
+                _repo = BigQueryRepository()
+                return _repo
             if backend != "parquet":
                 raise ValueError(f"unknown DATA_BACKEND {backend!r} (expected 'parquet' or 'bigquery')")
             _repo = ParquetRepository()

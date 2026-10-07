@@ -1,0 +1,7 @@
+config {
+  type: "declaration",
+  database: "workover-operations-agentic-ai",
+  schema: "wellpulse_silver",
+  name: "daily_production",
+  description: "SILVER daily_production: typed, de-duplicated on (well_id, production_date); loaded by lakehouse/load/bronze_to_silver.py."
+}

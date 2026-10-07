@@ -1,0 +1,7 @@
+config {
+  type: "declaration",
+  database: "workover-operations-agentic-ai",
+  schema: "wellpulse_silver",
+  name: "well_status_history",
+  description: "SILVER well_status_history: typed, de-duplicated on (episode_id); loaded by lakehouse/load/bronze_to_silver.py."
+}

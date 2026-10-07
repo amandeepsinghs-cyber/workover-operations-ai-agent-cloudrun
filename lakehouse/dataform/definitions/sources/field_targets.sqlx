@@ -1,0 +1,7 @@
+config {
+  type: "declaration",
+  database: "workover-operations-agentic-ai",
+  schema: "wellpulse_silver",
+  name: "field_targets",
+  description: "SILVER field_targets: typed, de-duplicated on (field, month); loaded by lakehouse/load/bronze_to_silver.py."
+}

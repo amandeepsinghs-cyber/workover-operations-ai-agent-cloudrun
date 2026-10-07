@@ -1,0 +1,26 @@
+config {
+  type: "assertion",
+  name: "field_kpi_monthly_reconciles",
+  description: "Silver <-> Gold reconciliation (SDD 15.1): per field and month, Gold oil_bbl equals the sum of well oil in Silver daily_production within 0.1%. Returns violating rows."
+}
+
+WITH silver AS (
+  SELECT
+    field,
+    DATE_TRUNC(production_date, MONTH) AS month,
+    SUM(COALESCE(oil_rate_bopd, 0)) AS oil_bbl
+  FROM ${ref("daily_production")}
+  WHERE production_date <= DATE("${dataform.projectConfig.vars.as_of}")
+  GROUP BY field, month
+)
+SELECT
+  COALESCE(s.field, g.field) AS field,
+  COALESCE(s.month, g.month) AS month,
+  s.oil_bbl AS silver_oil_bbl,
+  g.oil_bbl AS gold_oil_bbl
+FROM silver AS s
+FULL OUTER JOIN ${ref("field_kpi_monthly")} AS g
+  ON g.field = s.field AND g.month = s.month
+WHERE s.oil_bbl IS NULL
+   OR g.oil_bbl IS NULL
+   OR ABS(g.oil_bbl - s.oil_bbl) > 0.001 * GREATEST(ABS(s.oil_bbl), 1)

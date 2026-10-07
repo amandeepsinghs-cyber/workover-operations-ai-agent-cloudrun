@@ -1,0 +1,166 @@
+config {
+  type: "view",
+  description: "SQL screening pre-filter for TC-020; the authoritative F-02 bucket is computed by TC-020 in the app (thresholds from trigger config), this view is NOT TC-020.",
+  columns: {
+    well_id: "Unique well identifier from well_master",
+    field: "Field name (e.g., Geleki, Lakwa, Lakhmani)",
+    cluster_id: "Cluster identifier",
+    lift_type: "Artificial lift type (SRP, GAS_LIFT, NATURAL)",
+    open_status: "Status of the active well episode as of as_of date",
+    open_status_since: "Start date of the active well status episode",
+    oil_30d_bopd: "Average oil production rate (BOPD) on producing days in trailing 30 days (as_of-29 .. as_of)",
+    oil_base_bopd: "Average oil production rate (BOPD) on producing days in 90-day baseline (as_of-119 .. as_of-30)",
+    oil_change_pct: "Percentage change in oil production rate from baseline to trailing 30 days",
+    wc_30d_pct: "Average water cut percentage on producing days in trailing 30 days",
+    wc_base_pct: "Average water cut percentage on producing days in 90-day baseline",
+    wc_change_pp: "Water cut change in percentage points (trailing 30d - baseline)",
+    down_days_30d: "Count of non-producing days in trailing 30 days",
+    uptime_30d_pct: "Average runtime percentage in trailing 30 days",
+    last_producing_date: "Most recent producing date within the 120-day evaluation window",
+    screen_bucket: "SQL triage pre-filter bucket: NOT_PRODUCING, DECLINING, WATCH, or OK"
+  },
+  assertions: {
+    uniqueKey: ["well_id"],
+    nonNull: ["well_id"]
+  }
+}
+
+/**
+ * sick_well_screen.sqlx
+ *
+ * Pre-filter screening view for well triage. Evaluates all wells from well_master at as_of date:
+ * - Active well status episode (from well_status_history)
+ * - Trailing 30-day producing metrics vs 90-day baseline (from daily_production)
+ * - Assigns screening bucket (NOT_PRODUCING, DECLINING, WATCH, OK)
+ */
+
+WITH current_status AS (
+  SELECT
+    well_id,
+    status AS open_status,
+    start_date AS open_status_since
+  FROM (
+    SELECT
+      well_id,
+      status,
+      start_date,
+      ROW_NUMBER() OVER (
+        PARTITION BY well_id
+        ORDER BY start_date DESC, episode_id DESC
+      ) AS rn
+    FROM
+      ${ref("well_status_history")}
+    WHERE
+      start_date <= DATE('${dataform.projectConfig.vars.as_of}')
+      AND (end_date IS NULL OR end_date >= DATE('${dataform.projectConfig.vars.as_of}'))
+  )
+  WHERE rn = 1
+),
+
+daily_window AS (
+  SELECT
+    well_id,
+    production_date,
+    oil_rate_bopd,
+    water_cut_pct,
+    runtime_fraction,
+    is_producing
+  FROM
+    ${ref("daily_production")}
+  WHERE
+    production_date BETWEEN DATE_SUB(DATE('${dataform.projectConfig.vars.as_of}'), INTERVAL 119 DAY)
+    AND DATE('${dataform.projectConfig.vars.as_of}')
+),
+
+well_daily_agg AS (
+  SELECT
+    well_id,
+    -- Trailing 30-day oil rate average on producing days (as_of-29 .. as_of)
+    AVG(CASE
+      WHEN production_date >= DATE_SUB(DATE('${dataform.projectConfig.vars.as_of}'), INTERVAL 29 DAY)
+        AND is_producing IS TRUE
+      THEN oil_rate_bopd
+    END) AS oil_30d_bopd,
+    -- Baseline 90-day oil rate average on producing days (as_of-119 .. as_of-30)
+    AVG(CASE
+      WHEN production_date <= DATE_SUB(DATE('${dataform.projectConfig.vars.as_of}'), INTERVAL 30 DAY)
+        AND is_producing IS TRUE
+      THEN oil_rate_bopd
+    END) AS oil_base_bopd,
+    -- Trailing 30-day water cut average on producing days
+    AVG(CASE
+      WHEN production_date >= DATE_SUB(DATE('${dataform.projectConfig.vars.as_of}'), INTERVAL 29 DAY)
+        AND is_producing IS TRUE
+      THEN water_cut_pct
+    END) AS wc_30d_pct,
+    -- Baseline 90-day water cut average on producing days
+    AVG(CASE
+      WHEN production_date <= DATE_SUB(DATE('${dataform.projectConfig.vars.as_of}'), INTERVAL 30 DAY)
+        AND is_producing IS TRUE
+      THEN water_cut_pct
+    END) AS wc_base_pct,
+    -- Trailing 30-day down days (COUNTIF NOT is_producing)
+    COUNTIF(
+      production_date >= DATE_SUB(DATE('${dataform.projectConfig.vars.as_of}'), INTERVAL 29 DAY)
+      AND NOT COALESCE(is_producing, FALSE)
+    ) AS down_days_30d,
+    -- Trailing 30-day uptime percentage: AVG(COALESCE(runtime_fraction, 0)) * 100
+    AVG(CASE
+      WHEN production_date >= DATE_SUB(DATE('${dataform.projectConfig.vars.as_of}'), INTERVAL 29 DAY)
+      THEN COALESCE(runtime_fraction, 0.0)
+    END) * 100.0 AS uptime_30d_pct,
+    -- Last producing date within the evaluation window
+    MAX(CASE WHEN is_producing IS TRUE THEN production_date END) AS last_producing_date
+  FROM
+    daily_window
+  GROUP BY
+    well_id
+),
+
+well_screen_metrics AS (
+  SELECT
+    wm.well_id,
+    wm.field,
+    wm.cluster_id,
+    wm.lift_type,
+    cs.open_status,
+    cs.open_status_since,
+    wda.oil_30d_bopd,
+    wda.oil_base_bopd,
+    SAFE_DIVIDE(wda.oil_30d_bopd - wda.oil_base_bopd, wda.oil_base_bopd) * 100.0 AS oil_change_pct,
+    wda.wc_30d_pct,
+    wda.wc_base_pct,
+    wda.wc_30d_pct - wda.wc_base_pct AS wc_change_pp,
+    COALESCE(wda.down_days_30d, 0) AS down_days_30d,
+    wda.uptime_30d_pct,
+    wda.last_producing_date
+  FROM
+    ${ref("well_master")} wm
+    LEFT JOIN current_status cs ON wm.well_id = cs.well_id
+    LEFT JOIN well_daily_agg wda ON wm.well_id = wda.well_id
+)
+
+SELECT
+  well_id,
+  field,
+  cluster_id,
+  lift_type,
+  open_status,
+  open_status_since,
+  oil_30d_bopd,
+  oil_base_bopd,
+  oil_change_pct,
+  wc_30d_pct,
+  wc_base_pct,
+  wc_change_pp,
+  down_days_30d,
+  uptime_30d_pct,
+  last_producing_date,
+  CASE
+    WHEN open_status IS NOT NULL AND open_status != 'PRODUCING' THEN 'NOT_PRODUCING'
+    WHEN oil_change_pct <= -20.0 THEN 'DECLINING'
+    WHEN wc_change_pp >= 5.0 OR down_days_30d >= 5 THEN 'WATCH'
+    ELSE 'OK'
+  END AS screen_bucket
+FROM
+  well_screen_metrics

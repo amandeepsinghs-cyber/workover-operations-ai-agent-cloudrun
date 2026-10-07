@@ -1,0 +1,93 @@
+config {
+  type: "table",
+  schema: "wellpulse_gold",
+  name: "field_kpi_monthly",
+  description: "GOLD 5-year field KPI roll-up, one row per (field, month) up to AS_OF. Feeds TC-028 (field production history) and TC-024 (field comparison). Volumes treat each daily allocated rate as one day of production; non-producing days (NULL rates, DC-014) contribute zero volume.",
+  bigquery: {
+    clusterBy: ["field"],
+    labels: { app: "wellpulse", stage: "x", datacloud: "jetski" }
+  },
+  columns: {
+    field: "Geleki | Lakwa | Lakhmani",
+    month: "First day of the calendar month",
+    days_in_period: "Distinct production dates in the month (<= AS_OF)",
+    wells_reporting: "Distinct wells with a daily_production row in the month",
+    oil_bbl: "SUM of daily oil_rate_bopd (NULL = 0) over all wells and days",
+    water_bbl: "SUM of daily water_rate_bwpd",
+    gas_mscf: "SUM of daily gas_rate_mscfd",
+    liquid_bbl: "SUM of daily liquid_rate_blpd",
+    oil_bopd: "Average daily field oil rate = oil_bbl / days_in_period",
+    water_bwpd: "water_bbl / days_in_period",
+    gas_mscfd: "gas_mscf / days_in_period",
+    liquid_blpd: "liquid_bbl / days_in_period",
+    water_cut_pct: "Volume-weighted water cut = water_bbl / (oil_bbl + water_bbl) * 100",
+    producing_wells: "Average number of producing wells per day",
+    uptime_pct: "Mean runtime_fraction over all well-days * 100",
+    target_oil_bopd: "field_targets.target_oil_bopd for the month",
+    gap_pct: "(oil_bopd - target_oil_bopd) / target_oil_bopd * 100",
+    as_of: "Data as-of date (D-15)"
+  },
+  assertions: {
+    uniqueKey: ["field", "month"],
+    nonNull: ["field", "month", "oil_bbl", "oil_bopd", "days_in_period"]
+  }
+}
+
+/**
+ * Silver daily_production -> monthly field KPIs.
+ * Partition pruning: production_date <= as_of; clustering on field.
+ * Reconciled against Silver by assertions/field_kpi_monthly_reconciles.sqlx (+-0.1%)
+ * and against the parquet repository by backend/tests/integration/test_backend_parity.py.
+ */
+WITH daily AS (
+  SELECT
+    field,
+    DATE_TRUNC(production_date, MONTH) AS month,
+    production_date,
+    well_id,
+    COALESCE(oil_rate_bopd, 0) AS oil,
+    COALESCE(water_rate_bwpd, 0) AS water,
+    COALESCE(gas_rate_mscfd, 0) AS gas,
+    COALESCE(liquid_rate_blpd, 0) AS liquid,
+    COALESCE(runtime_fraction, 0) AS runtime_fraction,
+    COALESCE(is_producing, FALSE) AS is_producing
+  FROM ${ref("daily_production")}
+  WHERE production_date <= DATE("${dataform.projectConfig.vars.as_of}")
+),
+monthly AS (
+  SELECT
+    field,
+    month,
+    COUNT(DISTINCT production_date) AS days_in_period,
+    COUNT(DISTINCT well_id) AS wells_reporting,
+    SUM(oil) AS oil_bbl,
+    SUM(water) AS water_bbl,
+    SUM(gas) AS gas_mscf,
+    SUM(liquid) AS liquid_bbl,
+    COUNTIF(is_producing) AS producing_well_days,
+    AVG(runtime_fraction) AS mean_runtime_fraction
+  FROM daily
+  GROUP BY field, month
+)
+SELECT
+  m.field,
+  m.month,
+  m.days_in_period,
+  m.wells_reporting,
+  m.oil_bbl,
+  m.water_bbl,
+  m.gas_mscf,
+  m.liquid_bbl,
+  SAFE_DIVIDE(m.oil_bbl, m.days_in_period) AS oil_bopd,
+  SAFE_DIVIDE(m.water_bbl, m.days_in_period) AS water_bwpd,
+  SAFE_DIVIDE(m.gas_mscf, m.days_in_period) AS gas_mscfd,
+  SAFE_DIVIDE(m.liquid_bbl, m.days_in_period) AS liquid_blpd,
+  SAFE_DIVIDE(m.water_bbl, m.oil_bbl + m.water_bbl) * 100 AS water_cut_pct,
+  SAFE_DIVIDE(m.producing_well_days, m.days_in_period) AS producing_wells,
+  m.mean_runtime_fraction * 100 AS uptime_pct,
+  t.target_oil_bopd,
+  SAFE_DIVIDE(SAFE_DIVIDE(m.oil_bbl, m.days_in_period) - t.target_oil_bopd, t.target_oil_bopd) * 100 AS gap_pct,
+  DATE("${dataform.projectConfig.vars.as_of}") AS as_of
+FROM monthly AS m
+LEFT JOIN ${ref("field_targets")} AS t
+  ON t.field = m.field AND t.month = m.month

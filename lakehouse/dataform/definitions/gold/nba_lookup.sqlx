@@ -1,0 +1,144 @@
+config {
+  type: "table",
+  description: "Next-Best-Action (NBA) intervention performance lookup table by field and catalogue job code, including field='ALL' benchmarks.",
+  columns: {
+    field: "Field name (e.g., Geleki, Lakwa, Lakhmani) or 'ALL' for portfolio-wide benchmark",
+    job_code: "Standard catalogue job code",
+    job_name: "Human-readable job description",
+    category: "Intervention category (e.g., ARTIFICIAL_LIFT, RESERVOIR, INTEGRITY)",
+    intervention_class: "High-level intervention classification (IC-01 to IC-15)",
+    mechanism_code: "Root-cause failure mechanism addressed by this job",
+    requires_rig: "Boolean flag indicating whether a workover rig is required",
+    equipment: "Required surface and downhole equipment description",
+    est_days: "Standard estimated operational duration in days",
+    cost_band: "Categorical cost band (LOW, MEDIUM, HIGH, MAJOR)",
+    sop_doc_id: "Reference document identifier for Standard Operating Procedure (SOP)",
+    n_jobs: "Count of completed historical interventions evaluated",
+    n_success: "Count of successful interventions (outcome = 'SUCCESS')",
+    n_partial: "Count of partially successful interventions (outcome = 'PARTIAL')",
+    n_failed: "Count of failed interventions (outcome = 'FAILED')",
+    p_success: "Historical success probability (SAFE_DIVIDE(n_success, n_jobs))",
+    p_success_or_partial: "Historical success or partial success probability",
+    median_uplift_bopd: "Median oil production uplift in BOPD across historical jobs",
+    median_rig_days: "Median rig days duration across historical jobs",
+    median_run_life_days: "Median run life duration in days across historical jobs",
+    last_job_date: "Most recent execution date for this job code and field"
+  },
+  assertions: {
+    uniqueKey: ["field", "job_code"],
+    nonNull: ["field", "job_code"]
+  }
+}
+
+/**
+ * nba_lookup.sqlx
+ *
+ * Next-Best-Action (NBA) intervention performance lookup table.
+ * Evaluates historical interventions with start_date <= as_of and outcome NOT IN ('CENSORED', 'IN_PROGRESS').
+ * Computes performance metrics grouped by (field, catalogue_job_code), unioned with portfolio-level (field='ALL')
+ * benchmarks including all catalogue jobs (even those with zero history).
+ */
+
+WITH filtered_workovers AS (
+  SELECT
+    wh.workover_id,
+    wh.well_id,
+    wh.field,
+    wh.catalogue_job_code,
+    wh.start_date,
+    wh.outcome,
+    wh.uplift_bopd,
+    wh.rig_days,
+    wh.run_life_days
+  FROM
+    ${ref("workover_history")} wh
+  WHERE
+    wh.start_date <= DATE('${dataform.projectConfig.vars.as_of}')
+    AND wh.outcome NOT IN ('CENSORED', 'IN_PROGRESS')
+    AND wh.catalogue_job_code IS NOT NULL
+),
+
+field_level AS (
+  SELECT
+    w.field,
+    jc.job_code,
+    jc.job_name,
+    jc.category,
+    jc.intervention_class,
+    jc.mechanism_code,
+    jc.requires_rig,
+    jc.equipment,
+    jc.est_days,
+    jc.cost_band,
+    jc.sop_doc_id,
+    COUNT(w.workover_id) AS n_jobs,
+    COUNTIF(w.outcome = 'SUCCESS') AS n_success,
+    COUNTIF(w.outcome = 'PARTIAL') AS n_partial,
+    COUNTIF(w.outcome = 'FAILED') AS n_failed,
+    SAFE_DIVIDE(COUNTIF(w.outcome = 'SUCCESS'), COUNT(w.workover_id)) AS p_success,
+    SAFE_DIVIDE(COUNTIF(w.outcome IN ('SUCCESS', 'PARTIAL')), COUNT(w.workover_id)) AS p_success_or_partial,
+    APPROX_QUANTILES(w.uplift_bopd, 2)[SAFE_OFFSET(1)] AS median_uplift_bopd,
+    APPROX_QUANTILES(w.rig_days, 2)[SAFE_OFFSET(1)] AS median_rig_days,
+    APPROX_QUANTILES(w.run_life_days, 2)[SAFE_OFFSET(1)] AS median_run_life_days,
+    MAX(w.start_date) AS last_job_date
+  FROM
+    filtered_workovers w
+    JOIN ${ref("job_catalogue")} jc ON w.catalogue_job_code = jc.job_code
+  WHERE
+    w.field IS NOT NULL
+  GROUP BY
+    w.field,
+    jc.job_code,
+    jc.job_name,
+    jc.category,
+    jc.intervention_class,
+    jc.mechanism_code,
+    jc.requires_rig,
+    jc.equipment,
+    jc.est_days,
+    jc.cost_band,
+    jc.sop_doc_id
+),
+
+all_level AS (
+  SELECT
+    'ALL' AS field,
+    jc.job_code,
+    jc.job_name,
+    jc.category,
+    jc.intervention_class,
+    jc.mechanism_code,
+    jc.requires_rig,
+    jc.equipment,
+    jc.est_days,
+    jc.cost_band,
+    jc.sop_doc_id,
+    COUNT(w.workover_id) AS n_jobs,
+    COUNTIF(w.outcome = 'SUCCESS') AS n_success,
+    COUNTIF(w.outcome = 'PARTIAL') AS n_partial,
+    COUNTIF(w.outcome = 'FAILED') AS n_failed,
+    SAFE_DIVIDE(COUNTIF(w.outcome = 'SUCCESS'), COUNT(w.workover_id)) AS p_success,
+    SAFE_DIVIDE(COUNTIF(w.outcome IN ('SUCCESS', 'PARTIAL')), COUNT(w.workover_id)) AS p_success_or_partial,
+    APPROX_QUANTILES(w.uplift_bopd, 2)[SAFE_OFFSET(1)] AS median_uplift_bopd,
+    APPROX_QUANTILES(w.rig_days, 2)[SAFE_OFFSET(1)] AS median_rig_days,
+    APPROX_QUANTILES(w.run_life_days, 2)[SAFE_OFFSET(1)] AS median_run_life_days,
+    MAX(w.start_date) AS last_job_date
+  FROM
+    ${ref("job_catalogue")} jc
+    LEFT JOIN filtered_workovers w ON jc.job_code = w.catalogue_job_code
+  GROUP BY
+    jc.job_code,
+    jc.job_name,
+    jc.category,
+    jc.intervention_class,
+    jc.mechanism_code,
+    jc.requires_rig,
+    jc.equipment,
+    jc.est_days,
+    jc.cost_band,
+    jc.sop_doc_id
+)
+
+SELECT * FROM field_level
+UNION ALL
+SELECT * FROM all_level

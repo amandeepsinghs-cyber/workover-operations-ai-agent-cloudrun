@@ -1,0 +1,7 @@
+defaultProject: workover-operations-agentic-ai
+defaultLocation: asia-south1
+defaultDataset: wellpulse_gold
+defaultAssertionDataset: wellpulse_gold
+dataformCoreVersion: 3.0.25
+vars:
+  as_of: "2026-09-23"

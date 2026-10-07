@@ -1,0 +1,7 @@
+config {
+  type: "declaration",
+  database: "workover-operations-agentic-ai",
+  schema: "wellpulse_gold",
+  name: "dossier_facts",
+  description: "GOLD dossier_facts: grounding facts behind every generated document/dossier (V5 grounding cache, derived interpretation SDD 15.1). Loaded by lakehouse/load/dossier_facts.py."
+}

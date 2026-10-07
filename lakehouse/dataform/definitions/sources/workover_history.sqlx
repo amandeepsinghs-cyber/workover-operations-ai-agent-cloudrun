@@ -1,0 +1,7 @@
+config {
+  type: "declaration",
+  database: "workover-operations-agentic-ai",
+  schema: "wellpulse_silver",
+  name: "workover_history",
+  description: "SILVER workover_history: typed, de-duplicated on (workover_id); loaded by lakehouse/load/bronze_to_silver.py."
+}

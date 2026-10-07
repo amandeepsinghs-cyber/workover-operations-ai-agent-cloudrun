@@ -1,0 +1,7 @@
+config {
+  type: "declaration",
+  database: "workover-operations-agentic-ai",
+  schema: "wellpulse_silver",
+  name: "job_catalogue",
+  description: "SILVER job_catalogue: typed, de-duplicated on (job_code); loaded by lakehouse/load/bronze_to_silver.py."
+}

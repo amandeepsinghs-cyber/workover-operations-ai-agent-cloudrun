@@ -1,0 +1,7 @@
+config {
+  type: "declaration",
+  database: "workover-operations-agentic-ai",
+  schema: "wellpulse_silver",
+  name: "operations_events",
+  description: "SILVER operations_events: typed, de-duplicated on (event_id); loaded by lakehouse/load/bronze_to_silver.py."
+}
