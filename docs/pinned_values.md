@@ -192,3 +192,55 @@ Decisions:
   It is verified against brute-force Shapley values and is additive to the raw margin.
 - **Q-D3 (artefact paths).** Follows build.md / BDD: `analytics/model/intervention_classifier_v1.pkl` and
   `intervention_classifier_metrics.json`.
+
+## 11. Stage R — TC-022 next best action + TC-027 counterfactual (Gate R, `AS_OF` 2026-09-23)
+
+Sources: `backend/app/analytics/tools/{nba,counterfactual}.py`; tests `backend/tests/unit/{test_tc022_nba,
+test_tc027_counterfactual}.py` (32 tests). Score = `deferred_bbl_avoided_12mo × p_success ÷ max(rig_days, 0.5) ×
+(1 − min(0.45, 0.15 × risk_flags))`; ranking tiers: guardrail-forced → diagnostic fit ✔ → ? (✘ rejected).
+No currency anywhere: cost is `cost_band` + `rig_days` (D-1).
+
+| Gate R item | Measured | Pass |
+|---|---|---|
+| LKW-047 action 1 = `PUMP_OVERHAUL` (as-of 2026-05-14, R-D1) | `PUMP_OVERHAUL` IC-01 ✔ (TC-005 PUMP_WEAR; ML IC-01 0.895), p 0.625 (n 162), 3.0 rig-days, MED, score 937.1. Also as-of 2026-07-06: `PUMP_OVERHAUL` (open episode PUMP_WEAR) | ✅ |
+| LKM-090 action 1 = `NO_JOB_JUSTIFIED` | `NO_JOB_JUSTIFIED` (G-2 RESERVOIR_DECLINE, offsets named), all other candidates rejected by G-2 | ✅ |
+| Chan-negative fixture → `CHOKE_BACK` + `MODEL_PHYSICS_DISAGREEMENT` | Fixture (GK-129 evidence, Chan CONING WOR′ −0.25, ML top IC-11 0.81): `CHOKE_BACK` (G-1), squeeze rejected `demoted_by G-1`. Real data: GK-103 → `CHOKE_BACK` + G1 + MODEL_PHYSICS_DISAGREEMENT (ML top IC-12) | ✅ |
+| GK-129 squeeze vs wax removal | `RECOMMENDED_PREFERRED`, deciding `diagnostic_fit` (wax ✘: no THP rise, WHT falling); cites DOC-SCAN-GK-129-2019, RCA-GK-129-2019, DOC-CBL-GK129-1998 (isolation QUESTIONABLE), WT-GK-129-20260120 | ✅ |
+| GK-129 squeeze vs re-perforation | `RECOMMENDED_PREFERRED`, deciding `diagnostic_fit` (re-perf ?) | ✅ |
+| Counterfactual dimensions | 6 rows: diagnostic fit (row 1 = PS-GK-129-20260120: SBHP 251.4 kg/cm², PI 0.431, PI −50.6 % vs previous), well history, field efficacy (p, n), execution (rig-days, cost band, MRO, rig slot), value, verdict | ✅ |
+| Priority ranking (TC-010, `/api/fields/{f}/priority`) | `score_formula` = deferred × p ÷ max(rig_days, 0.5); 10/10 Lakwa rows recompute exactly; cost band on every row | ✅ |
+| No ₹ / USD / payback | `currency_keys` empty for NBA, compare, recommendation; `grep estimated_cost_usd\|payback backend/app` → only the D-1 guard code (see R-D9) | ✅ |
+| Every action has SOP | Every job action: `SOP-IC-NN` resolves via `/api/docs/{id}.pdf`, ≥ 1 parsed phase with steps, unit type, duration band. All 14 catalogue SOPs parse | ✅ |
+
+Other measured rank-1 actions (AS_OF): GK-129 `CEMENT_SQUEEZE` ✔ p 0.594 (n 15) 8.0 rig-days HIGH, risk
+WELL_INTEGRITY + LOGISTICS_DELAY (no 8-day CLASS_I/II rig window in `rig_calendar`); LKM-061 `GLV_REPLACE` ✔
+(3 actions); LKW-047 at AS_OF `SCALE_ACID_BULLHEAD` ? (LOW_CONFIDENCE watch-list — pump already changed 2026-07-07).
+
+Decisions:
+
+- **R-D1 (LKW-047 as-of).** Gate evaluated as-of **2026-05-14**, the last producing day before failure episode
+  EP-LKW-047-040 (WAITING_ON_RIG 05-15..06-24, WAITING_ON_MATERIAL to 07-06, job WO-LKW-047-007 on 2026-07-07).
+  At AS_OF 2026-09-23 the pump has already been replaced, so action 1 is correctly not a pump job. Generator not edited.
+- **R-D2 (refusal has no SOP).** `NO_JOB_JUSTIFIED` has `sop_doc_id = null` (catalogue; BDD F14-S02 requires SOPs
+  for IC-01..14 only). Every job action has a resolving SOP.
+- **R-D3 (G-1 needs water in play).** G-1 fires only when Chan = CONING with WOR′ < 0 **and** the water problem is
+  active or a water class is a candidate. 82 wells are Chan-CONING; firing on Chan alone would over-reach.
+- **R-D4 (one job per class).** TC-008 alternatives are candidates; same-class alternatives are rejected with
+  their catalogue criterion.
+- **R-D5 (diagnostic-fit tiers).** TC-009 uplift is job-independent (decline-restore), so without fit tiers
+  rigless jobs win on the rig-days denominator alone. FIT ranks above UNCLEAR in TC-022; TC-027's verdict uses
+  the same order (fit first, ✘ is a veto; then value, < 10 % margin = CLOSE), so NBA and compare agree.
+- **R-D6 (p_success).** Two-level Beta, α = 5: asset IC prior → field × IC × lift → this well's own record. Only
+  finished, non-censored jobs started before `as_of`.
+- **R-D7 (rig slot).** First free window in `rig_calendar` for this well alone (WORKOVER_RIG → CLASS_I/CLASS_II).
+  The calendar covers only 2026-09-01..10-31; outside it the slot is UNAVAILABLE (not invented).
+- **R-D8 (healthy wells).** A PRODUCING_OK well with no diagnosed mechanism gets `LOW_CONFIDENCE` +
+  `WELL_HEALTHY_NO_TRIGGER` (watch-list, not a call to mobilise).
+- **R-D9 (grep gate).** `grep -rn "estimated_cost_usd\|payback" backend/app` still matches the D-1 *guards*
+  (`voice_tools._MONEY_KEY_MARKERS`, `live_prompt.md` "never mention … payback", `common.CURRENCY_KEY_RE`,
+  `generator/validate.CURRENCY_TOKENS`) and two docstrings saying "no payback". No response field carries a value.
+- **R-D10 (as_of override).** `/nba` and `/compare` accept `as_of` only when `settings.ALLOW_AS_OF_OVERRIDE` is
+  truthy (SDD names it; `settings.py` does not define it yet → 422).
+
+Deviations: BDD F04-S01 "3 ranked actions" — candidates (ML ≥ 0.10 + physics route + TC-008 alternatives) after
+the fit screen often leave 1–2 actions; flagged `FEWER_THAN_TOP_K`, not padded.

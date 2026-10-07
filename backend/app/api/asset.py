@@ -13,7 +13,9 @@ provenance}`` (SDD §13.1); unknown field / well → 404; no currency (D-1).
 * ``GET /api/wells/{id}/production?months=&metrics=`` — TC-017 v2 ``ProductionSeries`` with intervention markers
 
 ``/api/fields/{field}/health|attribution`` stay in ``fields.py`` (Stage P); ``/api/field/infrastructure`` stays
-in ``wells.py``. Persona comes from ``X-Persona`` (default ``ASSET_MANAGER``) until Stage Y's RBAC lands.
+in ``wells.py``. RBAC (Stage Y, SDD §16): ``app.agent.rbac`` — persona from ``X-Persona`` (default
+``ASSET_MANAGER``); ``field.aggregate`` routes 403 for FIELD_ENGINEER; priority queue is own-cluster for
+FIELD_ENGINEER and drops ``cost_band``; the well profile is a construction summary (no tallies) for ED.
 """
 
 from __future__ import annotations
@@ -21,9 +23,9 @@ from __future__ import annotations
 from dataclasses import replace
 from datetime import date
 
-from fastapi import APIRouter, Header, HTTPException, Query
-from fastapi.responses import JSONResponse
+from fastapi import APIRouter, Depends, HTTPException, Query
 
+from app.agent import rbac
 from app.analytics.tools.candidate_ranking import rank_candidates
 from app.analytics.tools.common import ToolResult, well_master_row
 from app.analytics.tools.field_history import field_production_history
@@ -36,19 +38,7 @@ from app.analytics.tools.well_profile import METRICS, well_production_series, we
 
 router = APIRouter()
 
-DEFAULT_PERSONA = "ASSET_MANAGER"
-AGGREGATE_PERSONAS = frozenset({"ED", "ASSET_MANAGER"})  # SDD §13.4 / §16 field.aggregate
 RETIRED_DETAIL = "GLK- IDs retired in v0.4; use GK-"
-
-
-def _persona(x_persona: str | None) -> str:
-    return (x_persona or DEFAULT_PERSONA).strip().upper()
-
-
-def _forbidden(persona: str, what: str) -> JSONResponse:
-    return JSONResponse(status_code=403, content={
-        "status": "UNAVAILABLE", "data": None, "missing_fields": [], "provenance": {},
-        "message": f"not permitted for persona {persona}: {what} is for ED / ASSET_MANAGER"})
 
 
 def _field_or_404(field: str) -> str:
@@ -77,7 +67,7 @@ def _date(s: str | None, name: str) -> date | None:
 
 
 @router.get("/fields")
-def list_fields():
+def list_fields(persona: str = Depends(rbac.require("asset.overview"))):
     """TC-025 hierarchy enriched with TC-020 counts and the synthetic field / cluster geometry (D-3)."""
     r = query_hierarchy()
     data = r.value
@@ -91,7 +81,7 @@ def list_fields():
         lons = [c["center_lon"] for c in f["clusters"] if c["center_lon"] is not None]
         f["centroid"] = ({"lat": round(sum(lats) / len(lats), 6), "lon": round(sum(lons) / len(lons), 6)}
                          if lats and lons else None)
-    return r.envelope()
+    return rbac.redact(persona, "asset.overview", r.envelope())
 
 
 @router.get("/fields/history")
@@ -100,11 +90,8 @@ def fields_history(
     start: str | None = None,
     end: str | None = None,
     freq: str = Query("M", pattern="^[MQYmqy]$"),
-    x_persona: str | None = Header(None, alias="X-Persona"),
+    persona: str = Depends(rbac.require("field.aggregate")),
 ):
-    persona = _persona(x_persona)
-    if persona not in AGGREGATE_PERSONAS:
-        return _forbidden(persona, "field production history")
     if fields:
         for f in fields.split(","):
             if f.strip() and f.strip().upper() != "ALL":
@@ -116,25 +103,23 @@ def fields_history(
 @router.get("/fields/compare")
 def fields_compare(
     period: str = Query("QTD", description="QTD | MTD | YTD | L12M"),
-    x_persona: str | None = Header(None, alias="X-Persona"),
+    persona: str = Depends(rbac.require("field.aggregate")),
 ):
-    persona = _persona(x_persona)
-    if persona not in AGGREGATE_PERSONAS:
-        return _forbidden(persona, "field comparison")
     if period.upper() not in PERIODS:
         raise HTTPException(status_code=422, detail=f"period must be one of {list(PERIODS)}")
-    return compare_fields(period=period.upper()).envelope()
+    return rbac.redact(persona, "field.aggregate", compare_fields(period=period.upper()).envelope())
 
 
 @router.get("/fields/map")
-def fields_map(field: str | None = None, cluster_id: str | None = None, color_by: str = "health"):
+def fields_map(field: str | None = None, cluster_id: str | None = None, color_by: str = "health",
+               persona: str = Depends(rbac.require("asset.overview"))):
     if field and field.strip().upper() != "ALL":
         for f in field.split(","):
             _field_or_404(f.strip())
     r = render_well_map(field=field or None, cluster_id=cluster_id or None, color_by=color_by)
     if r.value is None:
         raise HTTPException(status_code=422, detail=r.message)
-    return r.envelope()
+    return rbac.redact(persona, "asset.overview", r.envelope())
 
 
 @router.get("/fields/{field}/history")
@@ -143,14 +128,19 @@ def field_history(
     start: str | None = None,
     end: str | None = None,
     freq: str = Query("M", pattern="^[MQYmqy]$"),
-    x_persona: str | None = Header(None, alias="X-Persona"),
+    persona: str = Depends(rbac.require("field.aggregate")),
 ):
-    persona = _persona(x_persona)
     f = _field_or_404(field)
-    if persona not in AGGREGATE_PERSONAS:
-        return _forbidden(persona, "field production history")
     return field_production_history(fields=[f], start=_date(start, "start"), end=_date(end, "end"),
                                     freq=freq.upper()).envelope()
+
+
+def _in_cluster(rows: list, cluster_id: str | None) -> list:
+    if not cluster_id:
+        return list(rows)
+    c = cluster_id.upper()
+    return [x for x in rows if str(getattr(x, "cluster_id", None) or (x.get("cluster_id") if isinstance(x, dict) else "")
+                                   or "").upper() == c]
 
 
 @router.get("/fields/{field}/priority")
@@ -158,22 +148,35 @@ def field_priority(
     field: str,
     queue: str = Query("all", pattern="^(rig|rigless|all)$"),
     limit: int = Query(20, ge=1, le=200),
+    cluster_id: str | None = Query(None, description="restrict to one GGS cluster (FIELD_ENGINEER: own cluster)"),
+    well_id: str | None = Query(None, description="FIELD_ENGINEER: selected well → own cluster"),
+    persona: str = Depends(rbac.require("queue.read")),
 ):
     f = _field_or_404(field)
+    cluster_id = rbac.scope_cluster(persona, "queue.read", cluster_id or None, well_id)
     r = rank_candidates(f)
     if r.value is None:
         return r.envelope()
     q = r.value
-    rig = q.rig_queue[:limit] if queue in ("rig", "all") else []
-    rigless = q.rigless_queue[:limit] if queue in ("rigless", "all") else []
+    rig_all, rigless_all = _in_cluster(q.rig_queue, cluster_id), _in_cluster(q.rigless_queue, cluster_id)
+    rig = rig_all[:limit] if queue in ("rig", "all") else []
+    rigless = rigless_all[:limit] if queue in ("rigless", "all") else []
     trimmed = replace(q, rig_queue=rig, rigless_queue=rigless)
-    return ToolResult(r.status, trimmed, r.missing_fields, r.message, r.provenance).envelope()
+    if cluster_id:
+        trimmed = replace(trimmed, excluded_refusals=_in_cluster(q.excluded_refusals, cluster_id),
+                          excluded_unrouted=_in_cluster(q.excluded_unrouted, cluster_id))
+    prov = dict(r.provenance or {})
+    if cluster_id:
+        prov["cluster_id"] = cluster_id
+    env = ToolResult(r.status, trimmed, r.missing_fields, r.message, prov).envelope()
+    return rbac.redact(persona, "queue.read", env)
 
 
 @router.get("/wells/{well_id}/profile")
-def well_profile_route(well_id: str, k_neighbours: int = Query(4, ge=1, le=12)):
+def well_profile_route(well_id: str, k_neighbours: int = Query(4, ge=1, le=12),
+                       persona: str = Depends(rbac.require("well.construction"))):
     wid = _well_or_404(well_id)
-    return well_profile(wid, k_neighbours=k_neighbours).envelope()
+    return rbac.redact(persona, "well.construction", well_profile(wid, k_neighbours=k_neighbours).envelope())
 
 
 @router.get("/wells/{well_id}/production")
@@ -181,6 +184,7 @@ def well_production_route(
     well_id: str,
     months: int = Query(36, ge=1, le=60, description="24 / 36 / 60"),
     metrics: str | None = Query(None, description=f"comma list of {','.join(METRICS)}"),
+    persona: str = Depends(rbac.require("asset.overview")),
 ):
     wid = _well_or_404(well_id)
     ms = [m.strip() for m in metrics.split(",") if m.strip()] if metrics else None
@@ -188,4 +192,4 @@ def well_production_route(
         bad = [m for m in ms if m not in METRICS]
         if bad:
             raise HTTPException(status_code=422, detail=f"unknown metrics {bad}; valid: {list(METRICS)}")
-    return well_production_series(wid, months=months, metrics=ms).envelope()
+    return rbac.redact(persona, "asset.overview", well_production_series(wid, months=months, metrics=ms).envelope())

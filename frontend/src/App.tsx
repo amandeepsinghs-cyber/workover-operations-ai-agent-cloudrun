@@ -10,8 +10,13 @@ import { FieldSelector } from './components/fields/FieldSelector';
 import { FieldHistoryChart } from './components/fields/FieldHistoryChart';
 import { FieldComparison } from './components/fields/FieldComparison';
 import { WellDeepDiveDrawer } from './components/well/WellDeepDiveDrawer';
+import { usePersona } from './state/persona'; // Stage Y: tabs hidden per persona (UI hint; server enforces)
+// Stage R (additive): field health buckets (TC-020) + priority queue (TC-010)
+import { HealthBucketsCard } from './components/decision/HealthBucketsCard';
+import { PriorityQueueTable } from './components/decision/PriorityQueueTable';
+import type { FieldName } from './api/asset';
 
-type ScreenTab = 'map' | 'field_history' | 'field_compare';
+type ScreenTab = 'map' | 'field_history' | 'field_compare' | 'field_health';
 
 export function App() {
   const [wells, setWells] = useState<WellSummary[]>([]);
@@ -25,6 +30,20 @@ export function App() {
   const [fieldFilter, setFieldFilter] = useState<FieldFilter>('ALL');
   const [hierarchy, setHierarchy] = useState<Hierarchy | null>(null);
   const [screenTab, setScreenTab] = useState<ScreenTab>('map');
+  const { can } = usePersona(); // Stage Y
+  const canAggregate = can('field.aggregate');
+  // Stage R: health / priority tab (TC-020 field.health, TC-010 queue.read)
+  const canHealth = can('field.health') || can('queue.read');
+  const [healthField, setHealthField] = useState<FieldName>('Lakwa');
+  useEffect(() => {
+    if (fieldFilter !== 'ALL') setHealthField(fieldFilter);
+  }, [fieldFilter]);
+  useEffect(() => {
+    if (screenTab === 'field_health' && !canHealth) setScreenTab('map');
+  }, [canHealth, screenTab]);
+  useEffect(() => {
+    if (!canAggregate && screenTab !== 'map' && screenTab !== 'field_health') setScreenTab('map');
+  }, [canAggregate, screenTab]);
   const [drawerWellId, setDrawerWellId] = useState<string | null>(null);
 
   // Fetch initial fleet data and KPIs
@@ -141,8 +160,9 @@ export function App() {
         <span className="text-border">|</span>
         <div className="flex items-center gap-1">
           {tabBtn('map', 'Map & wells')}
-          {tabBtn('field_history', 'Field history (5y)')}
-          {tabBtn('field_compare', 'Field comparison')}
+          {canAggregate && tabBtn('field_history', 'Field history (5y)')}
+          {canAggregate && tabBtn('field_compare', 'Field comparison')}
+          {canHealth && tabBtn('field_health', 'Health & priority')}
         </div>
       </div>
 
@@ -163,6 +183,43 @@ export function App() {
               setScreenTab('map');
             }}
           />
+        </div>
+      ) : screenTab === 'field_health' ? (
+        <div className="flex-1 overflow-y-auto p-4 space-y-4">
+          <div className="flex items-center gap-2 text-xs font-mono">
+            <span className="text-textMuted">Field:</span>
+            {(['Geleki', 'Lakwa', 'Lakhmani'] as FieldName[]).map((f) => (
+              <button
+                key={f}
+                onClick={() => setHealthField(f)}
+                className={`px-2.5 py-1 rounded border ${
+                  healthField === f ? 'border-accent text-white bg-surface' : 'border-border text-textMuted hover:text-white'
+                }`}
+              >
+                {f}
+              </button>
+            ))}
+            <span className="text-textMuted ml-2">Click a well to open its deep dive (next best action, counterfactual).</span>
+          </div>
+          <div className="grid grid-cols-1 xl:grid-cols-[minmax(320px,2fr)_3fr] gap-4">
+            <HealthBucketsCard
+              field={healthField}
+              selectedWellId={drawerWellId}
+              onSelectWell={(id) => {
+                setSelectedWellId(id);
+                setDrawerWellId(id);
+              }}
+            />
+            <PriorityQueueTable
+              field={healthField}
+              limit={20}
+              selectedWellId={drawerWellId}
+              onSelectWell={(id) => {
+                setSelectedWellId(id);
+                setDrawerWellId(id);
+              }}
+            />
+          </div>
         </div>
       ) : (
         <div className="flex-1 flex overflow-hidden">
@@ -194,6 +251,7 @@ export function App() {
                 selectedWellId={selectedWellId}
                 onSelectWell={setSelectedWellId}
                 field={fieldFilter}
+                onOpenWell={setDrawerWellId}
               />
             </div>
 

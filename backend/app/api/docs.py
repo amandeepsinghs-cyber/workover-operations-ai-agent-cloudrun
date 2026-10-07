@@ -7,13 +7,20 @@
 
 Envelope: ``{status, data, message, missing_fields, provenance}`` (SDD §13.1). When the corpus has not
 been built the analytics routes return ``status = UNAVAILABLE`` with the build command in ``message``.
+
+RBAC (Stage Y, SDD §16): ``docs.sop_dossier`` for every persona, plus doc_type gating via
+``rbac.doc_type_allowed`` — ED: no D04 tally / D05 CBL (construction summary only); FIELD_ENGINEER: no D10
+monthly field production report (field roll-up). Lists / search silently exclude denied types; asking for
+only denied types, or opening a denied PDF / meta, → 403 UNAVAILABLE envelope.
 """
 from __future__ import annotations
 
 import json
 
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query
 from fastapi.responses import FileResponse
+
+from app.agent import rbac
 
 from app.analytics.docs_pdf.provenance import expand_sources
 from app.analytics.docs_pdf.store import get_store, norm_doc_types
@@ -36,6 +43,22 @@ def _types_or_422(doc_types: str | None) -> list[str] | None:
         raise HTTPException(status_code=422, detail=str(e))
 
 
+def _scoped_types(persona: str, requested: list[str] | None) -> list[str] | None:
+    """Doc types this persona may see (None = no filter). Only-denied request → 403 envelope."""
+    types = rbac.allowed_doc_types(persona, requested)
+    if types is not None and not types:
+        raise rbac.PermissionDenied(persona, rbac.doc_type_capability(requested[0] if requested else None),
+                                    f"doc_type {','.join(requested or [])}")
+    return types
+
+
+def _check_doc_access(persona: str, store, doc_id: str) -> None:
+    row = store.doc(doc_id) if store is not None else None
+    if row is not None and not rbac.doc_type_allowed(persona, row.get("doc_type")):
+        raise rbac.PermissionDenied(persona, rbac.doc_type_capability(row.get("doc_type")),
+                                    f"doc_type {row.get('doc_type')}")
+
+
 def _check_well(well_id: str) -> None:
     try:
         w = get_repository().get_well(well_id)
@@ -52,8 +75,9 @@ def search_documents(
     field: str | None = None,
     doc_types: str | None = Query(None, description="comma list, e.g. D2,D5"),
     top_k: int = Query(10, ge=1, le=50),
+    persona: str = Depends(rbac.require("docs.sop_dossier")),
 ):
-    types = _types_or_422(doc_types)
+    types = _scoped_types(persona, _types_or_422(doc_types))
     store = get_store()
     if store is None:
         return _envelope("UNAVAILABLE", [], BUILD_HINT, missing=["document_index"])
@@ -64,8 +88,9 @@ def search_documents(
 
 
 @router.get("/docs/{doc_id}.pdf")
-def get_document_pdf(doc_id: str):
+def get_document_pdf(doc_id: str, persona: str = Depends(rbac.require("docs.sop_dossier"))):
     store = get_store()
+    _check_doc_access(persona, store, doc_id)
     path = store.pdf_path(doc_id) if store is not None else None
     if path is None:
         raise HTTPException(status_code=404, detail=f"Document {doc_id} not found" + ("" if store else f" ({BUILD_HINT})"))
@@ -74,10 +99,11 @@ def get_document_pdf(doc_id: str):
 
 
 @router.get("/docs/{doc_id}/meta")
-def get_document_meta(doc_id: str):
+def get_document_meta(doc_id: str, persona: str = Depends(rbac.require("docs.sop_dossier"))):
     store = get_store()
     if store is None:
         return _envelope("UNAVAILABLE", None, BUILD_HINT, missing=["document_index"])
+    _check_doc_access(persona, store, doc_id)
     row = store.doc(doc_id)
     if row is None:
         raise HTTPException(status_code=404, detail=f"Document {doc_id} not found")
@@ -94,9 +120,10 @@ def get_well_documents(
     doc_types: str | None = Query(None, description="comma list, e.g. D2,D3"),
     q: str | None = None,
     limit: int = Query(500, ge=1, le=5000),
+    persona: str = Depends(rbac.require("docs.sop_dossier")),
 ):
     _check_well(well_id)
-    types = _types_or_422(doc_types)
+    types = _scoped_types(persona, _types_or_422(doc_types))
     store = get_store()
     if store is None:
         return _envelope("UNAVAILABLE", [], BUILD_HINT, missing=["document_index"])

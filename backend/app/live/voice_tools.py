@@ -85,8 +85,11 @@ def register_voice_tool(
 
 
 def tools_for(persona: str | None) -> list[VoiceTool]:
-    p = (persona or "").upper()
-    return [t for t in VOICE_TOOLS.values() if not p or p not in ALL_PERSONAS or p in t.personas]
+    # Stage Y: the persona filter comes from the RBAC matrix (app/agent/rbac.py); unmapped tools fall back
+    # to their registered ``personas`` set.
+    from app.agent import rbac
+
+    return [t for t in VOICE_TOOLS.values() if rbac.voice_tool_visible(t.name, persona, t.personas)]
 
 
 # ---------------------------------------------------------------------------
@@ -192,12 +195,17 @@ def execute_voice_tool(name: str, args: dict[str, Any] | None, persona: str | No
     tool = VOICE_TOOLS.get(name)
     if tool is None:
         return {"status": "ERROR", "message": f"unknown tool {name}", "duration_ms": 0}
-    if persona and persona.upper() in ALL_PERSONAS and persona.upper() not in tool.personas:
-        return {"status": "UNAVAILABLE", "message": f"not permitted for persona {persona}", "duration_ms": 0}
+    from app.agent import rbac  # Stage Y: tool-layer gating (SDD §16), not the prompt
+
+    sig = inspect.signature(tool.fn)
+    args, denial, cap = rbac.voice_gate(name, args, persona, tool.personas, set(sig.parameters))
+    if denial is not None:
+        return {**denial, "duration_ms": 0}
     try:
-        sig = inspect.signature(tool.fn)
         clean = {k: v for k, v in (args or {}).items() if k in sig.parameters}
         result = strip_money(to_json_safe(tool.fn(**clean)))
+        if persona:
+            result = rbac.redact(persona, cap, result)
     except Exception as e:  # tool errors must not kill the voice session
         logger.warning("voice tool %s failed: %s: %s", name, type(e).__name__, e)
         result = {"status": "ERROR", "message": f"{type(e).__name__}: {e}"}
@@ -527,3 +535,49 @@ def _v_classify_intervention(well_id: str = "", top_k: int = 3) -> dict[str, Any
     env = classify_intervention(well_id=well_id.strip().upper(), top_k=int(top_k or 3)).envelope()
     env["model_quality"] = model_quality().envelope().get("data")
     return env
+
+
+# ---------------------------------------------------------------------------
+# Stage R: TC-022 next best action + TC-027 counterfactual (SDD §9.1/9.2). Cost as band + rig-days only.
+# Registry is now 13 tools (> SDD §11.3's 12): Stage V trims the legacy well_summary / well_workovers /
+# well_recommendation tools (well_recommendation is now TC-022 rank-1 anyway).
+# ---------------------------------------------------------------------------
+@register_voice_tool(
+    name="next_best_action",
+    description=(
+        "TC-022: ranked next best actions for one well (job, intervention class, diagnostic fit, uplift BOPD, "
+        "deferred bbl over 12 months, p_success, rig-days, cost band, earliest rig slot, risk flags, SOP id), the "
+        "physics route vs the ML suggestion, guardrail flags (coning -> choke back; reservoir decline -> no job) "
+        "and rejected candidates with reasons. Use for 'what should we do on GK-129', 'next best action', "
+        "'kya karein', 'kaunsa job'."
+    ),
+    action_kind="nba",
+)
+def _v_next_best_action(well_id: str, top_k: int = 3) -> dict[str, Any]:
+    from app.analytics.tools.nba import recommend_next_best_action
+
+    env = recommend_next_best_action(well_id.strip().upper(), top_k=int(top_k or 3)).envelope()
+    data = env.get("data")
+    if isinstance(data, dict):
+        data.pop("job_menu", None)  # UI picker only; keep the voice payload small
+        for a in data.get("actions") or []:
+            a["sop_phases"] = [p.get("phase") for p in a.pop("sop_steps", None) or [] if p.get("phase")]
+    return env
+
+
+@register_voice_tool(
+    name="compare_interventions",
+    description=(
+        "TC-027: why the recommended job and not an alternative, for one well. Side-by-side on diagnostic fit "
+        "(incl. latest pressure survey), this well's history, field efficacy, execution (rig-days, cost band, "
+        "rig slot) and value, with a verdict, the deciding dimension and cited prior-job documents. Give "
+        "well_id and alternative (e.g. 'WAX_REMOVAL', 'REPERFORATION', 'IC-04'); recommended defaults to the "
+        "TC-022 rank-1 job. Use for 'why not wax removal', 'squeeze ki jagah reperf kyun nahi'."
+    ),
+    action_kind="counterfactual",
+)
+def _v_compare_interventions(well_id: str, alternative: str, recommended: str = "") -> dict[str, Any]:
+    from app.analytics.tools.counterfactual import compare_interventions
+
+    return compare_interventions(well_id.strip().upper(), recommended_job=recommended or None,
+                                 alternative_job=alternative).envelope()

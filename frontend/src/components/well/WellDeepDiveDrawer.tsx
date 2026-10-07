@@ -10,6 +10,10 @@ import {
 } from '../../api/asset';
 import { ProductionMarkersChart } from './ProductionMarkersChart';
 import { NearbyWellsList } from './NearbyWellsList';
+// Stage R (additive): TC-022 next best action, TC-027 counterfactual, TC-019 attribution
+import { NbaCard } from '../decision/NbaCard';
+import { CounterfactualTable } from '../decision/CounterfactualTable';
+import { AttributionWaterfall } from '../decision/AttributionWaterfall';
 
 export interface WellDeepDiveDrawerProps {
   wellId: string;
@@ -44,6 +48,13 @@ export const WellDeepDiveDrawer: React.FC<WellDeepDiveDrawerProps> = ({
   onSelectWell,
 }) => {
   const [months, setMonths] = useState<24 | 36 | 60>(36);
+  // Stage R: counterfactual panel (opened from the NBA card or the toggle)
+  const [compareOpen, setCompareOpen] = useState<boolean>(false);
+  const [compareRec, setCompareRec] = useState<string | undefined>(undefined);
+  useEffect(() => {
+    setCompareOpen(false);
+    setCompareRec(undefined);
+  }, [wellId]);
 
   // Profile state
   const [profileEnvelope, setProfileEnvelope] = useState<Envelope<WellProfile> | null>(null);
@@ -684,6 +695,35 @@ export const WellDeepDiveDrawer: React.FC<WellDeepDiveDrawerProps> = ({
                   No production series available
                 </div>
               )}
+            </div>
+
+            {/* Stage R: Next best action (TC-022) */}
+            <div className="bg-[#0d1117] border border-border rounded-lg p-4 space-y-3">
+              <NbaCard
+                wellId={wellId}
+                topK={3}
+                onCompare={(jobCode) => {
+                  setCompareRec(jobCode);
+                  setCompareOpen(true);
+                }}
+              />
+            </div>
+
+            {/* Stage R: Counterfactual — why this job and not another (TC-027) */}
+            <div className="bg-[#0d1117] border border-border rounded-lg p-4 space-y-3">
+              <button
+                type="button"
+                onClick={() => setCompareOpen((o) => !o)}
+                className="text-xs font-mono uppercase text-textMuted font-bold hover:text-white"
+              >
+                {compareOpen ? '▾' : '▸'} Why not another job? (counterfactual)
+              </button>
+              {compareOpen && <CounterfactualTable key={`${wellId}-${compareRec ?? 'nba'}`} wellId={wellId} recommended={compareRec} />}
+            </div>
+
+            {/* Stage R: Decline attribution (TC-019) */}
+            <div className="bg-[#0d1117] border border-border rounded-lg p-4 space-y-3">
+              <AttributionWaterfall wellId={wellId} windowDays={180} />
             </div>
 
             {/* Section 10: Nearby Wells */}

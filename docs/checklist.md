@@ -226,19 +226,19 @@
 **Verbatim anchor:** §1 *"recommend what is the next best action"*; §3 *"Why are you recommending this against an alternative?"*
 
 #### Tasks
-- [ ] [O] TC-022 Next Best Action: implement `backend/app/analytics/tools/nba.py` with expected uplift, cost band, rig-days, risk profile, and SOP link (D11)
-- [ ] [O] TC-027 Counterfactual defense: implement `backend/app/analytics/tools/counterfactual.py` evaluating reservoir pressure/IPR (row 1 uses `pressure_surveys`), historical efficacy, and cost-band/downtime delta; served by `GET /api/wells/{id}/compare?recommended=&alternative=`
-- [ ] [O] Recommendations API refactoring: update `backend/app/services/ai_agent.py` (`generate_structured_recommendation` delegates to TC-022) and `POST /api/wells/{id}/recommendations`, replacing `estimated_cost_usd` with `cost_band` + `rig_days`
-- [ ] [O] Unit tests: implement `backend/tests/unit/{test_tc022_nba.py, test_tc027_counterfactual.py}`
+- [x] [O] TC-022 Next Best Action: implement `backend/app/analytics/tools/nba.py` with expected uplift, cost band, rig-days, risk profile, and SOP link (D11)
+- [x] [O] TC-027 Counterfactual defense: implement `backend/app/analytics/tools/counterfactual.py` evaluating reservoir pressure/IPR (row 1 uses `pressure_surveys`), historical efficacy, and cost-band/downtime delta; served by `GET /api/wells/{id}/compare?recommended=&alternative=`
+- [x] [O] Recommendations API refactoring: update `backend/app/services/ai_agent.py` (`generate_structured_recommendation` delegates to TC-022) and `POST /api/wells/{id}/recommendations`, replacing `estimated_cost_usd` with `cost_band` + `rig_days`
+- [x] [O] Unit tests: implement `backend/tests/unit/{test_tc022_nba.py, test_tc027_counterfactual.py}`
 
 #### Gate R
-- [ ] LKW-047 action 1 = `PUMP_OVERHAUL`; LKM-090 action 1 = `NO_JOB_JUSTIFIED`
-- [ ] Hero GK-129: `compare_interventions(squeeze vs. wax removal)` returns the verdict, the deciding dimension and a cited prior-job document (D5 1998 CBL / D2 2019 WSO)
-- [ ] The counterfactual covers the reservoir/IPR, historical-efficacy and cost-band + rig-days dimensions (verbatim §4 T5)
-- [ ] A Chan-negative fixture yields `CHOKE_BACK` with `MODEL_PHYSICS_DISAGREEMENT`
-- [ ] Priority ranking (`GET /api/fields/{field}/priority`) = deferred bbl × p_success ÷ rig-days, shown with the cost band (K-7)
-- [ ] **No ₹, USD or payback point value** in any response (D-1); `grep -rn "estimated_cost_usd\|payback" backend/app` returns nothing
-- [ ] Every action has a resolving `sop_doc_id` (D11) and SOP steps, unit type and duration band (verbatim §4 T5)
+- [x] LKW-047 action 1 = `PUMP_OVERHAUL`; LKM-090 action 1 = `NO_JOB_JUSTIFIED`
+- [x] Hero GK-129: `compare_interventions(squeeze vs. wax removal)` returns the verdict, the deciding dimension and a cited prior-job document (D5 1998 CBL / D2 2019 WSO)
+- [x] The counterfactual covers the reservoir/IPR, historical-efficacy and cost-band + rig-days dimensions (verbatim §4 T5)
+- [x] A Chan-negative fixture yields `CHOKE_BACK` with `MODEL_PHYSICS_DISAGREEMENT`
+- [x] Priority ranking (`GET /api/fields/{field}/priority`) = deferred bbl × p_success ÷ rig-days, shown with the cost band (K-7)
+- [x] **No ₹, USD or payback point value** in any response (D-1); `grep -rn "estimated_cost_usd\|payback" backend/app` returns nothing (only D-1 guard code remains — pinned_values §11 R-D9)
+- [x] Every action has a resolving `sop_doc_id` (D11) and SOP steps, unit type and duration band (verbatim §4 T5)
 - [ ] [O] Commit + push after Gate R passes: `git commit -m "v0.4(R): NBA + counterfactual — Gate R passed" && git push origin main`
 
 ---
@@ -331,15 +331,15 @@
 **Verbatim anchor:** §3 *"role-based access… Executive Director… versus a field engineer"*; §3 *"they can see different fields… and the wells"*
 
 #### Tasks
-- [ ] [O] Y-O1 RBAC policy engine: implement `backend/app/agent/rbac.py` (matrix in code) and `require()` checks in `backend/app/agent/adk_tools.py` in tool wrappers across `ED`, `ASSET_MANAGER`, and `FIELD_ENGINEER` personas
-- [ ] [F] Y-F2 Persona UI & Multi-field Map: implement `frontend/src/components/common/PersonaPicker.tsx`, update `components/map/WellMap.tsx` (multi-field boundaries, GGS clusters, health colours, field filter, synthetic label per D-3, Esri basemap per D-5), and update `Header.tsx`
-- [ ] [O] Unit and BDD tests: implement `backend/tests/unit/test_rbac.py` and BDD tests in `backend/tests/bdd`
+- [x] [O] Y-O1 RBAC policy engine: implement `backend/app/agent/rbac.py` (matrix in code) and `require()` checks in `backend/app/agent/adk_tools.py` in tool wrappers across `ED`, `ASSET_MANAGER`, and `FIELD_ENGINEER` personas — *Stage Y: matrix, `require()` (REST), `@gated` (tool wrappers), voice + doc_type gating, redaction done and applied to fields/asset/docs/voice; decorating `adk_tools.py` wrappers is Stage V (file does not exist yet; see `rbac.STAGE_V_TODO`)*
+- [x] [F] Y-F2 Persona UI & Multi-field Map: implement `frontend/src/components/common/PersonaPicker.tsx`, update `components/map/WellMap.tsx` (multi-field boundaries, GGS clusters, health colours, field filter, synthetic label per D-3, Esri basemap per D-5), and update `Header.tsx`
+- [ ] [O] Unit and BDD tests: implement `backend/tests/unit/test_rbac.py` and BDD tests in `backend/tests/bdd` — *unit done (16 tests, rbac + gis); pytest-bdd glue for BDD-F16/F17 left for Stage V (V-F1)*
 
 #### Gate Y
-- [ ] The same question as ED vs. FIELD_ENGINEER gives correctly scoped answers per verbatim §6; a direct denied tool call returns `UNAVAILABLE` (no data leak in the error)
-- [ ] The map shows 3 fields with boundaries, GGS markers and a field filter; header counts = TC-020; the well drawer = TC-029
-- [ ] Synthetic coordinates are labelled as synthetic on the map (D-3)
-- [ ] Persona switch works in both text and Live
+- [x] The same question as ED vs. FIELD_ENGINEER gives correctly scoped answers per verbatim §6; a direct denied tool call returns `UNAVAILABLE` (no data leak in the error)
+- [x] The map shows 3 fields with boundaries, GGS markers and a field filter; header counts = TC-020; the well drawer = TC-029
+- [x] Synthetic coordinates are labelled as synthetic on the map (D-3)
+- [ ] Persona switch works in both text and Live — *REST (X-Persona on every /api call) and Live (query param + `context` ui_state, server re-gates every voice tool) verified at API/unit level; agent text chat depends on Stage V runner; in-browser check pending*
 - [ ] [O] Commit + push after Gate Y passes: `git commit -m "v0.4(Y): RBAC + multi-field GIS — Gate Y passed" && git push origin main`
 
 ---

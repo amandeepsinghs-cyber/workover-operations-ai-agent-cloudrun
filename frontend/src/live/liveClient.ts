@@ -9,6 +9,7 @@
 
 import { audioPlayer } from './audioPlayer';
 import { micCapture } from './micCapture';
+import { getPersona, subscribePersona } from '../state/persona';
 
 export type LiveStatus = 'disconnected' | 'connecting' | 'connected' | 'reconnecting' | 'resumed' | 'fallback';
 export type VoiceState = 'idle' | 'listening' | 'thinking' | 'speaking';
@@ -61,6 +62,8 @@ export class LiveClient {
     if (handlers) {
       this.handlers = handlers;
     }
+    // Stage Y: persona switch reaches Live — sent as ui_state.persona (server re-gates every tool call).
+    subscribePersona((p) => this.setContext({ persona: p }));
   }
 
   public setHandlers(h: LiveHandlers): void {
@@ -113,6 +116,7 @@ export class LiveClient {
     if (ctx) {
       this.currentContext = { ...this.currentContext, ...ctx };
     }
+    if (!this.currentContext.persona) this.currentContext.persona = getPersona(); // Stage Y
 
     this.explicitDisconnect = false;
     this.setStatus('connecting');

@@ -1,6 +1,7 @@
 import React from 'react';
 import { Activity, AlertTriangle, CheckCircle, Flame, Layers, Radio, XCircle } from 'lucide-react';
 import { FleetKPIs, WellStatus } from '../../types/well';
+import { PersonaPicker } from '../persona/PersonaPicker';
 
 interface HeaderProps {
   kpis: FleetKPIs | null;
@@ -96,6 +97,8 @@ export const Header: React.FC<HeaderProps> = ({
 
       {/* Global Search & Live Indicator */}
       <div className="flex items-center gap-4">
+        {/* Stage Y (F-16): demo persona switch; X-Persona is added to every /api call */}
+        <PersonaPicker compact />
         <div className="relative">
           <input
             type="text"

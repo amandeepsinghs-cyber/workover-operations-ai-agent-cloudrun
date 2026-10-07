@@ -6,6 +6,8 @@
  * A non-OK status (UNAVAILABLE / INSUFFICIENT_HISTORY / LOW_CONFIDENCE) must be shown, not hidden.
  */
 
+import { getPersona } from '../state/persona';
+
 export type FieldName = 'Geleki' | 'Lakwa' | 'Lakhmani';
 export type FieldFilter = FieldName | 'ALL';
 export type ToolStatus =
@@ -334,7 +336,7 @@ export interface WellMapData {
 
 /* ------------------------------------------------------------------ fetch helpers */
 async function getEnvelope<T>(url: string): Promise<Envelope<T>> {
-  const res = await fetch(url, { headers: { 'X-Persona': 'ASSET_MANAGER' } });
+  const res = await fetch(url, { headers: { 'X-Persona': getPersona() } }); // Stage Y: demo persona switch
   const body = await res.json();
   if (!res.ok && !(body && typeof body === 'object' && 'status' in body)) {
     throw new Error((body && body.detail) || `HTTP ${res.status} for ${url}`);

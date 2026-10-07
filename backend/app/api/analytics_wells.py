@@ -38,3 +38,47 @@ def well_classification(well_id: str, top_k: int = Query(3, ge=1, le=15)):
     if well_master_row(wid) is None:
         raise HTTPException(status_code=404, detail=f"Well {well_id} not found")
     return classify_intervention(well_id=wid, top_k=top_k).envelope()
+
+
+# Stage R (additive): TC-022 next best action + TC-027 counterfactual (SDD §9.1/9.2, §13.3/13.4).
+def _as_of_or_422(as_of: str | None):
+    """``as_of`` is honoured only when settings.ALLOW_AS_OF_OVERRIDE is truthy (SDD §13); else 422."""
+    if not as_of:
+        return None
+    from datetime import date
+
+    from app import settings
+
+    if not getattr(settings, "ALLOW_AS_OF_OVERRIDE", False):
+        raise HTTPException(status_code=422, detail="as_of override disabled (ALLOW_AS_OF_OVERRIDE)")
+    try:
+        return date.fromisoformat(as_of)
+    except ValueError:
+        raise HTTPException(status_code=422, detail="as_of must be YYYY-MM-DD")
+
+
+def _known_well_or_404(well_id: str) -> str:
+    wid = well_id.strip().upper()
+    if wid.startswith("GLK-"):
+        raise HTTPException(status_code=404, detail=RETIRED_DETAIL)
+    if well_master_row(wid) is None:
+        raise HTTPException(status_code=404, detail=f"Well {well_id} not found")
+    return wid
+
+
+@router.get("/wells/{well_id}/nba")
+def well_next_best_action(well_id: str, top_k: int = Query(3, ge=1, le=5), as_of: str | None = None):
+    from app.analytics.tools.nba import recommend_next_best_action
+
+    wid = _known_well_or_404(well_id)
+    return recommend_next_best_action(wid, as_of=_as_of_or_422(as_of), top_k=top_k).envelope()
+
+
+@router.get("/wells/{well_id}/compare")
+def well_compare(well_id: str, alternative: str = Query(..., min_length=1), recommended: str | None = None,
+                 as_of: str | None = None):
+    from app.analytics.tools.counterfactual import compare_interventions
+
+    wid = _known_well_or_404(well_id)
+    return compare_interventions(wid, recommended_job=recommended or None, alternative_job=alternative,
+                                 as_of=_as_of_or_422(as_of)).envelope()

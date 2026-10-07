@@ -1,8 +1,21 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import L from 'leaflet';
 import { WellSummary, FieldInfrastructure, GatheringStation } from '../../types/well';
 import { Globe, Layers, Network, Building2, Maximize2, Minimize2, X } from 'lucide-react';
-import { assetApi, FieldFilter, WellMapData, GeoJSONFeature } from '../../api/asset';
+import {
+  assetApi,
+  FieldFilter,
+  WellMapData,
+  GeoJSONFeature,
+  HealthBucket,
+  MapPoint,
+  BUCKET_COLORS,
+} from '../../api/asset';
+import { t } from '../../i18n/strings';
+
+/** Stage Y: at or below this zoom the map shows one marker per GGS cluster (BDD-F17-S03). */
+const CLUSTER_MAX_ZOOM = 11;
+const HEALTH_BUCKETS: HealthBucket[] = ['PRODUCING_OK', 'AT_RISK', 'UNDERPERFORMING', 'NOT_PRODUCING'];
 
 interface WellMapProps {
   wells: WellSummary[];
@@ -10,6 +23,8 @@ interface WellMapProps {
   onSelectWell: (wellId: string) => void;
   /** Stage T: field filter ('ALL' = whole asset). Defaults to 'ALL'. */
   field?: FieldFilter;
+  /** Stage Y: open the well deep-dive drawer (TC-029 profile) from a map popup. */
+  onOpenWell?: (wellId: string) => void;
 }
 
 /** Central processing facility (CDP / CTF) — uses facility_master `type` when present. */
@@ -21,6 +36,7 @@ export const WellMap: React.FC<WellMapProps> = ({
   selectedWellId,
   onSelectWell,
   field = 'ALL',
+  onOpenWell,
 }) => {
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<L.Map | null>(null);
@@ -28,12 +44,32 @@ export const WellMap: React.FC<WellMapProps> = ({
   const infraLayerGroupRef = useRef<L.LayerGroup | null>(null);
   const boundaryLayerGroupRef = useRef<L.LayerGroup | null>(null);
   const markersRef = useRef<{ [id: string]: L.Marker }>({});
+  const clusterMarkersRef = useRef<L.Marker[]>([]);
+  const lastPannedRef = useRef<string | null>(null);
   const [mapStyle, setMapStyle] = useState<'satellite' | 'dark'>('satellite');
   const [showFlowlines, setShowFlowlines] = useState<boolean>(true);
   const [isFullscreen, setIsFullscreen] = useState<boolean>(false);
   const [infrastructure, setInfrastructure] = useState<FieldInfrastructure | null>(null);
   const [mapData, setMapData] = useState<WellMapData | null>(null);
+  const [zoom, setZoom] = useState<number>(10);
   const fieldLabel = field === 'ALL' ? 'Assam Asset' : field;
+  // Stage Y: TC-020 bucket + cluster per well from /api/fields/map (same source as the KPI header counts)
+  const bucketById = useMemo(() => {
+    const m: Record<string, MapPoint> = {};
+    (mapData?.points || []).forEach((p) => {
+      m[p.well_id] = p;
+    });
+    return m;
+  }, [mapData]);
+  const clusterMode = zoom <= CLUSTER_MAX_ZOOM && wells.length > 1;
+  const healthCounts = useMemo(() => {
+    const c: Record<HealthBucket, number> = { PRODUCING_OK: 0, AT_RISK: 0, UNDERPERFORMING: 0, NOT_PRODUCING: 0 };
+    HEALTH_BUCKETS.forEach((b) => {
+      c[b] = Number(mapData?.counts_by_color?.[b] ?? 0);
+    });
+    return c;
+  }, [mapData]);
+  const isSynthetic = (mapData?.boundaries || []).some((b) => b.is_synthetic_geometry !== false);
 
   // Resize Leaflet Map when toggling Fullscreen
   useEffect(() => {
@@ -117,6 +153,8 @@ export const WellMap: React.FC<WellMapProps> = ({
     infraLayerGroupRef.current = infraGroup;
 
     mapInstanceRef.current = map;
+    setZoom(map.getZoom());
+    map.on('zoomend', () => setZoom(map.getZoom()));
 
     return () => {
       map.remove();
@@ -224,16 +262,80 @@ export const WellMap: React.FC<WellMapProps> = ({
     // Clear previous markers
     Object.values(markersRef.current).forEach((marker) => marker.remove());
     markersRef.current = {};
+    clusterMarkersRef.current.forEach((m) => m.remove());
+    clusterMarkersRef.current = [];
+
+    // Stage Y (BDD-F17-S03): zoomed out → one marker per GGS cluster with counts; expands on zoom / click.
+    if (clusterMode) {
+      const groups = new Map<string, WellSummary[]>();
+      wells.forEach((w) => {
+        const cid = bucketById[w.id]?.cluster_id || (w as WellSummary & { cluster_id?: string }).cluster_id || w.field || 'UNASSIGNED';
+        if (!groups.has(cid)) groups.set(cid, []);
+        groups.get(cid)!.push(w);
+      });
+      groups.forEach((members, cid) => {
+        const lat = members.reduce((s, w) => s + w.coordinates.lat, 0) / members.length;
+        const lng = members.reduce((s, w) => s + w.coordinates.lng, 0) / members.length;
+        const counts: Record<string, number> = { PRODUCING_OK: 0, AT_RISK: 0, UNDERPERFORMING: 0, NOT_PRODUCING: 0 };
+        members.forEach((w) => {
+          const b = bucketById[w.id]?.bucket;
+          if (b && b in counts) counts[b] += 1;
+        });
+        let acc = 0;
+        const stops = (Object.keys(counts) as HealthBucket[])
+          .filter((b) => counts[b] > 0)
+          .map((b) => {
+            const from = (acc / members.length) * 360;
+            acc += counts[b];
+            const to = (acc / members.length) * 360;
+            return `${BUCKET_COLORS[b]} ${from}deg ${to}deg`;
+          });
+        const bg = stops.length ? `conic-gradient(${stops.join(', ')})` : '#8b949e';
+        const size = Math.min(56, 28 + Math.round(Math.sqrt(members.length) * 2.5));
+        const icon = L.divIcon({
+          className: 'well-cluster-marker',
+          html: `<div data-testid="well-cluster" style="width:${size}px;height:${size}px;border-radius:50%;background:${bg};
+                   display:flex;align-items:center;justify-content:center;box-shadow:0 2px 10px rgba(0,0,0,.8);cursor:pointer;">
+                   <div style="width:${size - 12}px;height:${size - 12}px;border-radius:50%;background:rgba(13,17,23,.92);
+                     color:#fff;font:700 11px 'JetBrains Mono',monospace;display:flex;align-items:center;justify-content:center;">
+                     ${members.length}</div></div>`,
+          iconSize: [size, size],
+          iconAnchor: [size / 2, size / 2],
+        });
+        const m = L.marker([lat, lng], { icon }).addTo(map);
+        const field0 = members[0]?.field || '';
+        m.bindTooltip(
+          `<b>${cid}</b> (${field0}) — ${members.length} ${t('map.wells')}<br/>` +
+            (Object.keys(counts) as HealthBucket[])
+              .map((b) => `<span style="color:${BUCKET_COLORS[b]}">●</span> ${t(`map.health.${b}`)}: ${counts[b]}`)
+              .join('<br/>') +
+            `<br/><i>${t('map.cluster_hint')}</i>`,
+          { sticky: true },
+        );
+        m.on('click', () => {
+          const b = L.latLngBounds(members.map((w) => [w.coordinates.lat, w.coordinates.lng] as [number, number]));
+          map.fitBounds(b, { padding: [32, 32], maxZoom: CLUSTER_MAX_ZOOM + 2 });
+        });
+        clusterMarkersRef.current.push(m);
+      });
+      return;
+    }
 
     wells.forEach((well) => {
       const isSelected = well.id === selectedWellId;
 
-      // Color mapping
+      // Color mapping — Stage Y: TC-020 health bucket from /api/fields/map (same source as the KPI header);
+      // legacy status colours only if the map payload has not arrived yet.
       let color = '#2ea043'; // healthy green
       let pulseClass = '';
       let statusText = 'HEALTHY';
 
-      if (well.status === 'warning') {
+      const bucket = bucketById[well.id]?.bucket as HealthBucket | null | undefined;
+      if (bucket && BUCKET_COLORS[bucket]) {
+        color = BUCKET_COLORS[bucket];
+        statusText = t(`map.health.${bucket}`).toUpperCase();
+        pulseClass = bucket === 'NOT_PRODUCING' ? 'pin-pulse-critical' : bucket === 'PRODUCING_OK' ? '' : 'pin-pulse-warning';
+      } else if (well.status === 'warning') {
         color = '#d29922'; // amber
         pulseClass = 'pin-pulse-warning';
         statusText = 'NEEDS ATTENTION';
@@ -278,7 +380,7 @@ export const WellMap: React.FC<WellMapProps> = ({
             </div>
 
             <!-- Pulsing Radar Glow on Critical/Warning Wells -->
-            ${(well.status === 'failed' || well.status === 'warning') ? `
+            ${pulseClass ? `
               <div class="${pulseClass}" style="position: absolute; top: -5px; left: -5px; width: ${size + 10}px; height: ${size + 10}px; border-radius: 50%; border: 2px solid ${color};"></div>
             ` : ''}
 
@@ -338,6 +440,9 @@ export const WellMap: React.FC<WellMapProps> = ({
               <strong style="color: #e6edf3;">${well.current_metrics.tubing_pressure_psi} psi</strong>
             </div>
           </div>
+          ${onOpenWell ? `<button data-open-well="${well.id}" style="margin-top: 8px; width: 100%; padding: 3px 6px; border-radius: 4px;
+              border: 1px solid #388bfd; color: #58a6ff; background: transparent; font: 600 10px monospace; cursor: pointer;">
+              Open well profile (TC-029)</button>` : ''}
         </div>
       `;
 
@@ -346,21 +451,27 @@ export const WellMap: React.FC<WellMapProps> = ({
       marker.on('click', () => {
         onSelectWell(well.id);
       });
+      // Stage Y (BDD-F17-S02): popup action opens the deep-dive drawer (values from /api/wells/{id}/profile)
+      marker.on('popupopen', (e: L.PopupEvent) => {
+        const btn = e.popup.getElement()?.querySelector(`[data-open-well="${well.id}"]`);
+        btn?.addEventListener('click', () => onOpenWell?.(well.id), { once: true });
+      });
 
       markersRef.current[well.id] = marker;
     });
 
-    // If well selected, pan smoothly to it
-    if (selectedWellId && markersRef.current[selectedWellId]) {
+    // If the selection changed, pan smoothly to it (not on zoom-driven re-renders)
+    if (selectedWellId && markersRef.current[selectedWellId] && lastPannedRef.current !== selectedWellId) {
       const selectedWell = wells.find((w) => w.id === selectedWellId);
       if (selectedWell) {
+        lastPannedRef.current = selectedWellId;
         map.panTo([selectedWell.coordinates.lat, selectedWell.coordinates.lng], {
           animate: true,
           duration: 0.6,
         });
       }
     }
-  }, [wells, selectedWellId, onSelectWell]);
+  }, [wells, selectedWellId, onSelectWell, onOpenWell, clusterMode, bucketById]);
 
   // Update Infrastructure and Flowlines Layer
   useEffect(() => {
@@ -658,24 +769,34 @@ export const WellMap: React.FC<WellMapProps> = ({
         </button>
       </div>
 
+      {/* Stage Y (D-3): synthetic geometry label, always visible */}
+      {isSynthetic && (
+        <div
+          data-testid="map-synthetic-label"
+          className="absolute bottom-4 right-4 z-[400] bg-amber-950/80 border border-amber-700/60 text-amber-200 px-2 py-1 rounded text-[10px] font-mono shadow-xl"
+          title="Field boundaries, GGS polygons and well locations are synthetic (demo data, D-3)"
+        >
+          ⚠ {t('map.synthetic')}
+        </div>
+      )}
+
       {/* Map Legend Overlay */}
       <div className="absolute bottom-4 left-4 z-[400] bg-surface/90 backdrop-blur-md border border-border px-3 py-2.5 rounded-lg text-xs font-mono shadow-xl max-w-xs">
         <div className="text-[10px] text-textMuted uppercase font-bold tracking-wider mb-2">
-          {fieldLabel} Production & Infrastructure
+          {fieldLabel} Production &amp; Infrastructure
         </div>
         <div className="flex flex-col gap-1.5">
-          <div className="flex items-center gap-2">
-            <span className="w-2.5 h-2.5 rounded-full bg-healthy border border-surface"></span>
-            <span className="text-textMain text-[11px]">Healthy Producing Well</span>
+          {/* Stage Y: TC-020 health buckets with counts (same numbers as the KPI header / GET /api/wells/kpis) */}
+          <div data-testid="map-health-counts" className="flex flex-col gap-1">
+            {HEALTH_BUCKETS.map((b) => (
+              <div key={b} className="flex items-center gap-2" data-bucket={b}>
+                <span className="w-2.5 h-2.5 rounded-full border border-surface" style={{ backgroundColor: BUCKET_COLORS[b] }}></span>
+                <span className="text-textMain text-[11px] flex-1">{t(`map.health.${b}`)}</span>
+                <strong className="text-white text-[11px]">{mapData ? healthCounts[b] : '–'}</strong>
+              </div>
+            ))}
           </div>
-          <div className="flex items-center gap-2">
-            <span className="w-2.5 h-2.5 rounded-full bg-warning border border-surface"></span>
-            <span className="text-textMain text-[11px]">Needs Attention (Wax / Water Cut)</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <span className="w-2.5 h-2.5 rounded-full bg-critical border border-surface animate-pulse"></span>
-            <span className="text-textMain text-[11px]">Critical / Tripped</span>
-          </div>
+          {clusterMode && <div className="text-[10px] text-textMuted italic">{t('map.cluster_hint')}</div>}
           <div className="border-t border-border/80 my-0.5"></div>
           <div className="flex items-center gap-2">
             <span className="w-2.5 h-2.5 rounded bg-amber-500 border border-amber-300"></span>

@@ -46,6 +46,10 @@ app.include_router(live_router)  # Stage U: WS /ws/live (SDD §11.4)
 app.include_router(fields_router, prefix="/api")  # Stage P: /api/fields/{f}/health|attribution, /api/wells/{id}/attribution
 from app.api.asset import router as asset_router  # noqa: E402  Stage T: /api/fields*, /api/wells/{id}/profile|production
 app.include_router(asset_router, prefix="/api")
+from app.agent import rbac as _rbac  # noqa: E402  Stage Y: PermissionDenied → 403 UNAVAILABLE envelope
+from app.api.me import router as me_router  # noqa: E402  Stage Y: GET /api/me/capabilities
+_rbac.install(app)
+app.include_router(me_router, prefix="/api")
 
 
 @app.on_event("startup")

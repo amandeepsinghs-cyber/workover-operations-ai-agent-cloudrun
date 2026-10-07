@@ -411,54 +411,31 @@ def _catalogue_effort(job_codes: tuple) -> Dict[str, Any]:
 
 
 def generate_structured_recommendation(well: Dict[str, Any]) -> Dict[str, Any]:
-    """Generates structured engineering recommendations for Geleki brownfield wells."""
-    status = well["status"]
-    formation = well["formation"]
+    """Structured recommendation = TC-022 rank-1 action (SDD §13.3; Stage R). No USD, no payback.
 
-    if status == "failed":
-        return {
-            "title": f"Mobilize ONGC Workover Rig & Sand Cleanout ({formation})",
-            "urgency": "Immediate (Within 48 hrs)",
-            "urgency_badge": "critical",
-            **_catalogue_effort(('SAND_CLEANOUT', 'GLV_REPLACE')),
-            "projected_flow_uplift_bopd": 85.0,
-            "action_items": [
-                "Mobilize ONGC workover rig from Nazira base to pull tubing and unseat stuck assembly.",
-                "Run coiled tubing with nitrogen foam to circulate out bridged Tipam formation sand.",
-                "Install standalone 20/40 mesh gravel pack screen across perforations to arrest future sand ingress.",
-                "Replace and recalibrate Gas Lift Valve (GLV) mandrels connected to GGS-2 manifold.",
-            ],
-            "risk_mitigation": "Equip wellhead with Class IV BOP and continuous H2S scrubbers during tripping.",
-        }
-    elif status == "warning":
-        return {
-            "title": "Hot Oil Paraffin Treatment & Water Shut-Off (WSO)",
-            "urgency": "High Priority (Within 10 Days)",
-            "urgency_badge": "warning",
-            **_catalogue_effort(('WAX_HOTOIL', 'POLYMER_GEL')),
-            "projected_flow_uplift_bopd": 45.0,
-            "action_items": [
-                "Circulate 70 bbl heated lease crude (85°C) with xylene-based wax solvent to dissolve tubing deposition.",
-                "Perform mechanical wireline scraper run to gauge tubing drift ID.",
-                "Inject cross-linked polyacrylamide polymer gel plug into high water-cut lower perforations.",
-                "Optimize gas lift injection rate from GGS compressor to restore stable drawdown.",
-            ],
-            "risk_mitigation": "Ensure wellhead return temperatures remain above 45°C to prevent re-solidification in flowlines.",
-        }
-    else:
-        return {
-            "title": "Continuous Gas Lift Tuning & Flowline Dosing (Geleki GGS)",
-            "urgency": "Routine Asset Optimization",
-            "urgency_badge": "healthy",
-            **_catalogue_effort(('LIFT_OPTIM',)),
-            "projected_flow_uplift_bopd": 15.0,
-            "action_items": [
-                "Calibrate gas lift injection pressure regulator to 820 psi from GGS header.",
-                "Dose continuous pour-point depressant (PPD) and wax inhibitor at wellhead chemical injection skid.",
-                "Sample effluent water at Geleki GGS separator to monitor residual water cut.",
-            ],
-            "risk_mitigation": "Monitor casing annulus pressure daily to prevent gas lock at compressor station.",
-        }
+    The former hard-coded titles / uplift numbers were fabricated and are gone; when TC-022 has no
+    action the object says so (status UNAVAILABLE) instead of inventing one.
+    """
+    from app.analytics.tools.nba import recommend_next_best_action, recommendation_from_nba
+
+    result = recommend_next_best_action(str(well["id"]))
+    rec = recommendation_from_nba(result)
+    if rec is not None:
+        return rec
+    return {
+        "status": "UNAVAILABLE",
+        "title": "No recommendation available",
+        "urgency": "Review",
+        "urgency_badge": "warning",
+        "cost_band": None,
+        "rig_days": None,
+        "catalogue_job_codes": [],
+        "projected_flow_uplift_bopd": None,
+        "action_items": [],
+        "risk_mitigation": result.message or "TC-022 returned no action.",
+        "flags": list(getattr(result.value, "flags", []) or []),
+        "provenance": json.loads(json.dumps(result.provenance, default=str)),
+    }
 
 
 def call_gemini_api(
