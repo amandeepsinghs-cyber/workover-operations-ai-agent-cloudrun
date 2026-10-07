@@ -1,0 +1,559 @@
+{
+  "method": "GET",
+  "route": "/api/wells/{well}/reports",
+  "schema": {
+    "properties": {
+      "bottomhole_pressure_survey": {
+        "properties": {
+          "datum_depth_m_tvd": {
+            "type": [
+              "number"
+            ]
+          },
+          "drawdown_psi": {
+            "type": [
+              "number"
+            ]
+          },
+          "flowing_bottomhole_pressure_fbhp_psi": {
+            "type": [
+              "number"
+            ]
+          },
+          "fluid_gradient_psi_ft": {
+            "type": [
+              "number"
+            ]
+          },
+          "gas_lift_status": {
+            "properties": {
+              "injection_pressure_casing_psi": {
+                "type": [
+                  "number"
+                ]
+              },
+              "injection_rate_mcfd": {
+                "type": [
+                  "number"
+                ]
+              },
+              "operating_valve_depth_m": {
+                "type": [
+                  "number"
+                ]
+              },
+              "status": {
+                "type": [
+                  "string"
+                ]
+              }
+            },
+            "required": [
+              "injection_pressure_casing_psi",
+              "injection_rate_mcfd",
+              "operating_valve_depth_m",
+              "status"
+            ],
+            "type": [
+              "object"
+            ]
+          },
+          "issuing_authority": {
+            "type": [
+              "string"
+            ]
+          },
+          "productivity_index_pi": {
+            "type": [
+              "number"
+            ]
+          },
+          "report_id": {
+            "type": [
+              "string"
+            ]
+          },
+          "sonolog_fluid_level_m": {
+            "type": [
+              "number"
+            ]
+          },
+          "static_bottomhole_pressure_sbhp_psi": {
+            "type": [
+              "number"
+            ]
+          },
+          "survey_date": {
+            "type": [
+              "string"
+            ]
+          },
+          "title": {
+            "type": [
+              "string"
+            ]
+          }
+        },
+        "required": [
+          "datum_depth_m_tvd",
+          "drawdown_psi",
+          "flowing_bottomhole_pressure_fbhp_psi",
+          "fluid_gradient_psi_ft",
+          "gas_lift_status",
+          "issuing_authority",
+          "productivity_index_pi",
+          "report_id",
+          "sonolog_fluid_level_m",
+          "static_bottomhole_pressure_sbhp_psi",
+          "survey_date",
+          "title"
+        ],
+        "type": [
+          "object"
+        ]
+      },
+      "completion_report": {
+        "properties": {
+          "casing_policy": {
+            "items": {
+              "properties": {
+                "cement_class": {
+                  "type": [
+                    "string"
+                  ]
+                },
+                "depth_m": {
+                  "type": [
+                    "number"
+                  ]
+                },
+                "string": {
+                  "type": [
+                    "string"
+                  ]
+                }
+              },
+              "required": [
+                "cement_class",
+                "depth_m",
+                "string"
+              ],
+              "type": [
+                "object"
+              ]
+            },
+            "type": [
+              "array"
+            ]
+          },
+          "completion_date": {
+            "type": [
+              "string"
+            ]
+          },
+          "crude_assay": {
+            "properties": {
+              "api_gravity": {
+                "type": [
+                  "number"
+                ]
+              },
+              "pour_point_celsius": {
+                "type": [
+                  "number"
+                ]
+              },
+              "sulfur_wt_pct": {
+                "type": [
+                  "number"
+                ]
+              },
+              "viscosity_cp": {
+                "type": [
+                  "string"
+                ]
+              },
+              "wax_content_pct": {
+                "type": [
+                  "number"
+                ]
+              }
+            },
+            "required": [
+              "api_gravity",
+              "pour_point_celsius",
+              "sulfur_wt_pct",
+              "viscosity_cp",
+              "wax_content_pct"
+            ],
+            "type": [
+              "object"
+            ]
+          },
+          "initial_production_test": {
+            "properties": {
+              "choke_mm": {
+                "type": [
+                  "number"
+                ]
+              },
+              "flowing_tubing_pressure_psi": {
+                "type": [
+                  "number"
+                ]
+              },
+              "gas_rate_mcfd": {
+                "type": [
+                  "number"
+                ]
+              },
+              "oil_rate_bopd": {
+                "type": [
+                  "number"
+                ]
+              },
+              "water_cut_pct": {
+                "type": [
+                  "number"
+                ]
+              }
+            },
+            "required": [
+              "choke_mm",
+              "flowing_tubing_pressure_psi",
+              "gas_rate_mcfd",
+              "oil_rate_bopd",
+              "water_cut_pct"
+            ],
+            "type": [
+              "object"
+            ]
+          },
+          "issuing_authority": {
+            "type": [
+              "string"
+            ]
+          },
+          "perforated_intervals": {
+            "type": [
+              "string"
+            ]
+          },
+          "report_id": {
+            "type": [
+              "string"
+            ]
+          },
+          "spud_date": {
+            "type": [
+              "string"
+            ]
+          },
+          "target_formation": {
+            "type": [
+              "string"
+            ]
+          },
+          "title": {
+            "type": [
+              "string"
+            ]
+          },
+          "total_depth_m": {
+            "type": [
+              "number"
+            ]
+          },
+          "tubing_specification": {
+            "type": [
+              "string"
+            ]
+          }
+        },
+        "required": [
+          "casing_policy",
+          "completion_date",
+          "crude_assay",
+          "initial_production_test",
+          "issuing_authority",
+          "perforated_intervals",
+          "report_id",
+          "spud_date",
+          "target_formation",
+          "title",
+          "total_depth_m",
+          "tubing_specification"
+        ],
+        "type": [
+          "object"
+        ]
+      },
+      "daily_workover_report": {
+        "properties": {
+          "contractor": {
+            "type": [
+              "string"
+            ]
+          },
+          "date": {
+            "type": [
+              "string"
+            ]
+          },
+          "hourly_logs": {
+            "items": {
+              "properties": {
+                "activity": {
+                  "type": [
+                    "string"
+                  ]
+                },
+                "time": {
+                  "type": [
+                    "string"
+                  ]
+                }
+              },
+              "required": [
+                "activity",
+                "time"
+              ],
+              "type": [
+                "object"
+              ]
+            },
+            "type": [
+              "array"
+            ]
+          },
+          "issuing_authority": {
+            "type": [
+              "string"
+            ]
+          },
+          "job_cost_usd": {
+            "type": [
+              "number"
+            ]
+          },
+          "operation_type": {
+            "type": [
+              "string"
+            ]
+          },
+          "outcome_summary": {
+            "type": [
+              "string"
+            ]
+          },
+          "report_id": {
+            "type": [
+              "string"
+            ]
+          },
+          "shift_hours": {
+            "type": [
+              "string"
+            ]
+          },
+          "supervising_engineer": {
+            "type": [
+              "string"
+            ]
+          },
+          "title": {
+            "type": [
+              "string"
+            ]
+          },
+          "workover_rig": {
+            "type": [
+              "string"
+            ]
+          }
+        },
+        "required": [
+          "contractor",
+          "date",
+          "hourly_logs",
+          "issuing_authority",
+          "job_cost_usd",
+          "operation_type",
+          "outcome_summary",
+          "report_id",
+          "shift_hours",
+          "supervising_engineer",
+          "title",
+          "workover_rig"
+        ],
+        "type": [
+          "object"
+        ]
+      },
+      "water_and_scale_lab_report": {
+        "properties": {
+          "chemist_recommendation": {
+            "type": [
+              "string"
+            ]
+          },
+          "ionic_constituents_mg_l": {
+            "properties": {
+              "barium_ba": {
+                "type": [
+                  "number"
+                ]
+              },
+              "bicarbonate_hco3": {
+                "type": [
+                  "number"
+                ]
+              },
+              "calcium_ca": {
+                "type": [
+                  "number"
+                ]
+              },
+              "chloride_cl": {
+                "type": [
+                  "number"
+                ]
+              },
+              "magnesium_mg": {
+                "type": [
+                  "number"
+                ]
+              },
+              "sodium_na": {
+                "type": [
+                  "number"
+                ]
+              },
+              "strontium_sr": {
+                "type": [
+                  "number"
+                ]
+              },
+              "sulfate_so4": {
+                "type": [
+                  "number"
+                ]
+              }
+            },
+            "required": [
+              "barium_ba",
+              "bicarbonate_hco3",
+              "calcium_ca",
+              "chloride_cl",
+              "magnesium_mg",
+              "sodium_na",
+              "strontium_sr",
+              "sulfate_so4"
+            ],
+            "type": [
+              "object"
+            ]
+          },
+          "issuing_authority": {
+            "type": [
+              "string"
+            ]
+          },
+          "ph_at_25c": {
+            "type": [
+              "number"
+            ]
+          },
+          "report_id": {
+            "type": [
+              "string"
+            ]
+          },
+          "sample_date": {
+            "type": [
+              "string"
+            ]
+          },
+          "scaling_tendency_analysis": {
+            "properties": {
+              "barium_sulfate_baso4": {
+                "type": [
+                  "string"
+                ]
+              },
+              "calcium_carbonate_caco3": {
+                "type": [
+                  "string"
+                ]
+              },
+              "iron_sulfide_fes": {
+                "type": [
+                  "string"
+                ]
+              }
+            },
+            "required": [
+              "barium_sulfate_baso4",
+              "calcium_carbonate_caco3",
+              "iron_sulfide_fes"
+            ],
+            "type": [
+              "object"
+            ]
+          },
+          "specific_gravity": {
+            "type": [
+              "number"
+            ]
+          },
+          "title": {
+            "type": [
+              "string"
+            ]
+          },
+          "total_dissolved_solids_tds_mg_l": {
+            "type": [
+              "number"
+            ]
+          },
+          "water_cut_tested_pct": {
+            "type": [
+              "number"
+            ]
+          }
+        },
+        "required": [
+          "chemist_recommendation",
+          "ionic_constituents_mg_l",
+          "issuing_authority",
+          "ph_at_25c",
+          "report_id",
+          "sample_date",
+          "scaling_tendency_analysis",
+          "specific_gravity",
+          "title",
+          "total_dissolved_solids_tds_mg_l",
+          "water_cut_tested_pct"
+        ],
+        "type": [
+          "object"
+        ]
+      }
+    },
+    "required": [
+      "bottomhole_pressure_survey",
+      "completion_report",
+      "daily_workover_report",
+      "water_and_scale_lab_report"
+    ],
+    "type": [
+      "object"
+    ]
+  },
+  "status": 200,
+  "wells": [
+    "GLK-101",
+    "GLK-120",
+    "GLK-150"
+  ]
+}

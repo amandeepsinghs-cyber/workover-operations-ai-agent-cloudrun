@@ -1,0 +1,57 @@
+{
+  "method": "GET",
+  "route": "/api/wells/kpis",
+  "schema": {
+    "properties": {
+      "avg_water_cut_pct": {
+        "type": [
+          "number"
+        ]
+      },
+      "failed_count": {
+        "type": [
+          "number"
+        ]
+      },
+      "healthy_count": {
+        "type": [
+          "number"
+        ]
+      },
+      "total_gas_mcfd": {
+        "type": [
+          "number"
+        ]
+      },
+      "total_oil_bopd": {
+        "type": [
+          "number"
+        ]
+      },
+      "total_wells": {
+        "type": [
+          "number"
+        ]
+      },
+      "warning_count": {
+        "type": [
+          "number"
+        ]
+      }
+    },
+    "required": [
+      "avg_water_cut_pct",
+      "failed_count",
+      "healthy_count",
+      "total_gas_mcfd",
+      "total_oil_bopd",
+      "total_wells",
+      "warning_count"
+    ],
+    "type": [
+      "object"
+    ]
+  },
+  "status": 200,
+  "wells": []
+}

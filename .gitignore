@@ -1,6 +1,8 @@
 # Python virtual environment
 .venv/
 backend/.venv/
+.pytest_cache/
+.ruff_cache/
 __pycache__/
 *.py[cod]
 *$py.class
@@ -36,3 +38,6 @@ backend/app/data/lake_export/
 
 # Logs
 *.log
+
+# Stage M: read-only port-source baselines (large, regenerable)
+backend/tests/baseline/

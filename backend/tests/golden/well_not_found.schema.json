@@ -1,0 +1,21 @@
+{
+  "method": "GET",
+  "route": "/api/wells/NOPE-000",
+  "schema": {
+    "properties": {
+      "detail": {
+        "type": [
+          "string"
+        ]
+      }
+    },
+    "required": [
+      "detail"
+    ],
+    "type": [
+      "object"
+    ]
+  },
+  "status": 404,
+  "wells": []
+}

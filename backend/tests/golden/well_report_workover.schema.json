@@ -1,0 +1,112 @@
+{
+  "method": "GET",
+  "route": "/api/wells/{well}/reports/workover",
+  "schema": {
+    "properties": {
+      "contractor": {
+        "type": [
+          "string"
+        ]
+      },
+      "date": {
+        "type": [
+          "string"
+        ]
+      },
+      "hourly_logs": {
+        "items": {
+          "properties": {
+            "activity": {
+              "type": [
+                "string"
+              ]
+            },
+            "time": {
+              "type": [
+                "string"
+              ]
+            }
+          },
+          "required": [
+            "activity",
+            "time"
+          ],
+          "type": [
+            "object"
+          ]
+        },
+        "type": [
+          "array"
+        ]
+      },
+      "issuing_authority": {
+        "type": [
+          "string"
+        ]
+      },
+      "job_cost_usd": {
+        "type": [
+          "number"
+        ]
+      },
+      "operation_type": {
+        "type": [
+          "string"
+        ]
+      },
+      "outcome_summary": {
+        "type": [
+          "string"
+        ]
+      },
+      "report_id": {
+        "type": [
+          "string"
+        ]
+      },
+      "shift_hours": {
+        "type": [
+          "string"
+        ]
+      },
+      "supervising_engineer": {
+        "type": [
+          "string"
+        ]
+      },
+      "title": {
+        "type": [
+          "string"
+        ]
+      },
+      "workover_rig": {
+        "type": [
+          "string"
+        ]
+      }
+    },
+    "required": [
+      "contractor",
+      "date",
+      "hourly_logs",
+      "issuing_authority",
+      "job_cost_usd",
+      "operation_type",
+      "outcome_summary",
+      "report_id",
+      "shift_hours",
+      "supervising_engineer",
+      "title",
+      "workover_rig"
+    ],
+    "type": [
+      "object"
+    ]
+  },
+  "status": 200,
+  "wells": [
+    "GLK-101",
+    "GLK-120",
+    "GLK-150"
+  ]
+}

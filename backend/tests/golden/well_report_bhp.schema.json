@@ -1,0 +1,119 @@
+{
+  "method": "GET",
+  "route": "/api/wells/{well}/reports/bhp",
+  "schema": {
+    "properties": {
+      "datum_depth_m_tvd": {
+        "type": [
+          "number"
+        ]
+      },
+      "drawdown_psi": {
+        "type": [
+          "number"
+        ]
+      },
+      "flowing_bottomhole_pressure_fbhp_psi": {
+        "type": [
+          "number"
+        ]
+      },
+      "fluid_gradient_psi_ft": {
+        "type": [
+          "number"
+        ]
+      },
+      "gas_lift_status": {
+        "properties": {
+          "injection_pressure_casing_psi": {
+            "type": [
+              "number"
+            ]
+          },
+          "injection_rate_mcfd": {
+            "type": [
+              "number"
+            ]
+          },
+          "operating_valve_depth_m": {
+            "type": [
+              "number"
+            ]
+          },
+          "status": {
+            "type": [
+              "string"
+            ]
+          }
+        },
+        "required": [
+          "injection_pressure_casing_psi",
+          "injection_rate_mcfd",
+          "operating_valve_depth_m",
+          "status"
+        ],
+        "type": [
+          "object"
+        ]
+      },
+      "issuing_authority": {
+        "type": [
+          "string"
+        ]
+      },
+      "productivity_index_pi": {
+        "type": [
+          "number"
+        ]
+      },
+      "report_id": {
+        "type": [
+          "string"
+        ]
+      },
+      "sonolog_fluid_level_m": {
+        "type": [
+          "number"
+        ]
+      },
+      "static_bottomhole_pressure_sbhp_psi": {
+        "type": [
+          "number"
+        ]
+      },
+      "survey_date": {
+        "type": [
+          "string"
+        ]
+      },
+      "title": {
+        "type": [
+          "string"
+        ]
+      }
+    },
+    "required": [
+      "datum_depth_m_tvd",
+      "drawdown_psi",
+      "flowing_bottomhole_pressure_fbhp_psi",
+      "fluid_gradient_psi_ft",
+      "gas_lift_status",
+      "issuing_authority",
+      "productivity_index_pi",
+      "report_id",
+      "sonolog_fluid_level_m",
+      "static_bottomhole_pressure_sbhp_psi",
+      "survey_date",
+      "title"
+    ],
+    "type": [
+      "object"
+    ]
+  },
+  "status": 200,
+  "wells": [
+    "GLK-101",
+    "GLK-120",
+    "GLK-150"
+  ]
+}

@@ -1,0 +1,186 @@
+{
+  "method": "GET",
+  "route": "/api/wells/{well}/reports/completion",
+  "schema": {
+    "properties": {
+      "casing_policy": {
+        "items": {
+          "properties": {
+            "cement_class": {
+              "type": [
+                "string"
+              ]
+            },
+            "depth_m": {
+              "type": [
+                "number"
+              ]
+            },
+            "string": {
+              "type": [
+                "string"
+              ]
+            }
+          },
+          "required": [
+            "cement_class",
+            "depth_m",
+            "string"
+          ],
+          "type": [
+            "object"
+          ]
+        },
+        "type": [
+          "array"
+        ]
+      },
+      "completion_date": {
+        "type": [
+          "string"
+        ]
+      },
+      "crude_assay": {
+        "properties": {
+          "api_gravity": {
+            "type": [
+              "number"
+            ]
+          },
+          "pour_point_celsius": {
+            "type": [
+              "number"
+            ]
+          },
+          "sulfur_wt_pct": {
+            "type": [
+              "number"
+            ]
+          },
+          "viscosity_cp": {
+            "type": [
+              "string"
+            ]
+          },
+          "wax_content_pct": {
+            "type": [
+              "number"
+            ]
+          }
+        },
+        "required": [
+          "api_gravity",
+          "pour_point_celsius",
+          "sulfur_wt_pct",
+          "viscosity_cp",
+          "wax_content_pct"
+        ],
+        "type": [
+          "object"
+        ]
+      },
+      "initial_production_test": {
+        "properties": {
+          "choke_mm": {
+            "type": [
+              "number"
+            ]
+          },
+          "flowing_tubing_pressure_psi": {
+            "type": [
+              "number"
+            ]
+          },
+          "gas_rate_mcfd": {
+            "type": [
+              "number"
+            ]
+          },
+          "oil_rate_bopd": {
+            "type": [
+              "number"
+            ]
+          },
+          "water_cut_pct": {
+            "type": [
+              "number"
+            ]
+          }
+        },
+        "required": [
+          "choke_mm",
+          "flowing_tubing_pressure_psi",
+          "gas_rate_mcfd",
+          "oil_rate_bopd",
+          "water_cut_pct"
+        ],
+        "type": [
+          "object"
+        ]
+      },
+      "issuing_authority": {
+        "type": [
+          "string"
+        ]
+      },
+      "perforated_intervals": {
+        "type": [
+          "string"
+        ]
+      },
+      "report_id": {
+        "type": [
+          "string"
+        ]
+      },
+      "spud_date": {
+        "type": [
+          "string"
+        ]
+      },
+      "target_formation": {
+        "type": [
+          "string"
+        ]
+      },
+      "title": {
+        "type": [
+          "string"
+        ]
+      },
+      "total_depth_m": {
+        "type": [
+          "number"
+        ]
+      },
+      "tubing_specification": {
+        "type": [
+          "string"
+        ]
+      }
+    },
+    "required": [
+      "casing_policy",
+      "completion_date",
+      "crude_assay",
+      "initial_production_test",
+      "issuing_authority",
+      "perforated_intervals",
+      "report_id",
+      "spud_date",
+      "target_formation",
+      "title",
+      "total_depth_m",
+      "tubing_specification"
+    ],
+    "type": [
+      "object"
+    ]
+  },
+  "status": 200,
+  "wells": [
+    "GLK-101",
+    "GLK-120",
+    "GLK-150"
+  ]
+}

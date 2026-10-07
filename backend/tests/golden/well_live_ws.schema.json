@@ -1,0 +1,163 @@
+{
+  "method": "WEBSOCKET",
+  "route": "/api/wells/{well}/live",
+  "schema": {
+    "pong": {
+      "properties": {
+        "type": {
+          "type": [
+            "string"
+          ]
+        }
+      },
+      "required": [
+        "type"
+      ],
+      "type": [
+        "object"
+      ]
+    },
+    "ready": {
+      "properties": {
+        "mode": {
+          "type": [
+            "string"
+          ]
+        },
+        "status": {
+          "type": [
+            "string"
+          ]
+        },
+        "type": {
+          "type": [
+            "string"
+          ]
+        },
+        "well_id": {
+          "type": [
+            "string"
+          ]
+        },
+        "well_name": {
+          "type": [
+            "string"
+          ]
+        }
+      },
+      "required": [
+        "mode",
+        "status",
+        "type",
+        "well_id",
+        "well_name"
+      ],
+      "type": [
+        "object"
+      ]
+    },
+    "response": {
+      "properties": {
+        "engine": {
+          "type": [
+            "string"
+          ]
+        },
+        "language": {
+          "type": [
+            "string"
+          ]
+        },
+        "recommendation": {
+          "properties": {
+            "action_items": {
+              "items": {
+                "type": [
+                  "string"
+                ]
+              },
+              "type": [
+                "array"
+              ]
+            },
+            "estimated_cost_usd": {
+              "type": [
+                "number"
+              ]
+            },
+            "estimated_payback_days": {
+              "type": [
+                "number"
+              ]
+            },
+            "projected_flow_uplift_bopd": {
+              "type": [
+                "number"
+              ]
+            },
+            "risk_mitigation": {
+              "type": [
+                "string"
+              ]
+            },
+            "title": {
+              "type": [
+                "string"
+              ]
+            },
+            "urgency": {
+              "type": [
+                "string"
+              ]
+            },
+            "urgency_badge": {
+              "type": [
+                "string"
+              ]
+            }
+          },
+          "required": [
+            "action_items",
+            "estimated_cost_usd",
+            "estimated_payback_days",
+            "projected_flow_uplift_bopd",
+            "risk_mitigation",
+            "title",
+            "urgency",
+            "urgency_badge"
+          ],
+          "type": [
+            "null",
+            "object"
+          ]
+        },
+        "text": {
+          "type": [
+            "string"
+          ]
+        },
+        "type": {
+          "type": [
+            "string"
+          ]
+        }
+      },
+      "required": [
+        "engine",
+        "language",
+        "recommendation",
+        "text",
+        "type"
+      ],
+      "type": [
+        "object"
+      ]
+    }
+  },
+  "status": 101,
+  "wells": [
+    "GLK-101",
+    "GLK-120",
+    "GLK-150"
+  ]
+}

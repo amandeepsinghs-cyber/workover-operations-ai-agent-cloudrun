@@ -1,0 +1,72 @@
+{
+  "method": "GET",
+  "route": "/api/wells/{well}/workovers",
+  "schema": {
+    "items": {
+      "properties": {
+        "contractor": {
+          "type": [
+            "string"
+          ]
+        },
+        "cost_usd": {
+          "type": [
+            "number"
+          ]
+        },
+        "date": {
+          "type": [
+            "string"
+          ]
+        },
+        "description": {
+          "type": [
+            "string"
+          ]
+        },
+        "flow_delta_bopd": {
+          "type": [
+            "number"
+          ]
+        },
+        "id": {
+          "type": [
+            "string"
+          ]
+        },
+        "outcome": {
+          "type": [
+            "string"
+          ]
+        },
+        "type": {
+          "type": [
+            "string"
+          ]
+        }
+      },
+      "required": [
+        "contractor",
+        "cost_usd",
+        "date",
+        "description",
+        "flow_delta_bopd",
+        "id",
+        "outcome",
+        "type"
+      ],
+      "type": [
+        "object"
+      ]
+    },
+    "type": [
+      "array"
+    ]
+  },
+  "status": 200,
+  "wells": [
+    "GLK-101",
+    "GLK-120",
+    "GLK-150"
+  ]
+}

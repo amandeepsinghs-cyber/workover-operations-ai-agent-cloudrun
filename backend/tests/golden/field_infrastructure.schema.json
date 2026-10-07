@@ -1,0 +1,118 @@
+{
+  "method": "GET",
+  "route": "/api/field/infrastructure",
+  "schema": {
+    "properties": {
+      "center_coordinates": {
+        "properties": {
+          "lat": {
+            "type": [
+              "number"
+            ]
+          },
+          "lng": {
+            "type": [
+              "number"
+            ]
+          }
+        },
+        "required": [
+          "lat",
+          "lng"
+        ],
+        "type": [
+          "object"
+        ]
+      },
+      "field_name": {
+        "type": [
+          "string"
+        ]
+      },
+      "gathering_stations": {
+        "items": {
+          "properties": {
+            "capacity_bopd": {
+              "type": [
+                "number"
+              ]
+            },
+            "compressor_capacity_mmscfd": {
+              "type": [
+                "number"
+              ]
+            },
+            "coordinates": {
+              "properties": {
+                "lat": {
+                  "type": [
+                    "number"
+                  ]
+                },
+                "lng": {
+                  "type": [
+                    "number"
+                  ]
+                }
+              },
+              "required": [
+                "lat",
+                "lng"
+              ],
+              "type": [
+                "object"
+              ]
+            },
+            "id": {
+              "type": [
+                "string"
+              ]
+            },
+            "name": {
+              "type": [
+                "string"
+              ]
+            },
+            "serviced_wells": {
+              "items": {
+                "type": [
+                  "string"
+                ]
+              },
+              "type": [
+                "array"
+              ]
+            },
+            "water_handling_bwpd": {
+              "type": [
+                "number"
+              ]
+            }
+          },
+          "required": [
+            "capacity_bopd",
+            "coordinates",
+            "id",
+            "name"
+          ],
+          "type": [
+            "object"
+          ]
+        },
+        "type": [
+          "array"
+        ]
+      }
+    },
+    "required": [
+      "center_coordinates",
+      "field_name",
+      "gathering_stations"
+    ],
+    "type": [
+      "object"
+    ]
+  },
+  "status": 200,
+  "wells": []
+}

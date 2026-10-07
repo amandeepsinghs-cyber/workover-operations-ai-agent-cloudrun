@@ -1,0 +1,176 @@
+{
+  "method": "GET",
+  "route": "/api/wells",
+  "schema": {
+    "items": {
+      "properties": {
+        "basin": {
+          "type": [
+            "string"
+          ]
+        },
+        "coordinates": {
+          "properties": {
+            "lat": {
+              "type": [
+                "number"
+              ]
+            },
+            "lng": {
+              "type": [
+                "number"
+              ]
+            }
+          },
+          "required": [
+            "lat",
+            "lng"
+          ],
+          "type": [
+            "object"
+          ]
+        },
+        "current_metrics": {
+          "properties": {
+            "casing_pressure_psi": {
+              "type": [
+                "number"
+              ]
+            },
+            "choke_pct": {
+              "type": [
+                "number"
+              ]
+            },
+            "gas_mcfd": {
+              "type": [
+                "number"
+              ]
+            },
+            "oil_bopd": {
+              "type": [
+                "number"
+              ]
+            },
+            "tubing_pressure_psi": {
+              "type": [
+                "number"
+              ]
+            },
+            "uptime_pct": {
+              "type": [
+                "number"
+              ]
+            },
+            "water_cut_pct": {
+              "type": [
+                "number"
+              ]
+            }
+          },
+          "required": [
+            "casing_pressure_psi",
+            "choke_pct",
+            "gas_mcfd",
+            "oil_bopd",
+            "tubing_pressure_psi",
+            "uptime_pct",
+            "water_cut_pct"
+          ],
+          "type": [
+            "object"
+          ]
+        },
+        "formation": {
+          "type": [
+            "string"
+          ]
+        },
+        "id": {
+          "type": [
+            "string"
+          ]
+        },
+        "lift_type": {
+          "type": [
+            "string"
+          ]
+        },
+        "name": {
+          "type": [
+            "string"
+          ]
+        },
+        "recent_workovers_count": {
+          "type": [
+            "number"
+          ]
+        },
+        "status": {
+          "type": [
+            "string"
+          ]
+        },
+        "telemetry_summary": {
+          "properties": {
+            "avg_oil_bopd": {
+              "type": [
+                "number"
+              ]
+            },
+            "min_oil_bopd": {
+              "type": [
+                "number"
+              ]
+            },
+            "peak_oil_bopd": {
+              "type": [
+                "number"
+              ]
+            },
+            "total_workover_spend_usd": {
+              "type": [
+                "number"
+              ]
+            },
+            "total_workovers": {
+              "type": [
+                "number"
+              ]
+            }
+          },
+          "required": [
+            "avg_oil_bopd",
+            "min_oil_bopd",
+            "peak_oil_bopd",
+            "total_workover_spend_usd",
+            "total_workovers"
+          ],
+          "type": [
+            "object"
+          ]
+        }
+      },
+      "required": [
+        "basin",
+        "coordinates",
+        "current_metrics",
+        "formation",
+        "id",
+        "lift_type",
+        "name",
+        "recent_workovers_count",
+        "status",
+        "telemetry_summary"
+      ],
+      "type": [
+        "object"
+      ]
+    },
+    "type": [
+      "array"
+    ]
+  },
+  "status": 200,
+  "wells": []
+}

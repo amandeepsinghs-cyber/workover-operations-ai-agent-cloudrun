@@ -1,0 +1,159 @@
+{
+  "method": "GET",
+  "route": "/api/wells/{well}/reports/lab",
+  "schema": {
+    "properties": {
+      "chemist_recommendation": {
+        "type": [
+          "string"
+        ]
+      },
+      "ionic_constituents_mg_l": {
+        "properties": {
+          "barium_ba": {
+            "type": [
+              "number"
+            ]
+          },
+          "bicarbonate_hco3": {
+            "type": [
+              "number"
+            ]
+          },
+          "calcium_ca": {
+            "type": [
+              "number"
+            ]
+          },
+          "chloride_cl": {
+            "type": [
+              "number"
+            ]
+          },
+          "magnesium_mg": {
+            "type": [
+              "number"
+            ]
+          },
+          "sodium_na": {
+            "type": [
+              "number"
+            ]
+          },
+          "strontium_sr": {
+            "type": [
+              "number"
+            ]
+          },
+          "sulfate_so4": {
+            "type": [
+              "number"
+            ]
+          }
+        },
+        "required": [
+          "barium_ba",
+          "bicarbonate_hco3",
+          "calcium_ca",
+          "chloride_cl",
+          "magnesium_mg",
+          "sodium_na",
+          "strontium_sr",
+          "sulfate_so4"
+        ],
+        "type": [
+          "object"
+        ]
+      },
+      "issuing_authority": {
+        "type": [
+          "string"
+        ]
+      },
+      "ph_at_25c": {
+        "type": [
+          "number"
+        ]
+      },
+      "report_id": {
+        "type": [
+          "string"
+        ]
+      },
+      "sample_date": {
+        "type": [
+          "string"
+        ]
+      },
+      "scaling_tendency_analysis": {
+        "properties": {
+          "barium_sulfate_baso4": {
+            "type": [
+              "string"
+            ]
+          },
+          "calcium_carbonate_caco3": {
+            "type": [
+              "string"
+            ]
+          },
+          "iron_sulfide_fes": {
+            "type": [
+              "string"
+            ]
+          }
+        },
+        "required": [
+          "barium_sulfate_baso4",
+          "calcium_carbonate_caco3",
+          "iron_sulfide_fes"
+        ],
+        "type": [
+          "object"
+        ]
+      },
+      "specific_gravity": {
+        "type": [
+          "number"
+        ]
+      },
+      "title": {
+        "type": [
+          "string"
+        ]
+      },
+      "total_dissolved_solids_tds_mg_l": {
+        "type": [
+          "number"
+        ]
+      },
+      "water_cut_tested_pct": {
+        "type": [
+          "number"
+        ]
+      }
+    },
+    "required": [
+      "chemist_recommendation",
+      "ionic_constituents_mg_l",
+      "issuing_authority",
+      "ph_at_25c",
+      "report_id",
+      "sample_date",
+      "scaling_tendency_analysis",
+      "specific_gravity",
+      "title",
+      "total_dissolved_solids_tds_mg_l",
+      "water_cut_tested_pct"
+    ],
+    "type": [
+      "object"
+    ]
+  },
+  "status": 200,
+  "wells": [
+    "GLK-101",
+    "GLK-120",
+    "GLK-150"
+  ]
+}

@@ -14,22 +14,19 @@ echo "======================================================================"
 echo "           WellPulse - Energy Well Operations & Voice AI              "
 echo "======================================================================"
 
-# 1. Check prerequisites
-command -v python3 >/dev/null 2>&1 || { echo "[!] Error: python3 is required."; exit 1; }
+# 1. Check prerequisites (uv only for Python, npm only for the frontend: D-14)
+command -v uv >/dev/null 2>&1 || { echo "[!] Error: uv is required (https://docs.astral.sh/uv/)."; exit 1; }
 command -v node >/dev/null 2>&1 || { echo "[!] Error: node is required."; exit 1; }
 command -v npm >/dev/null 2>&1 || { echo "[!] Error: npm is required."; exit 1; }
 
-# 2. Setup Backend Virtualenv
-if [ ! -d "${BACKEND_DIR}/.venv" ]; then
-    echo "[*] Initializing backend virtual environment..."
-    python3 -m venv "${BACKEND_DIR}/.venv"
-    "${BACKEND_DIR}/.venv/bin/pip" install -r "${BACKEND_DIR}/requirements.txt"
-fi
+# 2. Sync backend environment from the lockfile (creates backend/.venv if needed)
+echo "[*] Syncing backend environment with uv (uv.lock)..."
+(cd "${BACKEND_DIR}" && uv sync --frozen)
 
 # 3. Ensure synthetic dataset is generated
 if [ ! -f "${BACKEND_DIR}/app/data/wells_data.json" ]; then
     echo "[*] Generating synthetic 24-month well telemetry..."
-    "${BACKEND_DIR}/.venv/bin/python" "${BACKEND_DIR}/app/services/data_generator.py"
+    (cd "${BACKEND_DIR}" && uv run python -m app.services.data_generator)
 fi
 
 # 4. Check Frontend dependencies
@@ -56,7 +53,7 @@ trap cleanup SIGINT SIGTERM EXIT
 
 # 6. Launch Backend
 echo "[*] Starting FastAPI Backend on http://localhost:8002..."
-(cd "${BACKEND_DIR}" && "${BACKEND_DIR}/.venv/bin/python" run.py) &
+(cd "${BACKEND_DIR}" && exec uv run --frozen python run.py) &
 BACKEND_PID=$!
 
 # Wait for backend health check
