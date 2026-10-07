@@ -371,3 +371,54 @@ def _v_compare_fields(period: str = "L12M") -> dict[str, Any]:
         return fn(period=period)
     except TypeError:
         return fn()
+
+
+# ---------------------------------------------------------------------------
+# Stage P: TC-019 / TC-020 (SDD §6.2, §11.3). Thin wrappers — the numbers come from the tools.
+# ---------------------------------------------------------------------------
+def _envelope_for_voice(r: Any, max_wells: int = 5) -> dict[str, Any]:
+    env = r.envelope()
+    data = env.get("data")
+    if isinstance(data, dict) and isinstance(data.get("wells"), list) and len(data["wells"]) > max_wells:
+        data["wells_total"] = len(data["wells"])
+        data["wells"] = data["wells"][:max_wells]  # voice payload: worst wells only (full list on screen)
+    return env
+
+
+@register_voice_tool(
+    name="attribute_decline",
+    description=(
+        "TC-019: why did production decline? Splits lost oil over a window (default 180 days) into "
+        "SUBSURFACE, EQUIPMENT, OPERATIONAL, HUMAN_PROCESS (a delay owned by a function, never a person), "
+        "EXTERNAL and UNEXPLAINED, with barrels, % and controllable share. Give well_id (e.g. 'LKW-047') "
+        "for one well, or field (optionally cluster_id) for a field rollup. Use for 'why did it decline', "
+        "'human factor or controllable', 'production kyun gira'."
+    ),
+    action_kind="attribution_waterfall",
+)
+def _v_attribute_decline(well_id: str = "", field: str = "", cluster_id: str = "", window_days: int = 180) -> dict[str, Any]:
+    from app.analytics.tools.attribution import attribute_decline
+
+    return _envelope_for_voice(attribute_decline(well_id=well_id or None, field=field or None,
+                                                 cluster_id=cluster_id or None, window_days=int(window_days or 180)))
+
+
+@register_voice_tool(
+    name="classify_well_health",
+    description=(
+        "TC-020: which wells are OK, at risk, underperforming or not producing in a field (Geleki, Lakwa, "
+        "Lakhmani), optionally one cluster. 'Sick or lost production' = AT_RISK + UNDERPERFORMING. Use for "
+        "'how many wells are sick', 'kitne wells band hain', 'which wells are not producing'."
+    ),
+    action_kind="health_buckets",
+)
+def _v_classify_well_health(field: str, cluster_id: str = "") -> dict[str, Any]:
+    from app.analytics.tools.health import classify_well_health
+
+    env = classify_well_health(field, cluster_id=cluster_id or None).envelope()
+    data = env.get("data")
+    if isinstance(data, dict) and isinstance(data.get("wells"), list):
+        flagged = [w for w in data["wells"] if w.get("bucket") != "PRODUCING_OK"]
+        data["wells_total"] = len(data["wells"])
+        data["wells"] = flagged[:10]  # voice payload: non-OK wells only, first 10
+    return env

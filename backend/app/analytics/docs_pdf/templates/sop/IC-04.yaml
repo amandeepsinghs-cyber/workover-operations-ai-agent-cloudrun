@@ -1,0 +1,102 @@
+sop_id: SOP-IC-04
+intervention_class: IC-04
+title: Standard Operating Procedure for Wax Removal and Paraffin Control
+purpose: Define safe operational procedures and equipment specifications for mechanical scraping, hot oil treatment, chemical
+  solvent soaking, and inhibitor application to clear wax depositions.
+scope: Covers all wax management interventions on Upper Assam paraffinic crude wells ({n_job_codes} catalogue job codes) utilizing
+  {equipment_list}.
+applicability:
+- Severe production decline caused by paraffin wax deposition inside production tubing or flowlines.
+- Inability to run subsurface tools or bottomhole pressure bombs due to solid wax obstruction.
+- Elevated wellhead flowing pressure drop between bottomhole and surface gathering network.
+roles:
+- Wellsite supervisor
+- Slickline operator
+- Pumping unit operator
+- Chemical treatment technician
+ppe_and_permits:
+- Approved work permit with hot work and chemical handling endorsements.
+- Chemical apron, eye protection goggles, rubber gloves, and respirator for solvent handling.
+- Portable gas detection equipment for volatile hydrocarbon vapor detection.
+hazards:
+- hazard: High pressure in wireline lubricator during mechanical wax cutting.
+  control: Pressure test lubricator to the approved test pressure in the approved programme, and bleed pressure through needle
+    valve.
+- hazard: Fire or vapor ignition during hot oil circulation or solvent pumping.
+  control: Enforce fire barrier distance, position truck exhaust downwind, and inspect all grounding cables.
+- hazard: Toxic vapor inhalation during solvent transfer and injection.
+  control: Use certified closed loop transfer hoses, wear chemical respirators, and handle solvents upwind.
+- hazard: Wireline toolstring getting stuck inside hard paraffin wax plug.
+  control: Use graduated scraper cutters, advance slowly with light jars, and monitor line tension indicator.
+pre_job_checks:
+- Review recent production rate, pour point data, and wax appearance temperature records.
+- Inspect slickline unit winch, weight indicator, wire condition, and stuffing box packings.
+- Inspect hot oiler or pump truck tanks, burner system, emergency shutdown valves, and hoses.
+- Confirm solvent volume, chemical batch certificates, and compatibility with formation oil.
+- Conduct safety briefing covering fire hazards, emergency evacuation, and pressure limits.
+procedure:
+- phase: Site Preparation and Pressure Isolation
+  steps:
+  - Verify area electrical isolation, erect safety barriers, and place dry chemical fire extinguishers.
+  - Check wellhead valves, flowline header, and casing valves for leaks or pressure anomalies.
+  - Connect pumping lines and discharge lines, securing all temporary piping with safety whip checks.
+  - Pressure test surface lines and manifolds to the approved test pressure in the approved programme.
+  - Check gas concentration levels around wellhead cellar and equipment exhausts.
+  - Verify proper earthing and bonding on all pumping trucks and mobile equipment.
+- phase: Mechanical Wax Scraping
+  steps:
+  - Install wireline lubricator and stuffing box on top of the wellhead swab valve.
+  - Pressure test lubricator assembly to the approved test pressure in the approved programme.
+  - Pick up initial undersized wireline gauge cutter on slickline toolstring.
+  - Equalize lubricator pressure with wellhead pressure and open swab valve fully.
+  - Run wireline toolstring downhole slowly, cutting wax rings and noting depths of resistance.
+  - Retrieve scraper toolstring, close swab valve, bleed lubricator, and inspect recovered wax debris.
+  - Repeat runs with progressively larger gauge cutters until full tubing drift is confirmed.
+- phase: Thermal and Chemical Treatment
+  steps:
+  - Heat flush fluid in hot oiler unit to the approved temperature below fluid flash point.
+  - Circulate hot fluid down casing annulus or tubing to melt soft wax accumulations.
+  - Pump prescribed volume of aromatic solvent blend into tubing string under low pump pressure.
+  - Displace solvent with treated formation brine or crude to place chemical across target interval.
+  - Shut in well for the programme soak duration to allow maximum wax dissolution.
+  - Inject continuous wax crystal modifier inhibitor into the surface flowline or downhole capillary line.
+- phase: Post Treatment Verification and Flowback
+  steps:
+  - Open well slowly through calibrated surface choke to flow back dissolved wax and solvent.
+  - Monitor fluid return at the group gathering station separator for emulsion or solid wax.
+  - Record flowing tubing pressure, casing pressure, and gross liquid production rate.
+  - Disconnect surface treating hoses, depressurize lines, and flush equipment with clean water.
+  - Clean wellsite cellar, collect chemical waste in certified drums, and remove safety barriers.
+  - Submit chemical job ticket and operational report to the production superintendent.
+job_variants:
+  WAX_SCRAPE:
+  - Run graduated mechanical wireline wax scrapers to clear paraffin deposits stand by stand.
+  - Verify slickline depth counter, monitor line pull tension, and inspect recovered solid wax.
+  WAX_HOTOIL:
+  - Circulate heated oil down tubing or annulus to melt wax deposits above reservoir pour point.
+  - Monitor pumping pressure and fluid return temperature at the surface flowline.
+  WAX_SOLVENT:
+  - Pump specialized aromatic paraffin solvent blend into tubing string and soak for programme duration.
+  - Displace solvent to target depth using filtered compatible brine or clean light crude.
+  WAX_INHIBITOR:
+  - Inject continuous or batch polymeric wax inhibitor chemical to prevent paraffin crystallization.
+  - Set injection rate on surface chemical metering pump and confirm chemical supply levels.
+  WAX_HEATER:
+  - Inspect downhole electrical heating cable and surface control panel connections.
+  - Energize heating system according to approved thermal schedule and monitor bottomhole temperature.
+acceptance_criteria:
+- Full drift gauge toolstring passes freely through entire production tubing string.
+- Surface flowing tubing pressure stabilizes at expected level without wax throttling.
+- Liquid delivery to group gathering station matches or exceeds pre-deposition baseline.
+post_job:
+- Record quantity of recovered wax, chemical volumes injected, and soak duration.
+- Establish recurring wireline scraping or chemical dosing frequency based on field results.
+- Complete waste disposal documentation for all collected hydrocarbon residue.
+lessons_learned:
+- Asset statistics show {jobs_all_fields} wax control jobs with {success_pct_all} operational success.
+- Median duration for wax interventions across all asset fields is {median_rig_days_all} rig days.
+- Early chemical inhibition significantly extends the interval between mechanical scraping runs.
+references:
+- Paraffin and Wax Management Guidelines for Assam Crude Wells.
+- Slickline Wireline Operating Procedures and Safety Rules.
+- Hazardous Chemical Handling and Waste Management Standard.

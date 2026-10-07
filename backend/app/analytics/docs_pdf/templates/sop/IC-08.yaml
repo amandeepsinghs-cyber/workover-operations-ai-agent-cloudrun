@@ -1,0 +1,94 @@
+sop_id: SOP-IC-08
+intervention_class: IC-08
+title: Standard Operating Procedure for Lift Optimisation and Artificial Lift Conversion
+purpose: Provide operating standards and workover procedures for optimizing existing artificial lift systems, installing downhole
+  gas separators, and converting well completion from one lift method to another.
+scope: Covers artificial lift redesign, downhole gas separator installations, and lift conversions across Assam asset wells
+  ({n_job_codes} catalogue job codes) utilizing {equipment_list}.
+applicability:
+- Severe gas locking in sucker rod pump barrels requiring downhole gas separation.
+- Reservoir pressure depletion rendering flowing or gas-lift completions incapable of continuous production.
+- High water cut requiring high volume lift capacity or conversion to sucker rod pumping.
+roles:
+- Wellsite supervisor
+- Workover rig superintendent
+- Artificial lift production engineer
+- Rig safety officer
+ppe_and_permits:
+- Approved workover permit with hot work and mechanical lifting certificates.
+- Multi-gas detector monitoring oxygen, lower explosive limit, and toxic gases.
+- Standard personal protective equipment including safety footwear and hard hat.
+hazards:
+- hazard: Well kick during completion changeover due to formation pressure differences.
+  control: Keep hole full of monitored kill brine, maintain dual barriers, and function test blowout preventers.
+- hazard: Mechanical damage to specialized gas separator or artificial lift equipment during running.
+  control: Drift all downhole components, use proper handling slips, and control hoisting speeds.
+- hazard: Trapped pressure in tubing or casing hanger cavity.
+  control: Bleed pressure through side wing valves, check pressure gauges, and confirm zero pressure.
+- hazard: Dropped objects on the rig floor while handling heavy surface pumping unit parts.
+  control: Enforce exclusion zone beneath mast, use tag lines, and inspect all lifting slings and hooks.
+pre_job_checks:
+- Review reservoir pressure history, inflow performance relationship, and gas-liquid ratio data.
+- Inspect workover rig, hoisting system, drawworks, and blowout preventer stack.
+- Verify engineering design specifications for replacement lift equipment and gas separator.
+- Confirm dimensions and compatibility of bottomhole pump, seating nipple, and rod string.
+- Check availability of kill fluid, tubing drifts, thread compound, and torque measurement equipment.
+procedure:
+- phase: Well Control and Completion Retrieval
+  steps:
+  - Establish primary well control by circulating compatible kill brine into wellbore.
+  - Monitor fluid returns to confirm well is hydrostatically dead with zero surface pressure.
+  - Nipple down wellhead tree, install blowout preventer stack, and test to the approved test pressure.
+  - Unseat existing completion hanger and pull old tubing string or gas-lift completion out of hole.
+  - Tally and inspect all pulled tubing joints, laying down unsuitable tubulars on pipe racks.
+  - Conduct wellbore drift and scraper run to clean casing wall prior to new completion installation.
+- phase: Equipment Inspection and Assembly
+  steps:
+  - Inspect downhole gas separator assembly, intake ports, and dip tube clearances.
+  - Perform dimensional checks on seating nipple, mud anchor, and perforated pup joint.
+  - Drift all new tubing joints and inspect threads with calibrated optical thread gauge.
+  - Assemble bottomhole artificial lift assembly on rig floor using manufacturer torque guidelines.
+  - Verify operation of downhole check valves and mechanical anchor slips.
+  - Conduct pre-job engineering verification of completion setting depth.
+- phase: Running New Lift Completion
+  steps:
+  - Run bottomhole assembly and tubing string in hole with power tongs and torque-turn monitoring.
+  - Hydrotest tubing string in stands to the approved test pressure in the approved programme.
+  - Install tubing hanger with packoff seals and land into casing spool bowl.
+  - Set production packer or anchor assembly according to approved setting procedure.
+  - Pressure test casing annulus to verify isolation to the approved test pressure in the approved programme.
+  - Nipple down blowout preventer stack and install matched production christmas tree.
+- phase: Surface Commissioning and Optimization
+  steps:
+  - Install surface pumping unit or connect gas-lift surface injection manifold.
+  - Align surface unit geometry, level foundation, and tension prime mover drive belts.
+  - Run sucker rod string or install wireline valves as called for by the conversion design.
+  - Stroke check pumping unit through manual rotation to verify bottom and top clearance.
+  - Energize surface drive and initiate production flow under controlled stroke and speed.
+  - Perform diagnostic surveys including dynamometer cards, acoustic fluid levels, and flow metering.
+job_variants:
+  LIFT_OPTIM:
+  - Adjust artificial lift parameters including stroke length, speed, or gas injection rate to maximize drawdown.
+  - Record acoustic fluid levels and motor power consumption to verify optimum operating point.
+  GAS_SEP_INSTALL:
+  - Pull existing completion and install downhole mechanical or natural gas separator below pump intake.
+  - Run modified mud anchor and tailpipe to prevent free gas entering the pump suction chamber.
+  LIFT_CONVERSION:
+  - Pull existing completion and install complete replacement artificial lift system.
+  - Reconfigure wellhead tree, surface power equipment, and downhole completion components.
+acceptance_criteria:
+- Completion components landed and anchored at exact programmed target depth.
+- Pressure integrity of tubing, casing annulus, and wellhead verified to the approved test pressure.
+- Sustained increase in oil production rate with stable pump fillage or efficient gas-liquid ratio.
+post_job:
+- Update well file with as-built completion schematic and downhole equipment serial numbers.
+- Establish baseline dynamometer, fluid level, and electrical current benchmark measurements.
+- Submit workover completion dossier and formal handover document to production operations.
+lessons_learned:
+- Field history documents {jobs_all_fields} lift conversion and optimization projects with {success_pct_all} success.
+- Median duration for this intervention class is {median_rig_days_all} rig days.
+- Proper downhole gas separation eliminates pump gas locking in high gas-oil ratio wells.
+references:
+- Artificial Lift Design and Optimization Engineering Standard.
+- Subsurface Gas Separator Installation and Application Guide.
+- Wellhead and Completion Integrity Policy.

@@ -78,6 +78,41 @@ Minimum **87** (contract: ≥ 30 per class).
 - BDD-F01-S03 / S06 loss-attribution shares (SUBSURFACE ≥ 80%, controllable ≤ 15% / ≥ 40%) are outputs of
   the TC-019 attribution tool and are pinned at Gate P, from this same data.
 
+### 8.1 Pinned at Gate P (TC-019 / TC-020, `AS_OF` 2026-09-23, `config_version` 2.0.0-wellpulse)
+
+| Value | Scenario | Contract | Measured |
+|---|---|---|---|
+| LKM-090 SUBSURFACE share, 180 d | BDD-F01-S03 | ≥ 80% | **100.0%** (RESERVOIR_DECLINE 321.9 bbl via TC-004 + NATURAL_DECLINE 275.4 bbl (TC-001 since-last-workover fit) + WATER_ENCROACHMENT 17.6 bbl; total 614.9 bbl) |
+| LKM-090 controllable share, 180 d | BDD-F01-S03 | ≤ 15% | **0.0%**; flag `NO_OPERATIONAL_ACTION_WOULD_HAVE_PREVENTED` |
+| Lakwa field controllable share, 90 d | BDD-F01-S06 | ≥ 40% | **68.8%** (total 219,482.3 bbl; unexplained 0.1%) |
+| LKW-047, 180 d | BDD-F01-S01 | largest HUMAN_PROCESS | **HUMAN_PROCESS 78.5%** — WAIT_ON_RIG 2,595.4 bbl / 41 d, WAIT_ON_MATERIAL 759.6 bbl / 12 d; EQUIPMENT 21.2% (PUMP_WEAR 774.1 bbl); total 4,275.8 bbl |
+| LKW-088, 180 d | BDD-F01-S04 | GRID_POWER_OUTAGE = EXTERNAL | **EXTERNAL 75.4%** (1,001.9 bbl, 12 d), controllable 0.0%; status LOW_CONFIDENCE (unexplained 22.8%: TC-001 fit LOW → natural decline not separated) |
+| Waterfall reconciliation | Gate P1 | ≤ 0.5% every well | **0.0%** (exact by construction; 1-dp display residual placed on largest bar) for all wells with a baseline (Geleki 131/142, Lakwa 147/160, Lakhmani 105/110; the rest have no pre-window production → INSUFFICIENT_HISTORY) |
+| TC-020 Geleki | BDD-F02-S01 | 142 | OK 88 · AT_RISK 21 · UNDERPERFORMING 5 · NOT_PRODUCING 28 |
+| TC-020 Lakwa | BDD-F02-S01 | 160 | OK 90 · AT_RISK 27 · UNDERPERFORMING 0 · NOT_PRODUCING 43 |
+| TC-020 Lakhmani | BDD-F02-S01 | 110 | OK 67 · AT_RISK 34 · UNDERPERFORMING 1 (LKM-061) · NOT_PRODUCING 8 |
+
+TC-001 fallback (orchestrator decision): a LOW 36-month fit is refitted on the current cycle (since the last
+workover, ≥ 90 post-transient points) and used only if not LOW. Fits used: Geleki 136 FULL_WINDOW (unchanged);
+Lakwa 24 full + 5 since-workover, 123 still LOW (89 have < 90 points in the current cycle, 34 have flat/noisy
+cycles, median r² 0.15); Lakhmani 30 full + 8 since-workover, 67 LOW. So Lakwa still has 0 UNDERPERFORMING —
+the data does not support more (not forced).
+
+### 8.2 Geleki trigger baseline v0.4 vs v0.3.0 fixtures
+
+Accepted by orchestrator: data-driven replaces hard-coded fixtures (integrity first). TC-007 at AS_OF 2026-09-23;
+44 of 136 active Geleki wells fire (v0.3.0 fixtures: 7).
+
+| Well | v0.3.0 fixture A / B / C / D | v0.4 data-driven A (residual) / B / C / D | Why different |
+|---|---|---|---|
+| GK-129 | FLAG / F / CHANNELLING / T | FLAG (−30.6%) / F / CHANNELLING / F | D = field P90 hazard, not a fixture |
+| GK-141 | WATCH / F / CHANNELLING_OR_INJECTOR / T | WATCH (−20.9%) / F / — / F | no injector table → injector mechanism untestable; still RESERVOIR_DECLINE → NO_JOB_JUSTIFIED |
+| GK-103 | WATCH / F / CONING / T | WATCH (−19.5%) / **T** / CONING / F | own run lives: 298 d since job > p50 296 d |
+| GK-112 | FLAG / F / SCALE / T | FLAG (−37.4%) / **T** / SCALE / F | 291 d > p50 287 d |
+| GK-087 | — / T / ROD_PART / T | — (0.0%) / F / — / F | run lives 179/302/354 d → p50 354 ≫ 206 d; no ROD_PART signal in data |
+| GK-055 | WATCH / F / PUMP_WEAR / T | **FLAG** (−40.0%) / F / PUMP_WEAR / F | residual tier from data |
+| GK-147 | FLAG / F / WAX / T | **WATCH** (best-of-7 −21.7%) / **T** / WAX / F | residual tier from data; 279 d > p50 254 d |
+
 ## 9. Decisions behind these values
 
 - **N-D5** Target = healthy-state potential × baseline plan efficiency; the gap is emergent, measured on QTD.

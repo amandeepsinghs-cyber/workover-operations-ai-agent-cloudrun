@@ -1,0 +1,459 @@
+{
+ "doc_type": "D03",
+ "doc_type_name": "Daily workover report",
+ "n_documents": 13661,
+ "missing_text": "not recorded",
+ "slots": {
+  "doc_id": {
+   "source": "corpus",
+   "examples": [
+    "DWR-GK-058-003-D06",
+    "DWR-LKM-005-006-D04",
+    "DWR-GK-090-003-D08"
+   ],
+   "missing_share": 0.0
+  },
+  "doc_type": {
+   "source": "corpus",
+   "examples": [
+    "D03"
+   ],
+   "missing_share": 0.0
+  },
+  "doc_type_name": {
+   "source": "corpus",
+   "examples": [
+    "Daily workover report"
+   ],
+   "missing_share": 0.0,
+   "categorical_values": [
+    "Daily workover report"
+   ]
+  },
+  "doc_title": {
+   "source": "corpus",
+   "examples": [
+    "GK-058 Daily Workover Report \u2014 RE_PERFORATION day 6 of 36",
+    "LKM-005 Daily Workover Report \u2014 TUBING_REPLACE day 4 of 4",
+    "GK-090 Daily Workover Report \u2014 TUBING_REPLACE day 8 of 9"
+   ],
+   "missing_share": 0.0
+  },
+  "doc_date": {
+   "source": "corpus",
+   "examples": [
+    "2024-03-16",
+    "2024-08-01",
+    "2023-12-24"
+   ],
+   "missing_share": 0.0
+  },
+  "field": {
+   "source": "field_master.field",
+   "examples": [
+    "Geleki",
+    "Lakhmani",
+    "Lakwa"
+   ],
+   "missing_share": 0.0,
+   "categorical_values": [
+    "Geleki",
+    "Lakhmani",
+    "Lakwa"
+   ]
+  },
+  "asset": {
+   "source": "field_master.asset",
+   "examples": [
+    "Assam"
+   ],
+   "missing_share": 0.0,
+   "categorical_values": [
+    "Assam"
+   ]
+  },
+  "as_of": {
+   "source": "settings.AS_OF",
+   "examples": [
+    "2026-09-23"
+   ],
+   "missing_share": 0.0
+  },
+  "well_id": {
+   "source": "well_master.well_id",
+   "examples": [
+    "GK-058",
+    "LKM-005",
+    "GK-090"
+   ],
+   "missing_share": 0.0
+  },
+  "cluster_id": {
+   "source": "well_master.cluster_id",
+   "examples": [
+    "GK-NE",
+    "LKM-GGS-I",
+    "GK-CENTRAL"
+   ],
+   "missing_share": 0.0,
+   "categorical_values": [
+    "GK-CENTRAL",
+    "GK-NE",
+    "GK-SW",
+    "LKM-GGS-I",
+    "LKM-GGS-II",
+    "LKW-GGS-I",
+    "LKW-GGS-II",
+    "LKW-GGS-III"
+   ]
+  },
+  "workover_id": {
+   "source": "workover_history.workover_id",
+   "examples": [
+    "WO-GK-058-003",
+    "WO-LKM-005-006",
+    "WO-GK-090-003"
+   ],
+   "missing_share": 0.0
+  },
+  "start_date": {
+   "source": "workover_history.start_date",
+   "examples": [
+    "2024-03-11",
+    "2024-07-29",
+    "2023-12-17"
+   ],
+   "missing_share": 0.0
+  },
+  "catalogue_job_code": {
+   "source": "workover_history.catalogue_job_code",
+   "examples": [
+    "RE_PERFORATION",
+    "TUBING_REPLACE",
+    "ROD_REPLACE"
+   ],
+   "missing_share": 0.0,
+   "categorical_values": [
+    "ADD_PERFORATION",
+    "CASING_REPAIR",
+    "CEMENT_SQUEEZE",
+    "GAS_SEP_INSTALL",
+    "GLV_REPLACE",
+    "HYDRAULIC_FRAC",
+    "LIFT_CONVERSION",
+    "MATRIX_ACID",
+    "PLUG_ABANDON",
+    "POLYMER_GEL",
+    "PUMP_OVERHAUL",
+    "RE_PERFORATION",
+    "ROD_REPLACE",
+    "SAND_CLEANOUT",
+    "SAND_CONTROL",
+    "STRADDLE_PACKER",
+    "TUBING_REPLACE",
+    "WAX_HEATER",
+    "WAX_SCRAPE",
+    "ZONE_TRANSFER"
+   ]
+  },
+  "intervention_class": {
+   "source": "workover_history.intervention_class",
+   "examples": [
+    "IC-10",
+    "IC-03",
+    "IC-02"
+   ],
+   "missing_share": 0.0
+  },
+  "failure_code": {
+   "source": "workover_history.failure_code",
+   "examples": [
+    "OTHER",
+    "TUBING_LEAK",
+    "ROD_PART"
+   ],
+   "missing_share": 0.0,
+   "categorical_values": [
+    "BYPASSED_PAY",
+    "CASING_LEAK",
+    "GAS_INTERFERENCE",
+    "GL_INJ_ANOMALY",
+    "GL_LOADING",
+    "OTHER",
+    "PI_DECLINE",
+    "PUMP_WEAR",
+    "RESERVOIR_DECLINE",
+    "ROD_PART",
+    "SAND",
+    "SUDDEN_MECH",
+    "TUBING_LEAK",
+    "WATER_CHANNELLING",
+    "WATER_ZONE",
+    "WAX"
+   ]
+  },
+  "rig_id": {
+   "source": "workover_history.rig_id",
+   "examples": [
+    "RIG-ASSAM-02",
+    "RIG-ASSAM-14",
+    "RIG-ASSAM-12"
+   ],
+   "missing_share": 0.0
+  },
+  "rig_days": {
+   "source": "workover_history.rig_days",
+   "examples": [
+    "36.0",
+    "4.0",
+    "9.0"
+   ],
+   "missing_share": 0.0
+  },
+  "pre_job_oil_bopd": {
+   "source": "workover_history.pre_job_oil_bopd",
+   "examples": [
+    "70.9",
+    "51.1",
+    "161.7"
+   ],
+   "missing_share": 0.0
+  },
+  "job_name": {
+   "source": "job_catalogue.job_name",
+   "examples": [
+    "Re-perforation",
+    "Tubing leak repair / replacement",
+    "Rod string replacement / part repair"
+   ],
+   "missing_share": 0.0,
+   "categorical_values": [
+    "Add-perforation (extend interval)",
+    "Casing repair / patch / squeeze",
+    "Cement squeeze + reperforation",
+    "Downhole heater install",
+    "Gas separator install / reset PSD",
+    "Gas-lift valve replacement (slickline)",
+    "Hydraulic fracturing / re-frac",
+    "Lift conversion (resize/PCP/gas lift)",
+    "Matrix acidising / stimulation",
+    "Mechanical scraping",
+    "Plug and abandon",
+    "Polymer / gel treatment",
+    "Pump changeout / overhaul",
+    "Re-perforation",
+    "Rod string replacement / part repair",
+    "Sand cleanout / bailing",
+    "Sand control screens / gravel pack",
+    "Selective isolation / straddle packer",
+    "Tubing leak repair / replacement",
+    "Zone transfer / behind-casing pay"
+   ]
+  },
+  "job_category": {
+   "source": "job_catalogue.category",
+   "examples": [
+    "INFLOW",
+    "MECHANICAL",
+    "WAX"
+   ],
+   "missing_share": 0.0,
+   "categorical_values": [
+    "DEPOSITION",
+    "GAS_LIFT",
+    "INFLOW",
+    "MECHANICAL",
+    "TERMINAL",
+    "WATER_CONTROL",
+    "WAX"
+   ]
+  },
+  "equipment": {
+   "source": "job_catalogue.equipment",
+   "examples": [
+    "WORKOVER_RIG",
+    "PULLING_UNIT",
+    "SLICKLINE_UNIT"
+   ],
+   "missing_share": 0.0,
+   "categorical_values": [
+    "PULLING_UNIT",
+    "SLICKLINE_UNIT",
+    "WORKOVER_RIG"
+   ]
+  },
+  "est_days": {
+   "source": "job_catalogue.est_days",
+   "examples": [
+    "3.0",
+    "3.5",
+    "1.5"
+   ],
+   "missing_share": 0.0
+  },
+  "sop_doc_id": {
+   "source": "job_catalogue.sop_doc_id",
+   "examples": [
+    "SOP-IC-10",
+    "SOP-IC-03",
+    "SOP-IC-02"
+   ],
+   "missing_share": 0.001
+  },
+  "report_date": {
+   "source": "workover_history.start_date + day - 1",
+   "examples": [
+    "2024-03-16",
+    "2024-08-01",
+    "2023-12-24"
+   ],
+   "missing_share": 0.0
+  },
+  "day_no": {
+   "source": "day index within workover_history.rig_days",
+   "examples": [
+    "6",
+    "4",
+    "8"
+   ],
+   "missing_share": 0.0
+  },
+  "total_days": {
+   "source": "ceil(workover_history.rig_days)",
+   "examples": [
+    "36",
+    "4",
+    "9"
+   ],
+   "missing_share": 0.0
+  },
+  "days_remaining": {
+   "source": "total_days - day_no",
+   "examples": [
+    "30",
+    "0",
+    "1"
+   ],
+   "missing_share": 0.0
+  },
+  "phase_code": {
+   "source": "facts._phase(day_no, total_days)",
+   "examples": [
+    "MAIN",
+    "RIG_DOWN",
+    "RIG_UP"
+   ],
+   "missing_share": 0.0,
+   "categorical_values": [
+    "MAIN",
+    "RIG_DOWN",
+    "RIG_UP"
+   ]
+  },
+  "over_plan": {
+   "source": "day_no > job_catalogue.est_days",
+   "examples": [
+    "Yes",
+    "No"
+   ],
+   "missing_share": 0.0,
+   "categorical_values": [
+    "No",
+    "Yes"
+   ]
+  },
+  "pump_setting_depth_m": {
+   "source": "well_master.pump_setting_depth_m",
+   "examples": [
+    "3,778.3",
+    "2,672.8",
+    "3,166.7"
+   ],
+   "missing_share": 0.263
+  },
+  "perf_top_m": {
+   "source": "well_master.perf_top_m",
+   "examples": [
+    "3,841.4",
+    "3,519.4",
+    "2,821.2"
+   ],
+   "missing_share": 0.0
+  },
+  "lift_type": {
+   "source": "well_master.lift_type",
+   "examples": [
+    "SRP",
+    "GAS_LIFT",
+    "NATURAL"
+   ],
+   "missing_share": 0.0,
+   "categorical_values": [
+    "GAS_LIFT",
+    "NATURAL",
+    "SRP"
+   ]
+  },
+  "well_status_today": {
+   "source": "well_status_history.status",
+   "examples": [
+    "UNDER_WORKOVER",
+    "PRODUCING"
+   ],
+   "missing_share": 0.0,
+   "categorical_values": [
+    "PRODUCING",
+    "UNDER_WORKOVER"
+   ]
+  },
+  "n_events_today": {
+   "source": "count(operations_events) on report_date",
+   "examples": [
+    "0",
+    "1"
+   ],
+   "missing_share": 0.0
+  }
+ },
+ "tables": {
+  "events_today": {
+   "columns": [
+    "event_type",
+    "factor_class",
+    "responsible_function",
+    "start_date",
+    "end_date"
+   ],
+   "source": "operations_events",
+   "example_rows": [
+    {
+     "event_type": "FLOOD_ACCESS_LOSS",
+     "factor_class": "EXTERNAL",
+     "responsible_function": "External access (weather)",
+     "start_date": "2024-07-14",
+     "end_date": "2024-07-16"
+    },
+    {
+     "event_type": "FLOOD_ACCESS_LOSS",
+     "factor_class": "EXTERNAL",
+     "responsible_function": "External access (weather)",
+     "start_date": "2024-07-14",
+     "end_date": "2024-07-16"
+    }
+   ],
+   "max_rows_seen": 1
+  }
+ },
+ "meta_keys": [
+  "intervention_class",
+  "job_code",
+  "workover_id"
+ ],
+ "sample_doc_ids": [
+  "DWR-GK-058-003-D06",
+  "DWR-LKM-005-006-D04",
+  "DWR-GK-090-003-D08",
+  "DWR-GK-126-025-D04",
+  "DWR-LKW-132-001-D03"
+ ]
+}

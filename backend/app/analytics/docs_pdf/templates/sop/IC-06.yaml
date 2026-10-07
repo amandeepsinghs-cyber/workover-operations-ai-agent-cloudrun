@@ -1,0 +1,92 @@
+sop_id: SOP-IC-06
+intervention_class: IC-06
+title: Standard Operating Procedure for Sand Cleanout, Bailing, and Sand Control
+purpose: Establish uniform guidelines for clearing sand plugs by hydrostatic bailing, coiled tubing washing, or reverse circulation,
+  and installing downhole sand control systems.
+scope: Applies to all sand cleanout and sand control operations on unconsolidated sandstone reservoirs across Assam assets
+  ({n_job_codes} catalogue job codes) utilizing {equipment_list}.
+applicability:
+- Sand fill obstructing perforated intervals, tailpipe, or bottomhole intake.
+- Severe sand cutting of surface chokes, flowlines, and artificial lift pump components.
+- Tagging bottom during wireline or slickline run significantly above total well depth.
+roles:
+- Wellsite supervisor
+- Workover rig superintendent
+- Coiled tubing or slickline specialist
+- Rig safety officer
+ppe_and_permits:
+- Standard workover and high pressure pumping permit to work.
+- Full personal protective equipment with eye protection and safety footwear.
+- Multi-gas detector monitoring hydrocarbon gas and oxygen levels continuously.
+hazards:
+- hazard: Differential sticking of cleanout string or coiled tubing in thick sand beds.
+  control: Maintain continuous circulation, control penetration speed, and use viscous gel sweeps.
+- hazard: Sudden sand surge or well kick due to reservoir pressure unloading.
+  control: Keep hole full of weighted kill brine, monitor trip tank volume, and test blowout preventers.
+- hazard: Wireline parting while jarring on hydrostatic sand bailer.
+  control: Monitor slickline pull tension within safe operating limits, and inspect wireline rope socket.
+- hazard: Surface equipment erosion and sand washouts during flowback.
+  control: Route returns through choke manifold and sand desander separator, and inspect pipe wall thickness.
+pre_job_checks:
+- Review well completion schematic, perforated depths, casing size, and liner top depth.
+- Check slickline sand bailer or coiled tubing unit certification and emergency stop systems.
+- Inspect circulation pump, mud tanks, shale shaker, desander, and sand settling pit.
+- Confirm volume and properties of cleanout fluid, foaming agent, and polymer sweeps.
+- Verify availability of wire-wrapped screens, slotted liners, or chemical resin consolidation chemicals.
+procedure:
+- phase: Well Preparation and Equipment Rig Up
+  steps:
+  - Verify well control status and record tubing and casing pressures on calibrated gauges.
+  - Pump approved kill brine to establish hydrostatic overbalance across the perforated formation.
+  - Rig up wireline lubricator or coiled tubing blowout preventer stack on wellhead flange.
+  - Pressure test lubricator and blowout preventer assembly to the approved test pressure in the approved programme.
+  - Connect circulation return line through sand catchers to the surface settling tank.
+  - Hold safety meeting with crew to review sand cleanout parameters and barrier procedures.
+- phase: Sand Bailing and Mechanical Cleanout
+  steps:
+  - Make up hydrostatic or mechanical sand bailer assembly on slickline toolstring.
+  - Run bailer into wellbore, tag sand bridge softly, and record top of sand fill depth.
+  - Actuate bailer mechanism to draw sand into bailer barrel and retrieve to surface.
+  - Empty recovered sand into measuring box, inspect grain size, and record recovered volume.
+  - Repeat bailing runs progressively until all perforations are uncovered to total depth.
+  - When using coiled tubing or wash pipe, circulate viscous sweep fluid to lift sand to surface.
+  - Circulate well clean until shale shaker and desander report zero sand in return fluid.
+- phase: Sand Control Installation
+  steps:
+  - Confirm clean wellbore by running drift assembly or dummy toolstring to bottom.
+  - Pick up downhole sand screen assembly or slotted liner on workstring.
+  - Run screen assembly in hole and position across the perforated sandstone reservoir interval.
+  - Set mechanical screen packer or liner hanger and verify positive weight set-down.
+  - Pump gravel pack proppant slurry or inject chemical sand consolidation resin as approved.
+  - Reverse circulate excess slurry or chemical and verify displacement volume.
+- phase: Well Clean-up and Handover
+  steps:
+  - Pull workstring or coiled tubing out of hole while monitoring well fluid level.
+  - Reinstall production completion or artificial lift assembly as required by programme.
+  - Pressure test completion to the approved test pressure in the approved programme.
+  - Flow well slowly through surface choke manifold to avoid abrupt reservoir drawdown.
+  - Sample effluent at regular intervals to verify sand-free liquid production.
+  - Submit cleanout tally, sand disposal manifests, and handover well to production section.
+job_variants:
+  SAND_CLEANOUT:
+  - Run mechanical hydrostatic bailer on slickline or circulate wash fluid to clean sand fill to bottom.
+  - Measure volume of sand removed, verify clean perforated interval, and dispose of sand in lined pits.
+  SAND_CONTROL:
+  - Install downhole wire-wrapped sand screens, slotted liners, or pump resin consolidation chemicals.
+  - Verify pack integrity and flow well back slowly under controlled drawdown to establish stable sand pack.
+acceptance_criteria:
+- Bottom tagged at or below target total depth confirming complete sand cleanout.
+- Surface fluid samples show sand cut below allowable field operational limit.
+- Well flows steadily without sand bridging or excessive erosion in surface choke.
+post_job:
+- Record initial sand top, final cleanout depth, and total volume of sand removed.
+- Dispose of sand slurry according to approved environmental waste guidelines.
+- Complete post-job performance evaluation and update well history dossier.
+lessons_learned:
+- Asset records show {jobs_all_fields} sand cleanout operations with {success_pct_all} success rate.
+- Median rig time for sand interventions is {median_rig_days_all} rig days.
+- Gentle drawdown post-cleanout prevents destabilizing the unconsolidated formation face.
+references:
+- Sand Control and Cleanout Field Operational Manual.
+- Slickline Bailing Procedures and Equipment Maintenance.
+- Environmental Waste Handling Protocol for Oily Sand Residues.

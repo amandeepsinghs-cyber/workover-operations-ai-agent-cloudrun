@@ -1,0 +1,91 @@
+sop_id: SOP-IC-09
+intervention_class: IC-09
+title: Standard Operating Procedure for Matrix Stimulation Acidizing and Fracturing
+purpose: Define mandatory technical specifications, environmental protections, and execution steps for matrix acidizing and
+  hydraulic fracturing interventions.
+scope: Covers near-wellbore matrix damage removal and sandstone hydraulic fracturing across Assam field assets ({n_job_codes}
+  catalogue job codes) utilizing {equipment_list}.
+applicability:
+- High skin factor and near-wellbore formation damage identified from pressure transient analysis.
+- Severe productivity impairment caused by drilling mud filtrate, fines migration, or clay swelling.
+- Low permeability reservoir sandstones requiring hydraulic fracture conductivity for economic flow.
+roles:
+- Wellsite supervisor
+- Stimulation technical supervisor
+- Production petroleum engineer
+- Safety and environmental officer
+ppe_and_permits:
+- Approved stimulation permit to work with high pressure pumping and hazardous chemical licenses.
+- Full acid resistant protective suit, chemical hood, rubber gloves, and safety boots.
+- Continuous multi-gas detector for hydrogen sulphide, combustible gases, and oxygen.
+hazards:
+- hazard: Catastrophic line failure under extreme hydraulic treating pressure.
+  control: Secure all high pressure treating iron with certified restraint cables, and clear danger zone.
+- hazard: Severe chemical burns or toxic fumes during acid mixing and pumping.
+  control: Use closed system fluid transfer, wear full chemical personal protective equipment, and keep eyewash stations ready.
+- hazard: Screen-out during proppant hydraulic fracturing causing pressure spikes.
+  control: Monitor treating pressure continuously, maintain flush pump on standby, and observe pressure limits.
+- hazard: Formation breakdown into adjacent water bearing zone during matrix acidizing.
+  control: Maintain surface injection pressure strictly below formation parting pressure.
+pre_job_checks:
+- Review reservoir mineralogy, clay sensitivity, and acid solubility test results.
+- Inspect high pressure pump trucks, blender unit, acid transport tankers, and treating iron.
+- Verify chemical quality certificates for acid corrosion inhibitors, iron control agents, and surfactants.
+- Perform wellhead isolation tree saver pressure test to the approved test pressure in the approved programme.
+- Conduct comprehensive safety briefing covering emergency shutdown, line relief, and muster locations.
+procedure:
+- phase: Site Layout and Pressure Testing
+  steps:
+  - Position stimulation trucks, blenders, and chemical tanks outside safety clearance radius.
+  - Connect high pressure treating iron from pump manifold to wellhead isolation tool.
+  - Install safety iron restraint slings and verify anchor staking along entire surface line.
+  - Prime pumping system and pressure test lines with water to the approved test pressure.
+  - Verify zero leaks on all swivel joints, hammer unions, check valves, and relief valves.
+  - Calibrate digital flow meters, densitometers, and pressure transducers on recording van.
+- phase: Pre-Flush and Chemical Matrix Injection
+  steps:
+  - Establish baseline injection rate and pressure using treated compatible formation brine.
+  - Pump pre-flush volume containing mutual solvent and clay stabilizer to displace formation brine.
+  - Inject formulated acid blend containing corrosion inhibitor and iron chelating agent.
+  - Regulate pumping rate to ensure bottomhole treating pressure remains below formation fracture gradient.
+  - Monitor continuous real-time skin evolution and pressure response on diagnostic computers.
+  - Pump overflush brine volume containing demulsifier to push live acid deep into pore matrix.
+- phase: Hydraulic Fracturing and Displacement
+  steps:
+  - Pump viscous fracturing fluid pad to initiate and propagate hydraulic fracture geometry.
+  - Stage proppant slurry through blender, gradually ramping proppant concentration as per programme.
+  - Monitor net pressure, treating rate, and proppant addition continuously to detect screen-out.
+  - Displace proppant slurry with clean displacement fluid to the top of the perforated interval.
+  - Shut down high pressure pumps immediately upon completing displacement and record shut-in pressure.
+  - Monitor pressure decline curve to evaluate fracture closure pressure and fluid efficiency.
+- phase: Flowback Clean-up and Handover
+  steps:
+  - Rig down wellhead isolation tool and reinstall wellhead flowline connections.
+  - Open well on calibrated small choke for controlled flowback into dedicated neutralization pit.
+  - Measure pH, emulsion tendency, and proppant sand recovery in return fluid samples.
+  - Gradually increase surface choke size as spent fluid clears and hydrocarbon flow begins.
+  - Neutralize spent acid in waste storage tank before authorized environmental transfer.
+  - Submit complete stimulation treatment log and handover well to production section.
+job_variants:
+  MATRIX_ACID:
+  - Inject sequestered acid system at matrix rates below fracture pressure to dissolve near-wellbore skin.
+  - Displace live acid with mutual solvent overflush and flow back spent acid immediately to prevent sludge.
+  HYDRAULIC_FRAC:
+  - Pump pad fluid, proppant stages, and displacement fluid to create high-conductivity fracture conduit.
+  - Monitor surface treating pressure, slurry density, and fracture closure to achieve design proppant placement.
+acceptance_criteria:
+- Total design chemical and proppant volumes placed into target reservoir formation.
+- Post-treatment pressure transient analysis confirms marked reduction in near-wellbore skin.
+- Sustained oil production uplift achieved with clear, sand-free effluent at gathering station.
+post_job:
+- Archive digital pressure, rate, and proppant concentration logs in engineering database.
+- Complete environmental waste neutralization and disposal documentation.
+- Submit post-job technical appraisal comparing actual performance against simulation models.
+lessons_learned:
+- Field intervention records list {jobs_all_fields} stimulation jobs with {success_pct_all} operational success.
+- Median duration for stimulation treatments is {median_rig_days_all} rig days.
+- Immediate flowback post-acidizing prevents secondary precipitation of iron and silica complexes.
+references:
+- Matrix Acidizing Field Best Practices and Quality Control Guide.
+- Hydraulic Fracturing Execution and Pressure Control Standard.
+- Hazardous Chemical Handling and Acid Neutralization Manual.

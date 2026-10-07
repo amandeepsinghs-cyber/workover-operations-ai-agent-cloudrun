@@ -3,7 +3,8 @@
 * Units: pressures kg/cm² × 14.2233 → psi; choke 64ths → % open (/64 × 100).
 * Null-not-zero (DC-014): non-producing days return ``null`` rates; never 0.
 * Currency never leaves the data layer (D-1): workovers carry ``cost_band`` + ``rig_days``.
-* Health is **INTERIM_N1**, a data-derived placeholder that Stage P TC-020 replaces:
+* Health: since Stage P the bucket comes from **TC-020** (``app.analytics.tools.health``, SDD §6.3);
+  the Stage N **INTERIM_N1** rule below is kept only as a fallback for a well TC-020 cannot classify:
 
     NOT_PRODUCING   open status at AS_OF ≠ PRODUCING, or no production on AS_OF        → "failed"
     UNDERPERFORMING 7-day mean oil ≤ 0.80 × mean of [AS_OF−90, AS_OF−31]               → "warning"
@@ -179,9 +180,21 @@ def telemetry_summary(daily: pd.DataFrame, workovers: list[dict]) -> dict:
     }
 
 
+def tc020_health(well_id: str, daily: pd.DataFrame, status: pd.DataFrame | None) -> tuple[str, str, str]:
+    """(bucket, reason, rule) from TC-020 (Stage P); INTERIM_N1 only if TC-020 cannot classify the well."""
+    from app.analytics.tools.health import HEALTH_RULE as TC020_RULE
+    from app.analytics.tools.health import well_health
+
+    h = well_health(well_id)
+    if h is not None:
+        return h.bucket, h.reason, TC020_RULE
+    bucket, reason = interim_health(daily, status)
+    return bucket, reason, HEALTH_RULE
+
+
 def well_summary(row: dict, daily: pd.DataFrame, t: dict, cat: pd.DataFrame) -> dict:
     wos = workover_records(t.get("workover_history"), cat)
-    bucket, reason = interim_health(daily, t.get("well_status_history"))
+    bucket, reason, rule = tc020_health(row["well_id"], daily, t.get("well_status_history"))
     metrics, mdate = current_metrics(daily)
     return {
         "id": row["well_id"],
@@ -200,7 +213,7 @@ def well_summary(row: dict, daily: pd.DataFrame, t: dict, cat: pd.DataFrame) -> 
         "health_bucket": bucket,
         "health_reason": reason,
         "status_reason": reason,
-        "health_rule": HEALTH_RULE,
+        "health_rule": rule,
         "as_of": settings.AS_OF.isoformat(),
         "current_metrics_date": mdate,
         "spud_date": _iso(row.get("spud_date")),

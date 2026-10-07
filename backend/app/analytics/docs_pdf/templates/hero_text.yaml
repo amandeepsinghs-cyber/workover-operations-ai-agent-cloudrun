@@ -1,0 +1,90 @@
+narratives:
+  - doc_id: DOC-CBL-GK129-1998
+    well_id: GK-129
+    heading: "Zonal isolation assessment and micro-annulus diagnostic"
+    tone: warning
+    callout: "Annular isolation is evaluated as {isolation_assessment} based on {assessment_basis}, warning of micro-annular fluid communication behind production casing."
+    paragraphs:
+      - "The cement bond log survey conducted on {log_date} for well {well_id} in {field} field covers the production casing across the {current_zone} interval. Top of cement is located at {cement_top_m} m MD, providing {cement_above_perf_m} m of nominal cement column above the open perforations ({perf_top_m} m to {perf_bottom_m} m MD); a long cement column on its own does not, however, guarantee a hydraulic seal at the pipe-cement interface."
+      - "Zonal isolation is formally designated as {isolation_assessment} on the basis of {assessment_basis}. The log remarks record a micro-annulus along the {prod_casing_grade} casing string ({prod_casing_od_in} in, {prod_casing_weight_ppf} ppf). No quantitative bond amplitude is retained in this summary, so the assessment is qualitative; a micro-annulus is a potential conduit for fluid migration behind pipe adjacent to the {zone_lithology} of the producing interval."
+      - "The micro-annulus is a risk for future water encroachment. Because fluid travelling behind pipe can bypass packers set inside the casing, mechanical straddle tools may not achieve a positive water shut-off; any future water shut-off design for this well should first evaluate a remedial cement squeeze to fill the void behind pipe."
+
+  - doc_id: DOC-SCAN-GK-129-2019
+    well_id: GK-129
+    heading: "Post-intervention engineering evaluation and failure diagnosis"
+    tone: danger
+    callout: "The mechanical straddle packer job resulted in an outcome of {outcome} with negligible oil uplift of {uplift_bopd} BOPD due to annular bypass."
+    paragraphs:
+      - "The workover intervention commenced on {start_date} and concluded on {end_date} using rig {rig_id} to execute a {job_name} ({catalogue_job_code}) for water shut-off in the {current_zone} reservoir. Initial candidate selection was based on {selection_evidence}. However, the operation concluded with an official outcome of {outcome}, failing to arrest water ingress into {well_id}."
+      - "Production response post-intervention confirmed diagnostic failure. Pre-job oil rate was {pre_job_oil_bopd} BOPD and post-job oil rate was {post_job_oil_bopd} BOPD, yielding an uplift of only {uplift_bopd} BOPD. Daily water-cut averages for the {window_days}-day windows around the job are not recorded in the source tables. The operational failure code was logged as {failure_code}; the engineering interpretation is that the straddle assembly seated inside the casing was bypassed."
+      - "The earlier cement bond log for this well records a micro-annulus behind casing, which would allow water to channel around the tool string. If water ingress originates from annular channelling rather than an internal mechanical breach, internal isolation tools cannot stop fluid entry. A remedial cement squeeze is the recommended next step to arrest bypass flow."
+
+  - doc_id: RCA-GK-129-2019
+    well_id: GK-129
+    heading: "Root-cause investigation and remedial intervention strategy"
+    tone: warning
+    callout: "Root cause confirmed: water bypass occurs behind casing through a micro-annular channel; mechanical straddle tools cannot seal annular pathways, requiring a remedial cement squeeze."
+    paragraphs:
+      - "Root-cause analysis of the {catalogue_job_code} intervention executed between {start_date} and {end_date} under {d02_doc_id} concludes that tool placement inside the production casing did not resolve fluid ingress. With pre-job oil production at {pre_job_oil_bopd} BOPD and post-job oil production at {post_job_oil_bopd} BOPD (net uplift of {uplift_bopd} BOPD), the resulting outcome of {outcome} confirms that the isolation barrier was ineffective."
+      - "Technical review indicates that the most likely ingress mechanism is extraneous water channelling behind the casing through the micro-annulus identified in the earlier cement bond log above {perf_top_m} m MD. Because fluid bypasses the casing wall entirely, mechanical straddle packers set within the casing bore are incapable of achieving hydraulic isolation."
+      - "Operations teams must distinguish annular water channelling from tubing flow restrictions such as wax deposition. While wax treatments address organic solids accumulation inside the tubing string, they do not remediate hydrostatic communication behind pipe. The indicated remedy is a remedial cement squeeze to fill annular voids and isolate the water-bearing zone."
+
+  - doc_id: DOC-SCAN-GK-129-004
+    well_id: GK-129
+    heading: "Production response and diagnostic comparison with water channelling"
+    tone: info
+    callout: "Mechanical scraping achieved an outcome of {outcome} with a reported post-job rate of {post_job_oil_bopd} BOPD, but water cut was essentially unchanged ({pre_wc_avg} before, {post_wc_avg} after)."
+    paragraphs:
+      - "The {job_name} ({catalogue_job_code}) operation conducted between {start_date} and {end_date} targeted wax deposition in the tubing string. Selection was based on {selection_evidence}, and the work was carried out with a {equipment} ({rig_id}). The intervention was completed with an operational outcome of {outcome}."
+      - "The job report records oil production rising from {pre_job_oil_bopd} BOPD to {post_job_oil_bopd} BOPD (an uplift of {uplift_bopd} BOPD). The {window_days}-day averages tell a more sober story: average oil moved from {pre_oil_avg} to {post_oil_avg} BOPD ({delta_oil} BOPD), and water cut shifted from {pre_wc_avg} to {post_wc_avg} (a change of {delta_wc})."
+      - "This illustrates the distinction between tubing restrictions and water-entry problems. Mechanical scraping clears paraffin from the tubing but cannot remediate channelling behind pipe. The persistently high water cut is consistent with the water channelling indicated by the earlier cement bond log, and wax removal should not be expected to bring it down; a remedial cement squeeze remains the relevant option for the water problem."
+
+  - doc_id: DOC-SCAN-LKW-047-007
+    well_id: LKW-047
+    heading: "Logistical deferment analysis and operational performance"
+    tone: warning
+    callout: "Execution of {workover_id} was delayed by {wait_on_rig_days} days waiting on rig and {wait_on_material_days} days waiting on material over the trailing {lookback_days}-day period, resulting in {deferred_bbl} bbl of deferred oil."
+    paragraphs:
+      - "The {job_name} ({catalogue_job_code}) on well {well_id} was successfully executed between {start_date} and {end_date} using a {equipment} ({rig_id}). Physical repair achieved an outcome of {outcome}, restoring artificial lift efficiency and increasing oil production from {pre_job_oil_bopd} BOPD to {post_job_oil_bopd} BOPD, delivering an uplift of {uplift_bopd} BOPD."
+      - "However, project value was significantly eroded by preceding logistics delays. Over the trailing {lookback_days}-day lookback window, mobilization was held up by {wait_on_rig_days} days waiting on rig availability and {wait_on_material_days} days waiting on warehouse material replenishment. Deferred production attributed to this job in the well status history totals {deferred_bbl} bbl."
+      - "While mechanical turnaround once on location required {rig_days} rig days ({calendar_days} calendar days), the prolonged standby underscores critical vulnerabilities in regional maintenance, repair, and operations inventory management. Strategic pre-stocking of insert pump assemblies and improved workover rig scheduling across {facility_name} are essential to minimize non-productive shut-in deferment."
+
+  - doc_id: DOC-SCAN-LKW-112-007
+    well_id: LKW-112
+    heading: "Remedial cement squeeze execution and water shut-off performance"
+    tone: success
+    callout: "Remedial cement squeeze achieved an outcome of {outcome}, reducing water cut from {pre_wc_avg} to {post_wc_avg} ({delta_wc}) and delivering an oil uplift of {uplift_bopd} BOPD."
+    paragraphs:
+      - "The remedial {job_name} ({catalogue_job_code}) intervention executed between {start_date} and {end_date} under {workover_id} targeted severe {failure_code} behind the production casing. Diagnostic justification was confirmed by {selection_evidence}. Rig {rig_id} carried out the squeeze across the perforated interval ({perf_top_m} m to {perf_bottom_m} m MD) followed by re-perforation of the {current_zone} pay, as defined by the job type."
+      - "Production testing validated successful hydraulic shut-off with an official outcome of {outcome}. Pre-job oil production was {pre_job_oil_bopd} BOPD and post-job oil production reached {post_job_oil_bopd} BOPD, an uplift of {uplift_bopd} BOPD. Concurrently, baseline water cut dropped from {pre_wc_avg} to {post_wc_avg}, a change of {delta_wc}."
+      - "This outcome shows that water channelling in {well_id} responds to cement placement behind casing. Re-establishing the cement sheath blocks the channel feeding water to the perforations, supporting cement squeeze as the preferred water-isolation method for this completion; run life after the job should be monitored for recurrence."
+
+  - doc_id: RCA-LKW-112-010
+    well_id: LKW-112
+    heading: "Inflow diagnostics failure analysis and mechanism identification"
+    tone: danger
+    callout: "The re-perforation intervention resulted in an outcome of {outcome} with negative uplift ({uplift_bopd} BOPD), proving that productivity index decline was a symptom of recurrent annular channelling rather than perforation plugging."
+    paragraphs:
+      - "Root-cause analysis of the {job_name} ({catalogue_job_code}) campaign under {d02_doc_id} points to a misdiagnosis of the inflow mechanism. Workover initiation was triggered by {selection_evidence} under operational failure code {failure_code}. However, post-job testing documented an outcome of {outcome}, with oil rate declining from {pre_job_oil_bopd} BOPD to {post_job_oil_bopd} BOPD (net uplift of {uplift_bopd} BOPD)."
+      - "Re-perforating the interval did not improve inflow because the underlying problem was most likely not near-wellbore perforation damage. Instead, water channelling behind the casing had recurred, allowing water to bypass the old squeeze and flood the perforation tunnels, holding water cut at {post_wc_avg}."
+      - "Perforating a zone affected by water migration behind pipe does not relieve the restriction that matters. Future candidate screening on this well should give water diagnostic plots priority over a PI decline signature alone. The indicated remedy is a repeat {next_job_code}, subsequently carried out as {next_workover_id}."
+
+  - doc_id: DOC-SCAN-LKW-112-011
+    well_id: LKW-112
+    heading: "Repeat cement squeeze execution and annular shut-off verification"
+    tone: success
+    callout: "The repeat cement squeeze achieved an outcome of {outcome}, restoring oil rate from {pre_job_oil_bopd} to {post_job_oil_bopd} BOPD (uplift {uplift_bopd} BOPD) and lowering water cut by {delta_wc}."
+    paragraphs:
+      - "Following the failure of {prev_workover_id} ({prev_job_code}), well {well_id} was re-entered between {start_date} and {end_date} under {workover_id} to execute a repeat {job_name} ({catalogue_job_code}) using rig {rig_id}. The intervention was programmed after water diagnostics confirmed active {failure_code} following the failed re-perforation."
+      - "Remedial squeeze cementing across the perforated interval ({perf_top_m} m to {perf_bottom_m} m MD) sealed the recurrent channel behind pipe. The job achieved an overall outcome of {outcome}, suppressing extraneous water influx and reducing average water cut from {pre_wc_avg} to {post_wc_avg} ({delta_wc})."
+      - "Oil production responded, rising from {pre_job_oil_bopd} BOPD prior to the job to {post_job_oil_bopd} BOPD, generating a net uplift of {uplift_bopd} BOPD. This successful re-squeeze validates the diagnosis established in the failure root-cause review, demonstrating that annular sealing, rather than wellbore stimulation, remains the decisive recovery mechanism for this well."
+
+  - doc_id: WT-LKM-090-20250810
+    well_id: LKM-090
+    heading: "Reservoir depletion assessment and intervention screening recommendation"
+    tone: info
+    callout: "Static bottom-hole pressure changed by {sbhp_change_kgcm2} kg/cm sq since {prev_survey_date}; the well's oil decline of {well_decline_pct} is no steeper than the offset median ({offset_median_decline_pct}), consistent with reservoir depletion rather than a wellbore problem. No workover is justified."
+    paragraphs:
+      - "The bottom-hole pressure survey ({survey_id}) and well test ({test_id}) completed on {doc_date} evaluate performance of well {well_id} producing from the {current_zone} reservoir. Measured static bottom-hole pressure is {sbhp_kgcm2} kg/cm sq, a change of {sbhp_change_kgcm2} kg/cm sq relative to {prev_sbhp_kgcm2} kg/cm sq recorded during the previous survey on {prev_survey_date}."
+      - "Production decline analysis over the trailing {decline_window_days}-day window indicates a well decline rate of {well_decline_pct}, which is no steeper than the offset median decline of {offset_median_decline_pct}. Flowing bottom-hole pressure stands at {fbhp_kgcm2} kg/cm sq under an operating drawdown of {drawdown_kgcm2} kg/cm sq, sustaining a productivity index of {pi_bpd_per_kgcm2} BPD per kg/cm sq."
+      - "Taken together, the falling static pressure and the offset comparison indicate that production attenuation is driven by normal reservoir pressure depletion rather than mechanical impairment, near-wellbore skin, or lift malfunction. Consequently, no workover or rig intervention is technically or economically justified. Operational strategy should focus on voidage management, pressure maintenance, and routine production surveillance."

@@ -1,0 +1,86 @@
+sop_id: SOP-IC-02
+intervention_class: IC-02
+title: Standard Operating Procedure for Sucker Rod String Repair and Replacement
+purpose: Provide standardized instructions for retrieving, fishing, inspecting, and replacing failed or parted sucker rod
+  strings safely.
+scope: Covers sucker rod repairs and replacements on artificial lift wells across Assam fields ({n_job_codes} catalogue job
+  codes) using {equipment_list}.
+applicability:
+- Polished rod dropping freely or loss of rod string weight on surface beam hanger.
+- Dynamometer card showing parted rod signature with zero pump stroke response.
+- Severe rod fatigue, rod body corrosion pitting, or worn coupling boxes detected during survey.
+roles:
+- Wellsite supervisor
+- Pulling unit operator
+- Production petroleum engineer
+- Rig safety officer
+ppe_and_permits:
+- Workover permit with mechanical lifting authorization displayed at site.
+- Standard personal protective equipment including hard hats, eye protection, and safety footwear.
+- Continuous gas detection equipment operational at the wellhead.
+hazards:
+- hazard: Parted rod string dropping deeper into the tubing during fishing operations.
+  control: Engage fishing overshot with proper grapple size, pull steadily within tensile limits, and record string weight
+    changes.
+- hazard: Trapped pressure under stuffing box caused by rod parting.
+  control: Bleed tubing pressure to flowline header, monitor pressure gauges, and kill well with approved brine.
+- hazard: Pinch point injuries during rod make-up and breakout on the work floor.
+  control: Use rod tongs with safety backup arms, keep hands away from rod elevator latches, and verify crew positioning.
+pre_job_checks:
+- Measure free rod string weight and estimate depth of rod parting.
+- Verify fishing tool availability including rod overshot, box taps, and proper grapple sizes.
+- Check pulling unit winch brakes, hoisting line certificate, and mast guy line tensions.
+- Confirm stock of replacement sucker rods, pony rods, and centralizer rod guides.
+procedure:
+- phase: Well Preparation and Surface Disconnection
+  steps:
+  - De-energize pumping unit motor, set mechanical parking brake, and install lockout tagout device.
+  - Bleed tubing and casing pressure to zero through the flowline to the group gathering station.
+  - Pump kill brine down tubing or casing annulus until fluid column achieves hydrostatically dead condition.
+  - Disconnect horse head bridle from polished rod clamp and swing head clear of well center.
+  - Remove polished rod stuffing box and install rod blowout preventer with blind and rod rams.
+  - Pick up polished rod and top rod stands to retrieve parted upper string section.
+- phase: Fishing and String Retrieval
+  steps:
+  - Inspect upper parted rod end to determine failure mode whether pin failure, box split, or body break.
+  - Select appropriate rod overshot or mouse trap fishing tool matched to parted rod diameter.
+  - Run fishing assembly on rod string slowly to the calculated fish top depth.
+  - Tag fish top softly, engage overshot over rod fish neck, and confirm latch engagement with light pull.
+  - Pull fish steadily off bottom seat while monitoring weight indicator for excessive overpull.
+  - Retrieve remaining rod string stands, inspecting all couplings for thread galling or mechanical wear.
+- phase: Rod Replacement and Space-out
+  steps:
+  - Lay down damaged rods and replace with inspected new API graded sucker rods.
+  - Install molded rod centralizer guides in sections where tubing wear is indicated.
+  - Clean and inspect all rod pin threads, applying approved API modified rod thread lubricant.
+  - Torque rod couplings to recommended circumferential displacement values using calibrated rod tongs.
+  - Tag bottom pump seating nipple gently and record exact rod string length tally.
+  - Space out polished rod to ensure correct plunger clearance from bottom seat.
+- phase: Completion and Handover
+  steps:
+  - Repack stuffing box with fresh packing rings and lubricate polished rod surface.
+  - Pressure test tubing string against pump standing valve to the approved test pressure in the approved programme.
+  - Reinstall polished rod clamp and re-hang bridle cables on the horse head.
+  - Release pumping unit mechanical brake and perform hand rotation check of all clearances.
+  - Energize prime mover, restart pumping unit, and verify liquid delivery to the surface flowline.
+  - Obtain post-job dynamometer card to verify normal pump loading and rod stress levels.
+job_variants:
+  ROD_REPLACE:
+  - Fish parted rod string, inspect retrieved rods for corrosion pitting, and replace with certified API rods.
+  - Install snap-on rod guides along intervals with known directional doglegs or tubing contact wear.
+acceptance_criteria:
+- Smooth rod string reciprocation with zero surface vibration or abnormal mechanical clatter.
+- Post-intervention dynamometer survey shows balanced rod loading and proper valve action.
+- Tubing hydrostatic pressure test holds the approved test pressure without leakage.
+post_job:
+- Document parted rod depth, failure root cause, and replacement rod tally in workover log.
+- Send damaged rod specimens to materials laboratory for metallurgical failure analysis.
+- Submit daily operation log and handover well to production section.
+lessons_learned:
+- Intervention history across fields records {jobs_all_fields} jobs with {success_pct_all} success rate.
+- Median duration for this intervention class stands at {median_rig_days_all} rig days.
+- Installing rod centralizers in crooked well intervals reduces repeat rod parting frequency.
+references:
+- API Recommended Practice for Care and Handling of Sucker Rods.
+- Wellsite Lifting and Hoisting Safety Procedure.
+- Asset Workover and Completion Operations Standard.

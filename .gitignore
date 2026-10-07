@@ -41,3 +41,8 @@ backend/app/data/lake_export/
 
 # Stage M: read-only port-source baselines (large, regenerable)
 backend/tests/baseline/
+
+# Stage O: synthetic PDF corpus + retrieval index (regenerable, D-18)
+#   cd backend && uv run python -m app.analytics.docs_pdf.build
+backend/app/data/docs_pdf/
+backend/app/data/index/

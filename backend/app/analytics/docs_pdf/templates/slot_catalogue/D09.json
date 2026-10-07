@@ -1,0 +1,606 @@
+{
+ "doc_type": "D09",
+ "doc_type_name": "Field study / annual review",
+ "n_documents": 23,
+ "missing_text": "not recorded",
+ "slots": {
+  "doc_id": {
+   "source": "corpus",
+   "examples": [
+    "FS-LKW-2024",
+    "FS-GK-2021",
+    "FS-LKW-2023"
+   ],
+   "missing_share": 0.0
+  },
+  "doc_type": {
+   "source": "corpus",
+   "examples": [
+    "D09"
+   ],
+   "missing_share": 0.0
+  },
+  "doc_type_name": {
+   "source": "corpus",
+   "examples": [
+    "Field study / annual review"
+   ],
+   "missing_share": 0.0,
+   "categorical_values": [
+    "Field study / annual review"
+   ]
+  },
+  "doc_title": {
+   "source": "corpus",
+   "examples": [
+    "Lakwa Field Annual Review 2024",
+    "Geleki Field Annual Review 2021 (part year)",
+    "Lakwa Field Annual Review 2023"
+   ],
+   "missing_share": 0.0
+  },
+  "doc_date": {
+   "source": "corpus",
+   "examples": [
+    "2024-12-31",
+    "2021-12-31",
+    "2023-12-31"
+   ],
+   "missing_share": 0.0
+  },
+  "field": {
+   "source": "field_master.field",
+   "examples": [
+    "Lakwa",
+    "Geleki",
+    "Lakhmani"
+   ],
+   "missing_share": 0.0,
+   "categorical_values": [
+    "Geleki",
+    "Lakhmani",
+    "Lakwa"
+   ]
+  },
+  "asset": {
+   "source": "field_master.asset",
+   "examples": [
+    "Assam"
+   ],
+   "missing_share": 0.0,
+   "categorical_values": [
+    "Assam"
+   ]
+  },
+  "as_of": {
+   "source": "settings.AS_OF",
+   "examples": [
+    "2026-09-23"
+   ],
+   "missing_share": 0.0
+  },
+  "year": {
+   "source": "calendar year",
+   "examples": [
+    "2024",
+    "2021",
+    "2023"
+   ],
+   "missing_share": 0.0
+  },
+  "is_partial_year": {
+   "source": "period shorter than calendar year",
+   "examples": [
+    "No",
+    "Yes"
+   ],
+   "missing_share": 0.0,
+   "categorical_values": [
+    "No",
+    "Yes"
+   ]
+  },
+  "period_start": {
+   "source": "period",
+   "examples": [
+    "2024-01-01",
+    "2021-10-01",
+    "2023-01-01"
+   ],
+   "missing_share": 0.0
+  },
+  "period_end": {
+   "source": "period",
+   "examples": [
+    "2024-12-31",
+    "2021-12-31",
+    "2023-12-31"
+   ],
+   "missing_share": 0.0
+  },
+  "period_days": {
+   "source": "period_end - period_start + 1",
+   "examples": [
+    "366",
+    "92",
+    "365"
+   ],
+   "missing_share": 0.0
+  },
+  "oil_bbl": {
+   "source": "sum(daily_production.oil_rate_bopd) over period",
+   "examples": [
+    "3,100,671",
+    "1,252,764",
+    "3,264,335"
+   ],
+   "missing_share": 0.0
+  },
+  "water_bbl": {
+   "source": "sum(daily_production.water_rate_bwpd)",
+   "examples": [
+    "13,136,042",
+    "2,033,735",
+    "11,946,126"
+   ],
+   "missing_share": 0.0
+  },
+  "gas_mscf": {
+   "source": "sum(daily_production.gas_rate_mscfd)",
+   "examples": [
+    "1,254,878",
+    "519,916",
+    "1,273,985"
+   ],
+   "missing_share": 0.0
+  },
+  "avg_oil_bopd": {
+   "source": "oil_bbl / period_days",
+   "examples": [
+    "8,471.8",
+    "13,617.0",
+    "8,943.4"
+   ],
+   "missing_share": 0.0
+  },
+  "avg_water_cut_pct": {
+   "source": "water_bbl / (oil_bbl + water_bbl)",
+   "examples": [
+    "80.9%",
+    "61.9%",
+    "78.5%"
+   ],
+   "missing_share": 0.0
+  },
+  "avg_gor_scf_bbl": {
+   "source": "gas_mscf * 1000 / oil_bbl",
+   "examples": [
+    "405",
+    "415",
+    "390"
+   ],
+   "missing_share": 0.0
+  },
+  "active_wells": {
+   "source": "count distinct producing wells",
+   "examples": [
+    "152",
+    "136",
+    "105"
+   ],
+   "missing_share": 0.0
+  },
+  "wells_total": {
+   "source": "count(well_master)",
+   "examples": [
+    "160",
+    "142",
+    "110"
+   ],
+   "missing_share": 0.0
+  },
+  "uptime_pct": {
+   "source": "producing well-days / well-days",
+   "examples": [
+    "81.5%",
+    "83.1%",
+    "83.5%"
+   ],
+   "missing_share": 0.0
+  },
+  "target_oil_bopd": {
+   "source": "mean(field_targets.target_oil_bopd)",
+   "examples": [
+    "9,111.1",
+    "13,694.9",
+    "9,294.3"
+   ],
+   "missing_share": 0.0
+  },
+  "potential_oil_bopd": {
+   "source": "mean(field_targets.potential_oil_bopd)",
+   "examples": [
+    "10,390.5",
+    "16,151.4",
+    "10,599.4"
+   ],
+   "missing_share": 0.0
+  },
+  "target_uptime_pct": {
+   "source": "mean(field_targets.target_uptime_pct)",
+   "examples": [
+    "91.2%",
+    "87.7%",
+    "94.9%"
+   ],
+   "missing_share": 0.0
+  },
+  "gap_vs_target_pct": {
+   "source": "(avg_oil_bopd - target_oil_bopd) / target_oil_bopd",
+   "examples": [
+    "-7.0%",
+    "-0.6%",
+    "-3.8%"
+   ],
+   "missing_share": 0.0
+  },
+  "n_jobs": {
+   "source": "count(workover_history started in period)",
+   "examples": [
+    "321",
+    "64",
+    "264"
+   ],
+   "missing_share": 0.0
+  },
+  "n_jobs_failed": {
+   "source": "count(... FAILED)",
+   "examples": [
+    "47",
+    "7",
+    "48"
+   ],
+   "missing_share": 0.0
+  },
+  "job_success_pct": {
+   "source": "share SUCCESS",
+   "examples": [
+    "56.1%",
+    "62.5%",
+    "53.4%"
+   ],
+   "missing_share": 0.0
+  },
+  "rig_days_used": {
+   "source": "sum(workover_history.rig_days)",
+   "examples": [
+    "1,024.0",
+    "156.0",
+    "808.0"
+   ],
+   "missing_share": 0.0
+  },
+  "uplift_bopd_total": {
+   "source": "sum(workover_history.uplift_bopd)",
+   "examples": [
+    "6,084.7",
+    "1,147.0",
+    "4,029.4"
+   ],
+   "missing_share": 0.0
+  },
+  "deferred_bbl": {
+   "source": "sum(well_status_history.deferred_bbl) non-producing episodes",
+   "examples": [
+    "1,232,718",
+    "564,256",
+    "1,187,498"
+   ],
+   "missing_share": 0.0
+  },
+  "prev_avg_oil_bopd": {
+   "source": "previous-year avg oil",
+   "examples": [
+    "8,943.4",
+    "9,924.5",
+    "6,464.9"
+   ],
+   "missing_share": 0.13
+  },
+  "yoy_change_pct": {
+   "source": "avg_oil_bopd vs previous year",
+   "examples": [
+    "-5.3%",
+    "-9.9%",
+    "-6.3%"
+   ],
+   "missing_share": 0.13
+  },
+  "n_wells": {
+   "source": "field_master.n_wells",
+   "examples": [
+    "160",
+    "142",
+    "110"
+   ],
+   "missing_share": 0.0
+  },
+  "primary_reservoirs": {
+   "source": "field_master.primary_reservoirs",
+   "examples": [
+    "Tipam,Barail,Lakadong"
+   ],
+   "missing_share": 0.0,
+   "categorical_values": [
+    "Tipam,Barail,Lakadong"
+   ]
+  },
+  "centroid_lat": {
+   "source": "field_master.centroid_lat",
+   "examples": [
+    "27.058",
+    "26.962",
+    "26.874"
+   ],
+   "missing_share": 0.0
+  },
+  "centroid_lon": {
+   "source": "field_master.centroid_lon",
+   "examples": [
+    "94.640",
+    "94.814",
+    "94.700"
+   ],
+   "missing_share": 0.0
+  },
+  "data_start": {
+   "source": "field_master.data_start",
+   "examples": [
+    "2021-10-01"
+   ],
+   "missing_share": 0.0
+  },
+  "data_end": {
+   "source": "field_master.data_end",
+   "examples": [
+    "2026-09-30"
+   ],
+   "missing_share": 0.0
+  },
+  "n_clusters": {
+   "source": "count(cluster_master)",
+   "examples": [
+    "3",
+    "2"
+   ],
+   "missing_share": 0.0
+  },
+  "study_topic": {
+   "source": "document_index.title",
+   "examples": [
+    "History of Water Injection in Geleki Asset",
+    "Tipam Sand Reservoir Geological Study Geleki",
+    "Geleki Surface Flowline Wax Scraping Protocol"
+   ],
+   "missing_share": 0.0
+  }
+ },
+ "tables": {
+  "jobs_by_class": {
+   "columns": [
+    "intervention_class",
+    "ic_label",
+    "n_jobs",
+    "n_success",
+    "n_failed",
+    "rig_days",
+    "uplift_bopd"
+   ],
+   "source": "workover_history",
+   "example_rows": [
+    {
+     "intervention_class": "IC-01",
+     "ic_label": "SRP pump change",
+     "n_jobs": "38",
+     "n_success": "17",
+     "n_failed": "9",
+     "rig_days": "110.0",
+     "uplift_bopd": "571.5"
+    },
+    {
+     "intervention_class": "IC-01",
+     "ic_label": "SRP pump change",
+     "n_jobs": "9",
+     "n_success": "5",
+     "n_failed": "1",
+     "rig_days": "28.0",
+     "uplift_bopd": "287.5"
+    }
+   ],
+   "max_rows_seen": 15
+  },
+  "downtime": {
+   "columns": [
+    "status",
+    "reason_code",
+    "episodes",
+    "days",
+    "deferred_bbl"
+   ],
+   "source": "well_status_history",
+   "example_rows": [
+    {
+     "status": "SHUT_IN",
+     "reason_code": "OTHER",
+     "episodes": "8",
+     "days": "2,928",
+     "deferred_bbl": "812,681"
+    },
+    {
+     "status": "SHUT_IN",
+     "reason_code": "OTHER",
+     "episodes": "6",
+     "days": "552",
+     "deferred_bbl": "346,947"
+    }
+   ],
+   "max_rows_seen": 10
+  },
+  "events": {
+   "columns": [
+    "event_type",
+    "factor_class",
+    "events",
+    "controllable"
+   ],
+   "source": "operations_events",
+   "example_rows": [
+    {
+     "event_type": "GRID_POWER_OUTAGE",
+     "factor_class": "EXTERNAL",
+     "events": "590",
+     "controllable": "0"
+    },
+    {
+     "event_type": "WAIT_ON_RIG",
+     "factor_class": "HUMAN_PROCESS",
+     "events": "64",
+     "controllable": "64"
+    }
+   ],
+   "max_rows_seen": 11
+  },
+  "clusters": {
+   "columns": [
+    "cluster_id",
+    "wells",
+    "oil",
+    "avg_oil_bopd"
+   ],
+   "source": "daily_production + well_master.cluster_id",
+   "example_rows": [
+    {
+     "cluster_id": "LKW-GGS-I",
+     "wells": "61",
+     "oil": "1,152,388",
+     "avg_oil_bopd": "3,148.6"
+    },
+    {
+     "cluster_id": "GK-CENTRAL",
+     "wells": "54",
+     "oil": "524,127",
+     "avg_oil_bopd": "5,697.0"
+    }
+   ],
+   "max_rows_seen": 3
+  },
+  "cluster_list": {
+   "columns": [
+    "cluster_id",
+    "cluster_type",
+    "n_wells",
+    "center_lat",
+    "center_lon"
+   ],
+   "source": "cluster_master",
+   "example_rows": [
+    {
+     "cluster_id": "LKW-GGS-I",
+     "cluster_type": "GGS",
+     "n_wells": "61",
+     "center_lat": "27.076",
+     "center_lon": "94.624"
+    },
+    {
+     "cluster_id": "GK-NE",
+     "cluster_type": "FAULT_BLOCK",
+     "n_wells": "60",
+     "center_lat": "26.980",
+     "center_lon": "94.830"
+    }
+   ],
+   "max_rows_seen": 3
+  },
+  "facilities": {
+   "columns": [
+    "facility_id",
+    "type",
+    "name",
+    "capacity_bopd",
+    "serviced_cluster_ids"
+   ],
+   "source": "facility_master",
+   "example_rows": [
+    {
+     "facility_id": "LKW-GGS-I",
+     "type": "GGS",
+     "name": "Lakwa Group Gathering Station I",
+     "capacity_bopd": "7,000",
+     "serviced_cluster_ids": "LKW-GGS-I"
+    },
+    {
+     "facility_id": "GGS-01",
+     "type": "GGS",
+     "name": "Gas Gathering Station 1 (Geleki South)",
+     "capacity_bopd": "6,000",
+     "serviced_cluster_ids": "GK-SW"
+    }
+   ],
+   "max_rows_seen": 4
+  },
+  "lift_mix": {
+   "columns": [
+    "lift_type",
+    "wells"
+   ],
+   "source": "well_master.lift_type",
+   "example_rows": [
+    {
+     "lift_type": "SRP",
+     "wells": "112"
+    },
+    {
+     "lift_type": "SRP",
+     "wells": "108"
+    }
+   ],
+   "max_rows_seen": 3
+  },
+  "formation_summary": {
+   "columns": [
+    "formation",
+    "median_top_md_m",
+    "wells",
+    "lithology"
+   ],
+   "source": "formation_tops",
+   "example_rows": [
+    {
+     "formation": "Alluvium",
+     "median_top_md_m": "0.0",
+     "wells": "160",
+     "lithology": "Unconsolidated sand and clay"
+    },
+    {
+     "formation": "Alluvium",
+     "median_top_md_m": "0.0",
+     "wells": "142",
+     "lithology": "Unconsolidated sand and clay"
+    }
+   ],
+   "max_rows_seen": 7
+  }
+ },
+ "meta_keys": [
+  "legacy_doc_type",
+  "variant",
+  "year"
+ ],
+ "sample_doc_ids": [
+  "FS-LKW-2024",
+  "FS-GK-2021",
+  "FS-LKW-2023",
+  "FS-LKM-2026",
+  "DOC-FIELD-WATERFLOOD-HIST"
+ ]
+}

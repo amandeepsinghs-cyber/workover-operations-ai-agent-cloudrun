@@ -1,0 +1,306 @@
+{
+ "doc_type": "D11",
+ "doc_type_name": "Standard operating procedure",
+ "n_documents": 14,
+ "missing_text": "not recorded",
+ "slots": {
+  "doc_id": {
+   "source": "corpus",
+   "examples": [
+    "SOP-IC-03",
+    "SOP-IC-11",
+    "SOP-IC-14"
+   ],
+   "missing_share": 0.0
+  },
+  "doc_type": {
+   "source": "corpus",
+   "examples": [
+    "D11"
+   ],
+   "missing_share": 0.0
+  },
+  "doc_type_name": {
+   "source": "corpus",
+   "examples": [
+    "Standard operating procedure"
+   ],
+   "missing_share": 0.0,
+   "categorical_values": [
+    "Standard operating procedure"
+   ]
+  },
+  "doc_title": {
+   "source": "corpus",
+   "examples": [
+    "SOP IC-03 \u2014 Tubing leak repair",
+    "SOP IC-11 \u2014 Water shut-off squeeze",
+    "SOP IC-14 \u2014 Surface and integrity repair"
+   ],
+   "missing_share": 0.0
+  },
+  "doc_date": {
+   "source": "corpus",
+   "examples": [
+    "2026-09-23"
+   ],
+   "missing_share": 0.0
+  },
+  "field": {
+   "source": "field_master.field",
+   "examples": [
+    "ALL"
+   ],
+   "missing_share": 0.0,
+   "categorical_values": [
+    "ALL"
+   ]
+  },
+  "asset": {
+   "source": "field_master.asset",
+   "examples": [
+    "Assam"
+   ],
+   "missing_share": 0.0,
+   "categorical_values": [
+    "Assam"
+   ]
+  },
+  "as_of": {
+   "source": "settings.AS_OF",
+   "examples": [
+    "2026-09-23"
+   ],
+   "missing_share": 0.0
+  },
+  "intervention_class": {
+   "source": "ic_map.yaml",
+   "examples": [
+    "IC-03",
+    "IC-11",
+    "IC-14"
+   ],
+   "missing_share": 0.0
+  },
+  "ic_label": {
+   "source": "ic_map.yaml label",
+   "examples": [
+    "Tubing leak repair",
+    "Water shut-off squeeze",
+    "Surface and integrity repair"
+   ],
+   "missing_share": 0.0,
+   "categorical_values": [
+    "Coning control (choke back)",
+    "Gas-lift valve change",
+    "Lift optimisation / conversion",
+    "Matrix stimulation (acid / frac)",
+    "Perforation work (re-perforation)",
+    "Rod string repair",
+    "SRP pump change",
+    "Sand cleanout / control",
+    "Scale removal / inhibition",
+    "Surface and integrity repair",
+    "Tubing leak repair",
+    "Water shut-off squeeze",
+    "Wax removal / control",
+    "Zonal isolation"
+   ]
+  },
+  "n_job_codes": {
+   "source": "count(job_catalogue[intervention_class])",
+   "examples": [
+    "1",
+    "2",
+    "3"
+   ],
+   "missing_share": 0.0
+  },
+  "equipment_list": {
+   "source": "job_catalogue.equipment",
+   "examples": [
+    "WORKOVER_RIG",
+    "SURFACE_CREW, WORKOVER_RIG",
+    "PULLING_UNIT, SURFACE_CREW, WORKOVER_RIG"
+   ],
+   "missing_share": 0.0,
+   "categorical_values": [
+    "HOT_OILER, PULLING_UNIT, PUMP_TRUCK, WORKOVER_RIG",
+    "PULLING_UNIT",
+    "PULLING_UNIT, SURFACE_CREW, WORKOVER_RIG",
+    "PULLING_UNIT, WORKOVER_RIG",
+    "PUMP_TRUCK",
+    "SLICKLINE_UNIT",
+    "SURFACE_CREW",
+    "SURFACE_CREW, WORKOVER_RIG",
+    "WORKOVER_RIG"
+   ]
+  },
+  "requires_rig_any": {
+   "source": "any(job_catalogue.requires_rig)",
+   "examples": [
+    "Yes",
+    "No"
+   ],
+   "missing_share": 0.0,
+   "categorical_values": [
+    "No",
+    "Yes"
+   ]
+  },
+  "est_days_min": {
+   "source": "min(job_catalogue.est_days)",
+   "examples": [
+    "3.5",
+    "4.0",
+    "0.5"
+   ],
+   "missing_share": 0.0
+  },
+  "est_days_max": {
+   "source": "max(job_catalogue.est_days)",
+   "examples": [
+    "3.5",
+    "6.5",
+    "7.0"
+   ],
+   "missing_share": 0.0
+  },
+  "jobs_all_fields": {
+   "source": "count(workover_history[intervention_class])",
+   "examples": [
+    "410",
+    "191",
+    "324"
+   ],
+   "missing_share": 0.0
+  },
+  "success_pct_all": {
+   "source": "share SUCCESS all fields",
+   "examples": [
+    "63.2%",
+    "57.6%",
+    "66.7%"
+   ],
+   "missing_share": 0.0
+  },
+  "median_rig_days_all": {
+   "source": "median rig_days all fields",
+   "examples": [
+    "5.0",
+    "8.0",
+    "0.0"
+   ],
+   "missing_share": 0.0
+  },
+  "median_uplift_all": {
+   "source": "median uplift_bopd all fields",
+   "examples": [
+    "9.4",
+    "25.3",
+    "16.0"
+   ],
+   "missing_share": 0.0
+  }
+ },
+ "tables": {
+  "job_codes": {
+   "columns": [
+    "job_code",
+    "job_name",
+    "category",
+    "equipment",
+    "requires_rig",
+    "est_days",
+    "cost_band",
+    "selection_evidence"
+   ],
+   "source": "job_catalogue",
+   "example_rows": [
+    {
+     "job_code": "TUBING_REPLACE",
+     "job_name": "Tubing leak repair / replacement",
+     "category": "MECHANICAL",
+     "equipment": "WORKOVER_RIG",
+     "requires_rig": "Yes",
+     "est_days": "3.5",
+     "cost_band": "MED",
+     "selection_evidence": "Sharp drop over 3-5d, CHP flat, displacement gap"
+    },
+    {
+     "job_code": "CEMENT_SQUEEZE",
+     "job_name": "Cement squeeze + reperforation",
+     "category": "WATER_CONTROL",
+     "equipment": "WORKOVER_RIG",
+     "requires_rig": "Yes",
+     "est_days": "6.5",
+     "cost_band": "HIGH",
+     "selection_evidence": "WOR prime positive slope + step change in water cut"
+    }
+   ],
+   "max_rows_seen": 5
+  },
+  "field_stats": {
+   "columns": [
+    "field",
+    "jobs",
+    "success_pct",
+    "failed",
+    "median_rig_days",
+    "median_uplift_bopd",
+    "median_run_life_days"
+   ],
+   "source": "workover_history (all fields)",
+   "example_rows": [
+    {
+     "field": "Geleki",
+     "jobs": "190",
+     "success_pct": "62.6%",
+     "failed": "20",
+     "median_rig_days": "5.0",
+     "median_uplift_bopd": "15.4",
+     "median_run_life_days": "144"
+    },
+    {
+     "field": "Geleki",
+     "jobs": "17",
+     "success_pct": "58.8%",
+     "failed": "4",
+     "median_rig_days": "7.0",
+     "median_uplift_bopd": "16.8",
+     "median_run_life_days": "173"
+    }
+   ],
+   "max_rows_seen": 3
+  },
+  "failure_modes": {
+   "columns": [
+    "failure_code",
+    "failed_jobs"
+   ],
+   "source": "workover_history[FAILED]",
+   "example_rows": [
+    {
+     "failure_code": "TUBING_LEAK",
+     "failed_jobs": "47"
+    },
+    {
+     "failure_code": "WATER_CHANNELLING",
+     "failed_jobs": "26"
+    }
+   ],
+   "max_rows_seen": 5
+  }
+ },
+ "meta_keys": [
+  "intervention_class",
+  "job_codes"
+ ],
+ "sample_doc_ids": [
+  "SOP-IC-03",
+  "SOP-IC-11",
+  "SOP-IC-14",
+  "SOP-IC-10",
+  "SOP-IC-08"
+ ]
+}

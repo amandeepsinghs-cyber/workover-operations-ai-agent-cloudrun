@@ -1,0 +1,91 @@
+sop_id: SOP-IC-07
+intervention_class: IC-07
+title: Standard Operating Procedure for Gas-Lift Valve Replacement by Slickline
+purpose: Define step-by-step procedures for safely retrieving and installing gas-lift valves, dummy valves, and orifice valves
+  in side pocket mandrels using slickline kick-over tools.
+scope: Applies to all continuous and intermittent gas-lift wells across Assam assets ({n_job_codes} catalogue job codes) utilizing
+  {equipment_list}.
+applicability:
+- Gas-lift diagnostic survey showing leaking dummy valve, cut orifice, or faulty operating valve.
+- Multi-point gas injection causing high lift gas consumption and poor lift efficiency.
+- Requirement to re-distribute gas injection depth to a deeper or shallower side pocket mandrel.
+roles:
+- Wellsite supervisor
+- Slickline supervisor
+- Gas-lift optimization engineer
+- Rig safety officer
+ppe_and_permits:
+- Approved cold work permit with slickline operation certificate.
+- Calibrated multi-gas detector for continuous hydrocarbon and toxic gas monitoring.
+- Standard personal protective equipment including impact gloves and eye protection.
+hazards:
+- hazard: High pressure gas release from casing annulus during valve change-out.
+  control: Depressurize gas injection line, bleed lubricator slowly, and verify zero differential pressure across mandrel.
+- hazard: Wireline breaking while jarring to pull or set gas-lift valve.
+  control: Monitor slickline pull tension indicator, inspect wire before job, and limit jarring forces.
+- hazard: Kick-over tool getting lodged or malfunctioning in the side pocket mandrel.
+  control: Confirm mandrel orientation, check finger spring tension, and drift toolstring prior to entry.
+- hazard: Dropping gas-lift valve downhole into the tubing string.
+  control: Inspect pulling tool shear pins, verify latch spring tension, and use proper running prong.
+pre_job_checks:
+- Review well completion schematic, side pocket mandrel depths, series type, and orientation.
+- Check slickline unit, weight indicator, depth counter, and lubricator section seals.
+- Verify test certificates for wireline lubricator, wireline valve, and stuffing box.
+- Inspect replacement gas-lift valves, verify port size, bellows test pressure, and packing rings.
+- Conduct safety briefing covering wellhead pressure control and emergency shutdown procedures.
+procedure:
+- phase: Well Preparation and Pressure Equalization
+  steps:
+  - Isolate high pressure lift gas supply line and vent gas from surface injection manifold.
+  - Record casing annulus pressure and flowing tubing pressure on calibrated test gauges.
+  - Equalize pressure between casing annulus and tubing string where possible through injection valve.
+  - Confirm wellhead master valves and swab valve operate freely and seal completely.
+  - Install barrier warning signs and establish designated exclusion area around wellhead.
+  - Review depth tally of side pocket mandrels with slickline crew.
+- phase: Slickline Rig Up and Barrier Testing
+  steps:
+  - Position slickline unit squarely with wellhead and anchor unit with heavy-duty tie downs.
+  - Rig up wireline lubricator, wireline blowout preventer, and hydraulic stuffing box on swab valve.
+  - Pressure test lubricator assembly to the approved test pressure in the approved programme.
+  - Bleed test pressure and verify zero leakage across all lubricator quick unions.
+  - Open wellhead swab valve slowly and equalize lubricator with well pressure.
+  - Zero slickline depth counter at the wellhead tubing hanger reference datum.
+- phase: Valve Retrieval and Replacement
+  steps:
+  - Make up pulling tool and kick-over tool on slickline toolstring with stem and jars.
+  - Run toolstring downhole to depth immediately below targeted side pocket mandrel.
+  - Pull up slowly through mandrel to engage orienting sleeve and kick over into pocket.
+  - Jar downward to latch pulling tool onto valve fishing neck, then jar upward to shear and retrieve valve.
+  - Retrieve toolstring to surface, close swab valve, bleed lubricator, and inspect retrieved valve.
+  - Examine packing seals and check valve seat of retrieved valve for erosion or failure causes.
+  - Dress running tool with fresh shear pin and mount calibrated replacement gas-lift valve.
+  - Run into hole, locate side pocket mandrel, kick over, and jar downward to lock valve into pocket.
+  - Jar upward to shear running tool pin, confirm release, and pull toolstring back to surface.
+- phase: Annulus Barrier Testing and Restart
+  steps:
+  - Close wellhead swab valve, bleed lubricator pressure to zero, and rig down slickline equipment.
+  - Pressurize casing annulus with lift gas to verify valve closure or expected injection response.
+  - Conduct pressure hold test on annulus to confirm integrity of newly installed valve packings.
+  - Open lift gas supply wing valve and establish design gas injection rate through choke.
+  - Monitor flowing tubing pressure, casing injection pressure, and liquid delivery at gathering station.
+  - Complete gas-lift valve replacement report and file documentation with production section.
+job_variants:
+  GLV_REPLACE:
+  - Retrieve defective gas-lift valve from side pocket mandrel using slickline kick-over tool.
+  - Install calibrated replacement valve with verified port size and pressure test casing barrier.
+acceptance_criteria:
+- Replacement valve latches securely into side pocket mandrel and releases running tool cleanly.
+- Annulus pressure test confirms zero leakage through valve packings to the approved test pressure.
+- Stable single-point gas injection achieved with expected drawdown and oil production uplift.
+post_job:
+- Document retrieved valve serial number, condition, port size, and replacement valve parameters.
+- Tag removed valve and return to gas-lift workshop for inspection, recalibration, or redressing.
+- Update well completion records and notify gas-lift optimization engineering team.
+lessons_learned:
+- Historical records show {jobs_all_fields} gas-lift valve changeouts with {success_pct_all} success rate.
+- Median duration for slickline valve interventions is {median_rig_days_all} rig days.
+- Careful inspection of pocket seal bores prevents premature packing seal failures.
+references:
+- Slickline Gas-Lift Valve Running and Pulling Standard.
+- Gas-Lift System Optimization and Mandrel Maintenance Manual.
+- API Recommended Practice for Gas-Lift Operations.

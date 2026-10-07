@@ -1,0 +1,672 @@
+{
+ "doc_type": "D07",
+ "doc_type_name": "Well test and pressure survey report",
+ "n_documents": 1447,
+ "missing_text": "not recorded",
+ "slots": {
+  "doc_id": {
+   "source": "corpus",
+   "examples": [
+    "WT-LKW-033-20241020",
+    "WT-LKW-120-20220420",
+    "WT-LKW-054-20240410"
+   ],
+   "missing_share": 0.0
+  },
+  "doc_type": {
+   "source": "corpus",
+   "examples": [
+    "D07"
+   ],
+   "missing_share": 0.0
+  },
+  "doc_type_name": {
+   "source": "corpus",
+   "examples": [
+    "Well test and pressure survey report"
+   ],
+   "missing_share": 0.0,
+   "categorical_values": [
+    "Well test and pressure survey report"
+   ]
+  },
+  "doc_title": {
+   "source": "corpus",
+   "examples": [
+    "LKW-033 Well Test & Pressure Survey Report (2024-10-20)",
+    "LKW-120 Well Test & Pressure Survey Report (2022-04-20)",
+    "LKW-054 Well Test & Pressure Survey Report (2024-04-10)"
+   ],
+   "missing_share": 0.0
+  },
+  "doc_date": {
+   "source": "corpus",
+   "examples": [
+    "2024-10-20",
+    "2022-04-20",
+    "2024-04-10"
+   ],
+   "missing_share": 0.0
+  },
+  "field": {
+   "source": "field_master.field",
+   "examples": [
+    "Lakwa",
+    "Geleki",
+    "Lakhmani"
+   ],
+   "missing_share": 0.0,
+   "categorical_values": [
+    "Geleki",
+    "Lakhmani",
+    "Lakwa"
+   ]
+  },
+  "asset": {
+   "source": "field_master.asset",
+   "examples": [
+    "Assam"
+   ],
+   "missing_share": 0.0,
+   "categorical_values": [
+    "Assam"
+   ]
+  },
+  "as_of": {
+   "source": "settings.AS_OF",
+   "examples": [
+    "2026-09-23"
+   ],
+   "missing_share": 0.0
+  },
+  "well_id": {
+   "source": "well_master.well_id",
+   "examples": [
+    "LKW-033",
+    "LKW-120",
+    "LKW-054"
+   ],
+   "missing_share": 0.0
+  },
+  "cluster_id": {
+   "source": "well_master.cluster_id",
+   "examples": [
+    "LKW-GGS-III",
+    "LKW-GGS-II",
+    "LKW-GGS-I"
+   ],
+   "missing_share": 0.0,
+   "categorical_values": [
+    "GK-CENTRAL",
+    "GK-NE",
+    "GK-SW",
+    "LKM-GGS-I",
+    "LKM-GGS-II",
+    "LKW-GGS-I",
+    "LKW-GGS-II",
+    "LKW-GGS-III"
+   ]
+  },
+  "spud_date": {
+   "source": "well_master.spud_date",
+   "examples": [
+    "1968-10-15",
+    "1972-04-13",
+    "1974-01-26"
+   ],
+   "missing_share": 0.0
+  },
+  "completion_date": {
+   "source": "well_master.completion_date",
+   "examples": [
+    "1969-03-24",
+    "1972-08-02",
+    "1974-05-13"
+   ],
+   "missing_share": 0.0
+  },
+  "current_zone": {
+   "source": "well_master.current_zone",
+   "examples": [
+    "Tipam",
+    "Barail",
+    "Lakadong"
+   ],
+   "missing_share": 0.0,
+   "categorical_values": [
+    "Barail",
+    "Lakadong",
+    "Tipam"
+   ]
+  },
+  "perf_top_m": {
+   "source": "well_master.perf_top_m",
+   "examples": [
+    "2,761.0",
+    "3,112.5",
+    "2,771.1"
+   ],
+   "missing_share": 0.0
+  },
+  "perf_bottom_m": {
+   "source": "well_master.perf_bottom_m",
+   "examples": [
+    "2,790.6",
+    "3,133.1",
+    "2,828.6"
+   ],
+   "missing_share": 0.0
+  },
+  "total_depth_md_m": {
+   "source": "well_master.total_depth_md_m",
+   "examples": [
+    "2,863.3",
+    "3,184.2",
+    "2,913.0"
+   ],
+   "missing_share": 0.0
+  },
+  "total_depth_tvd_m": {
+   "source": "well_master.total_depth_tvd_m",
+   "examples": [
+    "2,833.8",
+    "3,114.4",
+    "2,873.2"
+   ],
+   "missing_share": 0.0
+  },
+  "lift_type": {
+   "source": "well_master.lift_type",
+   "examples": [
+    "GAS_LIFT",
+    "SRP",
+    "NATURAL"
+   ],
+   "missing_share": 0.0,
+   "categorical_values": [
+    "GAS_LIFT",
+    "NATURAL",
+    "SRP"
+   ]
+  },
+  "plunger_diameter_in": {
+   "source": "well_master.plunger_diameter_in",
+   "examples": [
+    "1.50",
+    "1.25"
+   ],
+   "missing_share": 0.361
+  },
+  "stroke_length_in": {
+   "source": "well_master.stroke_length_in",
+   "examples": [
+    "54.0",
+    "100.0",
+    "64.0"
+   ],
+   "missing_share": 0.361
+  },
+  "pump_setting_depth_m": {
+   "source": "well_master.pump_setting_depth_m",
+   "examples": [
+    "3,032.2",
+    "2,693.0",
+    "2,737.9"
+   ],
+   "missing_share": 0.361
+  },
+  "rod_string_grade": {
+   "source": "well_master.rod_string_grade",
+   "examples": [
+    "D",
+    "K",
+    "C"
+   ],
+   "missing_share": 0.361,
+   "categorical_values": [
+    "C",
+    "D",
+    "K",
+    "not recorded"
+   ]
+  },
+  "pump_type": {
+   "source": "well_master.pump_type",
+   "examples": [
+    "INSERT",
+    "TUBING"
+   ],
+   "missing_share": 0.361,
+   "categorical_values": [
+    "INSERT",
+    "TUBING",
+    "not recorded"
+   ]
+  },
+  "casing_vented": {
+   "source": "well_master.casing_vented",
+   "examples": [
+    "No",
+    "Yes"
+   ],
+   "missing_share": 0.0,
+   "categorical_values": [
+    "No",
+    "Yes"
+   ]
+  },
+  "tubing_size_in": {
+   "source": "well_master.tubing_size_in",
+   "examples": [
+    "2.875",
+    "3.500"
+   ],
+   "missing_share": 0.0
+  },
+  "casing_size_in": {
+   "source": "well_master.casing_size_in",
+   "examples": [
+    "5.500",
+    "7.000"
+   ],
+   "missing_share": 0.0
+  },
+  "latitude": {
+   "source": "well_master.latitude",
+   "examples": [
+    "27.03709",
+    "27.04600",
+    "27.04972"
+   ],
+   "missing_share": 0.0
+  },
+  "longitude": {
+   "source": "well_master.longitude",
+   "examples": [
+    "94.62457",
+    "94.65050",
+    "94.63621"
+   ],
+   "missing_share": 0.0
+  },
+  "well_status": {
+   "source": "well_master.status",
+   "examples": [
+    "ACTIVE",
+    "IDLE"
+   ],
+   "missing_share": 0.0,
+   "categorical_values": [
+    "ACTIVE",
+    "IDLE"
+   ]
+  },
+  "perf_interval_m": {
+   "source": "well_master.perf_bottom_m - perf_top_m",
+   "examples": [
+    "29.6",
+    "20.6",
+    "57.5"
+   ],
+   "missing_share": 0.0
+  },
+  "facility_id": {
+   "source": "facility_master.facility_id",
+   "examples": [
+    "LKW-GGS-III",
+    "LKW-GGS-II",
+    "LKW-GGS-I"
+   ],
+   "missing_share": 0.0,
+   "categorical_values": [
+    "LKM-GGS-I",
+    "LKM-GGS-II",
+    "LKW-GGS-I",
+    "LKW-GGS-II",
+    "LKW-GGS-III"
+   ]
+  },
+  "facility_name": {
+   "source": "facility_master.name",
+   "examples": [
+    "Lakwa Group Gathering Station III",
+    "Lakwa Group Gathering Station II",
+    "Lakwa Group Gathering Station I"
+   ],
+   "missing_share": 0.0,
+   "categorical_values": [
+    "Lakhmani Group Gathering Station I",
+    "Lakhmani Group Gathering Station II",
+    "Lakwa Group Gathering Station I",
+    "Lakwa Group Gathering Station II",
+    "Lakwa Group Gathering Station III"
+   ]
+  },
+  "survey_id": {
+   "source": "pressure_surveys.survey_id",
+   "examples": [
+    "PS-LKW-033-20241020",
+    "PS-LKW-120-20220420",
+    "PS-LKW-054-20240410"
+   ],
+   "missing_share": 0.0
+  },
+  "survey_date": {
+   "source": "pressure_surveys.survey_date",
+   "examples": [
+    "2024-10-20",
+    "2022-04-20",
+    "2024-04-10"
+   ],
+   "missing_share": 0.0
+  },
+  "sbhp_kgcm2": {
+   "source": "pressure_surveys.sbhp_kgcm2",
+   "examples": [
+    "215.2",
+    "255.5",
+    "221.7"
+   ],
+   "missing_share": 0.0
+  },
+  "fbhp_kgcm2": {
+   "source": "pressure_surveys.fbhp_kgcm2",
+   "examples": [
+    "93.8",
+    "96.1",
+    "108.1"
+   ],
+   "missing_share": 0.0
+  },
+  "pi_bpd_per_kgcm2": {
+   "source": "pressure_surveys.pi_bpd_per_kgcm2",
+   "examples": [
+    "7.291",
+    "2.404",
+    "2.210"
+   ],
+   "missing_share": 0.083
+  },
+  "fluid_level_m": {
+   "source": "pressure_surveys.fluid_level_m",
+   "examples": [
+    "1,690.4",
+    "1,976.5",
+    "1,532.1"
+   ],
+   "missing_share": 0.0
+  },
+  "datum_tvd_m": {
+   "source": "pressure_surveys.datum_tvd_m",
+   "examples": [
+    "2,732.6",
+    "3,044.3",
+    "2,733.2"
+   ],
+   "missing_share": 0.0
+  },
+  "drawdown_kgcm2": {
+   "source": "pressure_surveys.sbhp - fbhp",
+   "examples": [
+    "121.4",
+    "159.4",
+    "113.6"
+   ],
+   "missing_share": 0.0
+  },
+  "prev_survey_date": {
+   "source": "pressure_surveys.survey_date[previous]",
+   "examples": [
+    "2023-04-28",
+    "2022-06-13",
+    "2022-08-09"
+   ],
+   "missing_share": 0.285
+  },
+  "prev_sbhp_kgcm2": {
+   "source": "pressure_surveys.sbhp_kgcm2[previous]",
+   "examples": [
+    "226.1",
+    "220.0",
+    "229.6"
+   ],
+   "missing_share": 0.285
+  },
+  "sbhp_change_kgcm2": {
+   "source": "sbhp - previous sbhp",
+   "examples": [
+    "-10.9",
+    "+1.7",
+    "-2.8"
+   ],
+   "missing_share": 0.285
+  },
+  "test_id": {
+   "source": "well_tests.test_id",
+   "examples": [
+    "TST-LKW-033-20241021",
+    "TST-LKW-120-20220415",
+    "TST-LKW-054-20240408"
+   ],
+   "missing_share": 0.046
+  },
+  "test_date": {
+   "source": "well_tests.test_date",
+   "examples": [
+    "2024-10-21",
+    "2022-04-15",
+    "2024-04-08"
+   ],
+   "missing_share": 0.046
+  },
+  "test_duration_hr": {
+   "source": "well_tests.test_duration_hr",
+   "examples": [
+    "24.0"
+   ],
+   "missing_share": 0.046
+  },
+  "test_oil_rate_bopd": {
+   "source": "well_tests.oil_rate_bopd",
+   "examples": [
+    "78.2",
+    "86.5",
+    "118.7"
+   ],
+   "missing_share": 0.046
+  },
+  "test_water_rate_bwpd": {
+   "source": "well_tests.water_rate_bwpd",
+   "examples": [
+    "801.8",
+    "316.2",
+    "130.9"
+   ],
+   "missing_share": 0.046
+  },
+  "test_gas_rate_mscfd": {
+   "source": "well_tests.gas_rate_mscfd",
+   "examples": [
+    "21.7",
+    "39.7",
+    "27.1"
+   ],
+   "missing_share": 0.046
+  },
+  "test_thp_kgcm2": {
+   "source": "well_tests.thp_kgcm2",
+   "examples": [
+    "12.0",
+    "11.2",
+    "9.8"
+   ],
+   "missing_share": 0.046
+  },
+  "test_chp_kgcm2": {
+   "source": "well_tests.chp_kgcm2",
+   "examples": [
+    "15.7",
+    "14.2",
+    "19.4"
+   ],
+   "missing_share": 0.046
+  },
+  "test_fluid_level_m": {
+   "source": "well_tests.fluid_level_m",
+   "examples": [
+    "753.1",
+    "991.0",
+    "747.6"
+   ],
+   "missing_share": 0.046
+  },
+  "test_pump_intake_p_kgcm2": {
+   "source": "well_tests.pump_intake_p_kgcm2",
+   "examples": [
+    "45.6",
+    "22.6",
+    "21.7"
+   ],
+   "missing_share": 0.046
+  },
+  "test_quality": {
+   "source": "well_tests.test_quality",
+   "examples": [
+    "GOOD",
+    "SUSPECT",
+    "REJECTED"
+   ],
+   "missing_share": 0.046,
+   "categorical_values": [
+    "GOOD",
+    "REJECTED",
+    "SUSPECT",
+    "not recorded"
+   ]
+  },
+  "test_water_cut_pct": {
+   "source": "well_tests.water_rate / (oil + water)",
+   "examples": [
+    "91.1%",
+    "78.5%",
+    "52.4%"
+   ],
+   "missing_share": 0.046
+  },
+  "test_gor_scf_bbl": {
+   "source": "well_tests.gas_rate_mscfd * 1000 / oil_rate_bopd",
+   "examples": [
+    "277",
+    "459",
+    "228"
+   ],
+   "missing_share": 0.046
+  },
+  "decline_window_days": {
+   "source": "facts.DECLINE_WINDOW_DAYS",
+   "examples": [
+    "180"
+   ],
+   "missing_share": 0.0
+  },
+  "well_decline_pct": {
+   "source": "daily_production oil: mean(last window) vs mean(window starting decline_window_days earlier)",
+   "examples": [
+    "-12.8%",
+    "-22.8%",
+    "+1.3%"
+   ],
+   "missing_share": 0.198
+  },
+  "offset_median_decline_pct": {
+   "source": "median(offsets.decline_pct)",
+   "examples": [
+    "+11.1%",
+    "+19.1%",
+    "-15.2%"
+   ],
+   "missing_share": 0.099
+  },
+  "offset_max_residual_pp": {
+   "source": "max |offset decline - well decline|",
+   "examples": [
+    "48.8 pp",
+    "87.0 pp",
+    "86.2 pp"
+   ],
+   "missing_share": 0.198
+  }
+ },
+ "tables": {
+  "recent_tests": {
+   "columns": [
+    "test_date",
+    "oil_rate_bopd",
+    "water_rate_bwpd",
+    "gas_rate_mscfd",
+    "thp_kgcm2",
+    "chp_kgcm2",
+    "fluid_level_m",
+    "test_quality"
+   ],
+   "source": "well_tests",
+   "example_rows": [
+    {
+     "test_date": "2024-08-15",
+     "oil_rate_bopd": "78.4",
+     "water_rate_bwpd": "789.0",
+     "gas_rate_mscfd": "21.7",
+     "thp_kgcm2": "11.6",
+     "chp_kgcm2": "16.1",
+     "fluid_level_m": "774.1",
+     "test_quality": "GOOD"
+    },
+    {
+     "test_date": "2022-02-27",
+     "oil_rate_bopd": "105.2",
+     "water_rate_bwpd": "373.1",
+     "gas_rate_mscfd": "48.2",
+     "thp_kgcm2": "11.4",
+     "chp_kgcm2": "14.3",
+     "fluid_level_m": "1,408.4",
+     "test_quality": "SUSPECT"
+    }
+   ],
+   "max_rows_seen": 4
+  },
+  "offsets": {
+   "columns": [
+    "offset_well_id",
+    "distance_m",
+    "same_zone",
+    "decline_pct"
+   ],
+   "source": "well_offsets + daily_production",
+   "example_rows": [
+    {
+     "offset_well_id": "LKW-121",
+     "distance_m": "341.6",
+     "same_zone": "No",
+     "decline_pct": "+36.0%"
+    },
+    {
+     "offset_well_id": "LKW-070",
+     "distance_m": "187.8",
+     "same_zone": "Yes",
+     "decline_pct": "-2.1%"
+    }
+   ],
+   "max_rows_seen": 6
+  }
+ },
+ "meta_keys": [
+  "survey_id"
+ ],
+ "sample_doc_ids": [
+  "WT-LKW-033-20241020",
+  "WT-LKW-120-20220420",
+  "WT-LKW-054-20240410",
+  "WT-LKW-103-20230827",
+  "WT-LKW-061-20251107"
+ ]
+}

@@ -1,0 +1,92 @@
+sop_id: SOP-IC-10
+intervention_class: IC-10
+title: Standard Operating Procedure for Re-Perforation and Additional Perforation Work
+purpose: Establish strict safety standards, explosive handling protocols, and operational procedures for wireline casing perforating
+  and re-perforating reservoir zones.
+scope: Covers electric wireline perforating and tubing-conveyed perforating operations across Assam asset wells ({n_job_codes}
+  catalogue job codes) utilizing {equipment_list}.
+applicability:
+- Severely plugged or collapsed perforations showing zero inflow despite stimulation.
+- Identification of bypassed or unperforated hydrocarbon pay sands on openhole or cased hole logs.
+- Requirement to re-establish reservoir connectivity after cement squeeze or casing patch repair.
+roles:
+- Wellsite supervisor
+- Logging and perforating specialist
+- Petroleum production engineer
+- Explosive safety officer
+ppe_and_permits:
+- Approved explosive handling and perforating permit to work with radio silence clearance.
+- Personal protective equipment including antistatic clothing, eye protection, and safety boots.
+- Multi-gas detector monitoring atmospheric conditions at wellhead and logging unit.
+hazards:
+- hazard: Premature explosive detonation caused by stray electric voltage, static, or radio transmission.
+  control: Enforce complete radio silence, disconnect cathodic protection, and ground logging unit to wellhead.
+- hazard: Well blowout upon perforating high pressure underbalanced reservoir zone.
+  control: Verify hydrostatic kill column, install rated wireline blowout preventer, and test lubricator.
+- hazard: Perforating gun getting stuck in casing due to burred perforations or sand influx.
+  control: Use hollow carrier guns, inspect gun outer diameter, and pull gun slowly past perforated interval.
+- hazard: Misfire of perforating charges leaving live explosives downhole or at surface.
+  control: Follow approved disarming protocol, test firing circuits, and keep personnel clear during retrieval.
+pre_job_checks:
+- Review openhole logs, cased hole gamma ray correlation logs, and approved shot depth programme.
+- Inspect wireline logging truck, winch unit, shooting panel, and armored logging cable.
+- Perform stray voltage survey between wellhead, logging truck, and explosive loading bench.
+- Verify explosive permits, magazine custody records, detonator compatibility, and charge counts.
+- Conduct safety briefing covering radio silence enforcement, perimeter barriers, and misfire procedures.
+procedure:
+- phase: Well Preparation and Radio Silence Enforcement
+  steps:
+  - Confirm well control status and record tubing and casing pressures on calibrated gauges.
+  - Establish safety exclusion zone and post explosive warning signs around wellsite perimeter.
+  - Turn off all radio transmitters, mobile telephones, and cathodic protection systems on location.
+  - Connect dedicated copper grounding cable between wireline truck chassis and wellhead casing flange.
+  - Measure stray voltage across wellhead and ground to confirm reading is below allowable threshold.
+  - Hold safety toolbox meeting with all wellsite personnel before handling explosive detonators.
+- phase: Gun Assembly and Lubricator Pressure Testing
+  steps:
+  - Load shaped charges and detonating cord into steel hollow carrier gun body in designated bunker.
+  - Make up casing collar locator and safety firing head onto perforating gun assembly.
+  - Connect electric wireline cable head and verify circuit continuity on safety meter.
+  - Hoist gun assembly into wireline lubricator using auxiliary crane line and tag lines.
+  - Connect lubricator to wellhead wireline valve and pressure test to the approved test pressure.
+  - Bleed test pressure and verify zero pressure drop across lubricator seals.
+- phase: Wireline Correlation and Perforation Execution
+  steps:
+  - Open wellhead swab valve slowly and equalize lubricator with wellbore fluid pressure.
+  - Run perforating gun assembly in hole while monitoring depth counter and cable tension.
+  - Record gamma ray and casing collar locator correlation log across target reservoir section.
+  - Correlate collar log with reference openhole logs to identify exact target depth interval.
+  - Position perforating gun on depth, apply line tension brake, and reconfirm depth correlation.
+  - Clear all personnel from wellhead area, arm shooting panel, and fire perforating charges.
+  - Observe instantaneous surface pressure indication and line movement confirming detonation.
+- phase: Gun Retrieval and Handover
+  steps:
+  - Pull fired gun assembly out of hole slowly, observing line tension past the perforated depth.
+  - Slow down line speed prior to gun entry into wireline lubricator.
+  - Close wellhead swab valve, bleed lubricator pressure to zero, and verify zero internal pressure.
+  - Disconnect lubricator and swing gun assembly to ground inspection rack.
+  - Inspect gun carrier to confirm complete charge detonation and intact carrier body.
+  - Lift radio silence restrictions, remove safety barriers, and handover well to production section.
+job_variants:
+  RE_PERFORATION:
+  - Re-perforate existing depleted or damaged intervals using deep penetrating shaped charges.
+  - Verify depth alignment against previous perforation collars and correlate with base log.
+  ADD_PERFORATION:
+  - Perforate new prospective sandstone reservoir pay intervals uphole or downhole in the wellbore.
+  - Confirm geological isolation from nearby water contacts using cement bond log evaluation.
+acceptance_criteria:
+- Accurate placement of perforating charges confirmed by casing collar correlation log.
+- Post-job inspection confirms all shaped charges fired cleanly without gun rupture.
+- Positive reservoir response observed with fluid entry and pressure response at surface.
+post_job:
+- Record exact perforated depth intervals, charge type, shot density, and phasing in well dossier.
+- Reconcile explosive usage manifests with explosive safety inspector.
+- Submit completed perforating log and operations report to petroleum engineering department.
+lessons_learned:
+- Asset database contains {jobs_all_fields} perforating operations with {success_pct_all} success rate.
+- Median duration for wireline perforating jobs is {median_rig_days_all} rig days.
+- Precise collar correlation prevents perforating outside the intended reservoir sand body.
+references:
+- Explosive Safety and Perforating Operational Standards.
+- Wireline Well Control and Lubricator Operations Manual.
+- Cased Hole Logging and Depth Correlation Guidelines.

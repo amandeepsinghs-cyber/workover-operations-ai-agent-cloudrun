@@ -29,6 +29,12 @@ if [ ! -f "${BACKEND_DIR}/app/data/landing/asset/field_targets.parquet" ]; then
     (cd "${BACKEND_DIR}" && uv run python -m app.analytics.generator.generate --field all --start 2021-10-01 --end 2026-09-30)
 fi
 
+# 3b. Ensure the synthetic PDF corpus + search index exist (git-ignored, ~3 min; Stage O, D-18)
+if [ ! -f "${BACKEND_DIR}/app/data/index/corpus_manifest.json" ]; then
+    echo "[*] Building synthetic document corpus (D1..D11 + SOPs) and search index..."
+    (cd "${BACKEND_DIR}" && uv run python -m app.analytics.docs_pdf.build)
+fi
+
 # 4. Check Frontend dependencies
 if [ ! -d "${FRONTEND_DIR}/node_modules" ]; then
     echo "[*] Installing frontend npm dependencies..."

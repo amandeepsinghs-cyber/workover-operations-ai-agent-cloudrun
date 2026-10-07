@@ -1,0 +1,91 @@
+sop_id: SOP-IC-11
+intervention_class: IC-11
+title: Standard Operating Procedure for Water Shut-Off Squeeze and Chemical Gelling
+purpose: Provide standardized engineering procedures and barrier control standards for executing cement squeeze and chemical
+  polymer gel water shut-off treatments.
+scope: Covers cement squeeze and chemical water shut-off operations on watered-out completions across Assam assets ({n_job_codes}
+  catalogue job codes) utilizing {equipment_list}.
+applicability:
+- Sudden or progressive water breakthrough causing severe water cut elevation and oil decline.
+- Production logging tool survey indicating bottom water coning or channel behind casing.
+- Water-oil ratio diagnostic plots showing positive slope characteristic of water channeling.
+roles:
+- Wellsite supervisor
+- Workover rig superintendent
+- Cementing service supervisor
+- Production petroleum engineer
+ppe_and_permits:
+- Approved workover permit with high pressure pumping and cementing endorsements.
+- Personal protective equipment including chemical goggles, dust respirator, and safety boots.
+- Multi-gas detector monitoring wellhead area for explosive and toxic vapors.
+hazards:
+- hazard: Premature cement slurry setting inside workstring or cement retainer.
+  control: Test slurry thickening time with safety margin, maintain high pressure pump standby, and monitor volume.
+- hazard: Cement channeling into productive oil pay intervals above water zone.
+  control: Set mechanical squeeze packer or bridge plug at verified depth between water and oil zones.
+- hazard: High pressure pumping line rupture during squeeze hesitation.
+  control: Install safety iron restraints, test lines to the approved test pressure, and clear personnel.
+- hazard: Workstring getting stuck in casing while reversing out excess cement.
+  control: Initiate reverse circulation promptly upon reaching squeeze pressure, and use clean brine.
+pre_job_checks:
+- Review recent production logs, water cut trends, cement bond log, and perforated intervals.
+- Inspect cementing unit, slurry mixing equipment, displacement tanks, and manifold valves.
+- Perform laboratory testing of cement slurry thickening time, fluid loss, and compressive strength.
+- Inspect mechanical squeeze packer or drillable cement retainer and setting tools.
+- Conduct safety meeting with rig crew and cementing specialists covering squeeze pressures and barriers.
+procedure:
+- phase: Well Preparation and Mechanical Isolation
+  steps:
+  - Establish primary well control by circulating approved kill brine into the wellbore.
+  - Pull production tubing and completion equipment out of hole, laying down damaged joints.
+  - Run casing scraper and bit assembly to clean casing wall across the squeeze interval.
+  - Make up drillable cement retainer or retrievable squeeze packer on workstring.
+  - Run in hole, correlate setting depth against casing collar, and set packer above wet perforations.
+  - Pressure test workstring and casing annulus above packer to the approved test pressure.
+- phase: Injection Test and Chemical Mixing
+  steps:
+  - Establish injection rate into wet perforations with filtered brine to determine injectivity.
+  - Connect high pressure treating iron from cementing unit to workstring swivel.
+  - Pressure test surface pumping lines to the approved test pressure in the approved programme.
+  - Mix cement slurry or crosslinked polymer gel in cementing unit to specified slurry density.
+  - Verify slurry density using pressurized mud balance, and check fluid properties.
+  - Pump pre-flush wash fluid to condition formation face ahead of squeeze slurry.
+- phase: Squeeze Execution and Hesitation
+  steps:
+  - Pump mixed cement slurry or polymer gel down workstring and spot across target perforations.
+  - Sting into retainer or close packer bypass valve to direct slurry into formation.
+  - Squeeze slurry into perforations at regulated pump rate, monitoring pressure trends continuously.
+  - Implement hesitation squeeze technique, stopping pumps periodically to allow filter cake buildup.
+  - Continue hesitation cycles until final approved squeeze pressure is achieved and holds steadily.
+  - Sting out of retainer or release packer, and reverse circulate excess slurry out of workstring.
+- phase: Post Squeeze Verification and Handover
+  steps:
+  - Pull workstring out of hole, and allow cement to cure under shut-in pressure for programme duration.
+  - Pick up drill bit and drill collars, and run in hole to drill out hard cement inside casing.
+  - Drill out cement across perforated interval down to original bottom depth, and circulate clean.
+  - Pressure test squeezed perforations to the approved test pressure in the approved programme.
+  - Run production completion or prepare well for re-perforation of prospective oil zone.
+  - Complete water shut-off operational dossier and handover well to production operations.
+job_variants:
+  CEMENT_SQUEEZE:
+  - Squeeze class G cement slurry with fluid loss control additives into watered-out perforations.
+  - Hesitate pumping until reaching final squeeze pressure, reverse circulate, and drill out hard cement.
+  POLYMER_GEL:
+  - Inject crosslinked polymer gel solution deep into high permeability water channeling thief zone.
+  - Allow gelation to mature under shut-in condition to establish durable water permeability barrier.
+acceptance_criteria:
+- Positive pressure test across squeezed perforations confirms hydraulic isolation to approved pressure.
+- Excess slurry completely reversed out without leaving residual cement string in casing.
+- Significant reduction in water cut and restoration of clean oil production upon well restart.
+post_job:
+- Record slurry volume, squeeze pressures, retainer depth, and drillout log in well file.
+- Submit post-job cementing charts and pressure recording logs to asset petroleum engineer.
+- Update reservoir surveillance records with updated zonal isolation status.
+lessons_learned:
+- Field archives show {jobs_all_fields} water shut-off interventions with {success_pct_all} success rate.
+- Median duration for water control operations across all fields is {median_rig_days_all} rig days.
+- Accurate cement fluid loss control is essential to prevent premature dehydration inside the workstring.
+references:
+- Cement Squeeze Operations Manual and Best Practices.
+- Water Coning and Channeling Remediation Guidelines.
+- Well Integrity and Pressure Testing Protocol.

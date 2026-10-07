@@ -1,0 +1,89 @@
+sop_id: SOP-IC-13
+intervention_class: IC-13
+title: Standard Operating Procedure for Coning Control and Wellhead Choke Optimization
+purpose: Define systematic operating instructions for evaluating, throttling, and optimizing surface choke sizes to control
+  bottom water or gas coning.
+scope: Covers surface choke throttling and drawdown management across all producing wells in Assam assets ({n_job_codes} catalogue
+  job codes) utilizing {equipment_list}.
+applicability:
+- Rapid rise in water cut or gas-oil ratio following high drawdown production.
+- Bottom water coning or gas cap cresting diagnosed from production trends.
+- High critical coning rate sensitivity requiring calibrated choke adjustment.
+roles:
+- Wellsite supervisor
+- Production petroleum engineer
+- Field production operator
+- Reservoir surveillance engineer
+ppe_and_permits:
+- Routine production operational permit for wellhead maintenance and valve adjustment.
+- Standard personal protective equipment including eye protection, gloves, and safety footwear.
+- Portable hydrocarbon gas detector for wellsite atmospheric monitoring.
+hazards:
+- hazard: Trapped pressure in choke manifold cavity during choke bean change-out.
+  control: Isolate upstream and downstream manifold valves, bleed body cavity, and verify zero pressure.
+- hazard: Erosion or washout of choke body during fluid throttling.
+  control: Inspect choke bean trim, monitor ultrasonic wall thickness, and use tungsten carbide beans.
+- hazard: Liquid slugging or flowline surge when adjusting choke sizes.
+  control: Adjust choke gradually in increments, notify gathering station, and monitor separator pressure.
+- hazard: Freezing or hydrate formation across high pressure choke restriction.
+  control: Monitor surface flowline temperature, inject hydrate inhibitor where necessary, and insulate choke body.
+pre_job_checks:
+- Review recent well test history, water cut trend, gas-oil ratio, and flowing pressures.
+- Inspect wellhead christmas tree, choke manifold, test separator, and flare line.
+- Check inventory of calibrated ceramic and tungsten carbide choke beans.
+- Verify calibration of flowing tubing pressure and casing pressure gauges.
+- Notify gathering station operator prior to initiating choke adjustment sequence.
+procedure:
+- phase: Baseline Assessment and Manifold Preparation
+  steps:
+  - Record baseline flowing tubing pressure, casing pressure, water cut, and gross liquid rate.
+  - Route well stream through test separator at the group gathering station for baseline test.
+  - Inspect surface choke manifold body, bonnet bolts, and pressure bleed valves.
+  - Confirm dual flow paths through choke manifold are operable for smooth flow switching.
+  - Check gas detection readings around wellhead cellar and manifold valves.
+  - Review recommended target choke size calculated from critical coning rate models.
+- phase: Stepwise Choke Throttling Execution
+  steps:
+  - Open secondary choke manifold arm slowly to balance pressure across valves.
+  - Divert well stream to alternate choke wing without interrupting total flow.
+  - Isolate primary choke arm by closing upstream and downstream wing valves.
+  - Bleed pressure from primary choke cavity through needle valve to atmospheric drain.
+  - Remove choke bonnet, replace worn choke bean with calculated smaller diameter bean.
+  - Reinstall choke bonnet, torque bolts evenly, and pressure test body with well pressure.
+  - Switch well flow back to calibrated choke arm slowly to prevent pressure shock.
+- phase: Stabilization and Performance Monitoring
+  steps:
+  - Monitor flowing tubing pressure and casing pressure continuously during stabilization.
+  - Observe fluid behavior at the group gathering station separator for slugging.
+  - Allow well to stabilize for the programme hold duration before taking performance samples.
+  - Sample produced liquid at flowline sampling port and measure water cut by centrifuge.
+  - Record gas-oil ratio and verify suppression of coning gas or water breakthrough.
+  - Evaluate whether drawdown reduction achieved target water cut suppression.
+- phase: Handover and Production Optimization
+  steps:
+  - Conduct final inspection of choke manifold for vibration or external leakage.
+  - Lock choke operating handwheel or secure fixed choke bean housing cap.
+  - Record final flowing pressures, choke size, and production rates in daily well report.
+  - Notify reservoir engineering team of implemented choke size and initial response.
+  - Establish routine sampling schedule to monitor long term water cut trends.
+  - Complete operational sign-off and update production management database.
+job_variants:
+  CHOKE_BACK:
+  - Throttle surface choke bean size in calculated increments to reduce near-wellbore pressure drawdown.
+  - Track water-oil ratio and gas-oil ratio response until coning behavior subsides to sustainable level.
+acceptance_criteria:
+- Measurable reduction in water cut or gas-oil ratio achieved without total loss of oil rate.
+- Flowing tubing pressure stabilizes with zero vibration or pressure surging in flowline.
+- Manifold and choke body remain leak-free under steady flowing conditions.
+post_job:
+- Update well status card with updated choke size, flowing pressures, and production test.
+- Document recovered choke bean wear condition and replace eroded components in stock.
+- Archive stabilization data for reservoir model calibration and coning studies.
+lessons_learned:
+- Field records document {jobs_all_fields} coning control jobs with {success_pct_all} success rate.
+- Median duration for surface choke interventions is {median_rig_days_all} rig days.
+- Stepwise throttling prevents formation face pressure shock and stabilizes oil-water contacts.
+references:
+- Reservoir Management Guidelines for Water and Gas Coning Mitigation.
+- Wellhead Surface Manifold and Choke Maintenance Standard.
+- Production Testing and Fluid Sampling Operating Protocol.

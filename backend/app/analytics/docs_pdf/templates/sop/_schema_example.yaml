@@ -1,0 +1,36 @@
+# Schema example for the SOP library (NOT rendered: only IC-NN.yaml files are SOPs).
+# Copy this shape for every intervention class. No digits, no number words; use {slots}
+# from templates/slot_catalogue/D11.json for anything quantitative.
+sop_id: SOP-IC-00
+intervention_class: IC-00
+title: "Example procedure title"
+purpose: "Why this procedure exists and what outcome it protects."
+scope: "Which wells, lift types and job codes the procedure covers ({n_job_codes} catalogue job codes)."
+applicability:
+  - "Diagnostic signature that calls for this intervention class."
+roles:
+  - "Wellsite supervisor"
+ppe_and_permits:
+  - "Permit to work issued and displayed at the wellsite."
+hazards:
+  - hazard: "Trapped pressure in the tubing or annulus."
+    control: "Bleed down and confirm zero pressure before breaking any connection."
+pre_job_checks:
+  - "Confirm the latest well test and pressure survey are on file."
+procedure:
+  - phase: "Preparation"
+    steps:
+      - "Hold the pre-job safety meeting and walk the location."
+  - phase: "Execution"
+    steps:
+      - "Carry out the main operation as per the approved programme."
+job_variants:
+  EXAMPLE_JOB: ["Variant-specific step for this job code."]
+acceptance_criteria:
+  - "Post-job production is tested and compared with the pre-job average."
+post_job:
+  - "File the workover completion report and the daily reports."
+lessons_learned:
+  - "Field history shows a median of {median_rig_days_all} rig days for this class."
+references:
+  - "Job catalogue entry for each job code in this class."

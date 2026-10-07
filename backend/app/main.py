@@ -10,6 +10,8 @@ from fastapi.staticfiles import StaticFiles
 
 from app.api.live import router as live_router  # Stage U: WS /ws/live
 from app.api.wells import router as wells_router
+from app.api.docs import router as docs_router  # Stage O: document corpus
+from app.api.fields import router as fields_router  # Stage P: TC-019 / TC-020 routes
 from app.data_access.repository import get_repository
 
 app = FastAPI(
@@ -39,7 +41,9 @@ async def add_utf8_charset_header(request, call_next):
 
 # Register API routes FIRST so they take precedence over static files
 app.include_router(wells_router, prefix="/api")
+app.include_router(docs_router, prefix="/api")  # Stage O: /api/docs/*, /api/wells/{id}/documents
 app.include_router(live_router)  # Stage U: WS /ws/live (SDD §11.4)
+app.include_router(fields_router, prefix="/api")  # Stage P: /api/fields/{f}/health|attribution, /api/wells/{id}/attribution
 
 
 @app.on_event("startup")

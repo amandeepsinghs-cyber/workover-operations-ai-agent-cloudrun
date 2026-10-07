@@ -1,0 +1,485 @@
+{
+ "doc_type": "D10",
+ "doc_type_name": "Monthly field production report",
+ "n_documents": 177,
+ "missing_text": "not recorded",
+ "slots": {
+  "doc_id": {
+   "source": "corpus",
+   "examples": [
+    "MPR-LKM-2024-03",
+    "MPR-LKW-2022-08",
+    "MPR-LKW-2024-08"
+   ],
+   "missing_share": 0.0
+  },
+  "doc_type": {
+   "source": "corpus",
+   "examples": [
+    "D10"
+   ],
+   "missing_share": 0.0
+  },
+  "doc_type_name": {
+   "source": "corpus",
+   "examples": [
+    "Monthly field production report"
+   ],
+   "missing_share": 0.0,
+   "categorical_values": [
+    "Monthly field production report"
+   ]
+  },
+  "doc_title": {
+   "source": "corpus",
+   "examples": [
+    "Lakhmani Monthly Production Report March 2024",
+    "Lakwa Monthly Production Report August 2022",
+    "Lakwa Monthly Production Report August 2024"
+   ],
+   "missing_share": 0.0
+  },
+  "doc_date": {
+   "source": "corpus",
+   "examples": [
+    "2024-03-31",
+    "2022-08-31",
+    "2024-08-31"
+   ],
+   "missing_share": 0.0
+  },
+  "field": {
+   "source": "field_master.field",
+   "examples": [
+    "Lakhmani",
+    "Lakwa",
+    "Geleki"
+   ],
+   "missing_share": 0.0,
+   "categorical_values": [
+    "Geleki",
+    "Lakhmani",
+    "Lakwa"
+   ]
+  },
+  "asset": {
+   "source": "field_master.asset",
+   "examples": [
+    "Assam"
+   ],
+   "missing_share": 0.0,
+   "categorical_values": [
+    "Assam"
+   ]
+  },
+  "as_of": {
+   "source": "settings.AS_OF",
+   "examples": [
+    "2026-09-23"
+   ],
+   "missing_share": 0.0
+  },
+  "month_label": {
+   "source": "calendar month",
+   "examples": [
+    "March 2024",
+    "August 2022",
+    "August 2024"
+   ],
+   "missing_share": 0.0
+  },
+  "period_start": {
+   "source": "period",
+   "examples": [
+    "2024-03-01",
+    "2022-08-01",
+    "2024-08-01"
+   ],
+   "missing_share": 0.0
+  },
+  "period_end": {
+   "source": "period",
+   "examples": [
+    "2024-03-31",
+    "2022-08-31",
+    "2024-08-31"
+   ],
+   "missing_share": 0.0
+  },
+  "period_days": {
+   "source": "period_end - period_start + 1",
+   "examples": [
+    "31",
+    "30",
+    "28"
+   ],
+   "missing_share": 0.0
+  },
+  "oil_bbl": {
+   "source": "sum(daily_production.oil_rate_bopd) over period",
+   "examples": [
+    "223,100",
+    "309,240",
+    "281,164"
+   ],
+   "missing_share": 0.0
+  },
+  "water_bbl": {
+   "source": "sum(daily_production.water_rate_bwpd)",
+   "examples": [
+    "458,064",
+    "994,208",
+    "1,217,434"
+   ],
+   "missing_share": 0.0
+  },
+  "gas_mscf": {
+   "source": "sum(daily_production.gas_rate_mscfd)",
+   "examples": [
+    "149,479",
+    "116,669",
+    "114,884"
+   ],
+   "missing_share": 0.0
+  },
+  "avg_oil_bopd": {
+   "source": "oil_bbl / period_days",
+   "examples": [
+    "7,196.8",
+    "9,975.5",
+    "9,069.8"
+   ],
+   "missing_share": 0.0
+  },
+  "avg_water_cut_pct": {
+   "source": "water_bbl / (oil_bbl + water_bbl)",
+   "examples": [
+    "67.2%",
+    "76.3%",
+    "81.2%"
+   ],
+   "missing_share": 0.0
+  },
+  "avg_gor_scf_bbl": {
+   "source": "gas_mscf * 1000 / oil_bbl",
+   "examples": [
+    "670",
+    "377",
+    "409"
+   ],
+   "missing_share": 0.0
+  },
+  "active_wells": {
+   "source": "count distinct producing wells",
+   "examples": [
+    "105",
+    "151",
+    "146"
+   ],
+   "missing_share": 0.0
+  },
+  "wells_total": {
+   "source": "count(well_master)",
+   "examples": [
+    "110",
+    "160",
+    "142"
+   ],
+   "missing_share": 0.0
+  },
+  "uptime_pct": {
+   "source": "producing well-days / well-days",
+   "examples": [
+    "93.3%",
+    "89.1%",
+    "84.9%"
+   ],
+   "missing_share": 0.0
+  },
+  "target_oil_bopd": {
+   "source": "mean(field_targets.target_oil_bopd)",
+   "examples": [
+    "7,081.1",
+    "9,695.9",
+    "9,203.2"
+   ],
+   "missing_share": 0.0
+  },
+  "potential_oil_bopd": {
+   "source": "mean(field_targets.potential_oil_bopd)",
+   "examples": [
+    "7,686.8",
+    "11,057.3",
+    "10,495.5"
+   ],
+   "missing_share": 0.0
+  },
+  "target_uptime_pct": {
+   "source": "mean(field_targets.target_uptime_pct)",
+   "examples": [
+    "94.9%",
+    "91.2%",
+    "87.7%"
+   ],
+   "missing_share": 0.0
+  },
+  "gap_vs_target_pct": {
+   "source": "(avg_oil_bopd - target_oil_bopd) / target_oil_bopd",
+   "examples": [
+    "+1.6%",
+    "+2.9%",
+    "-1.4%"
+   ],
+   "missing_share": 0.0
+  },
+  "n_jobs": {
+   "source": "count(workover_history started in period)",
+   "examples": [
+    "14",
+    "30",
+    "25"
+   ],
+   "missing_share": 0.0
+  },
+  "n_jobs_failed": {
+   "source": "count(... FAILED)",
+   "examples": [
+    "1",
+    "2",
+    "6"
+   ],
+   "missing_share": 0.0
+  },
+  "job_success_pct": {
+   "source": "share SUCCESS",
+   "examples": [
+    "85.7%",
+    "70.0%",
+    "68.0%"
+   ],
+   "missing_share": 0.006
+  },
+  "rig_days_used": {
+   "source": "sum(workover_history.rig_days)",
+   "examples": [
+    "32.0",
+    "93.0",
+    "101.0"
+   ],
+   "missing_share": 0.0
+  },
+  "uplift_bopd_total": {
+   "source": "sum(workover_history.uplift_bopd)",
+   "examples": [
+    "295.6",
+    "637.4",
+    "773.9"
+   ],
+   "missing_share": 0.0
+  },
+  "deferred_bbl": {
+   "source": "sum(well_status_history.deferred_bbl) non-producing episodes",
+   "examples": [
+    "506,674",
+    "836,373",
+    "859,920"
+   ],
+   "missing_share": 0.0
+  },
+  "prev_avg_oil_bopd": {
+   "source": "previous-month avg oil",
+   "examples": [
+    "6,981.3",
+    "9,581.8",
+    "7,907.0"
+   ],
+   "missing_share": 0.017
+  },
+  "mom_change_pct": {
+   "source": "avg_oil_bopd vs previous month",
+   "examples": [
+    "+3.1%",
+    "+4.1%",
+    "+14.7%"
+   ],
+   "missing_share": 0.017
+  }
+ },
+ "tables": {
+  "jobs_by_class": {
+   "columns": [
+    "intervention_class",
+    "ic_label",
+    "n_jobs",
+    "n_success",
+    "n_failed",
+    "rig_days",
+    "uplift_bopd"
+   ],
+   "source": "workover_history",
+   "example_rows": [
+    {
+     "intervention_class": "IC-03",
+     "ic_label": "Tubing leak repair",
+     "n_jobs": "1",
+     "n_success": "1",
+     "n_failed": "0",
+     "rig_days": "6.0",
+     "uplift_bopd": "18.7"
+    },
+    {
+     "intervention_class": "IC-01",
+     "ic_label": "SRP pump change",
+     "n_jobs": "1",
+     "n_success": "1",
+     "n_failed": "0",
+     "rig_days": "2.0",
+     "uplift_bopd": "6.3"
+    }
+   ],
+   "max_rows_seen": 14
+  },
+  "downtime": {
+   "columns": [
+    "status",
+    "reason_code",
+    "episodes",
+    "days",
+    "deferred_bbl"
+   ],
+   "source": "well_status_history",
+   "example_rows": [
+    {
+     "status": "SHUT_IN",
+     "reason_code": "OTHER",
+     "episodes": "5",
+     "days": "155",
+     "deferred_bbl": "499,868"
+    },
+    {
+     "status": "SHUT_IN",
+     "reason_code": "OTHER",
+     "episodes": "8",
+     "days": "248",
+     "deferred_bbl": "812,681"
+    }
+   ],
+   "max_rows_seen": 10
+  },
+  "events": {
+   "columns": [
+    "event_type",
+    "factor_class",
+    "events",
+    "controllable"
+   ],
+   "source": "operations_events",
+   "example_rows": [
+    {
+     "event_type": "CHOKE_CHANGE",
+     "factor_class": "OPERATIONAL",
+     "events": "5",
+     "controllable": "5"
+    },
+    {
+     "event_type": "GRID_POWER_OUTAGE",
+     "factor_class": "EXTERNAL",
+     "events": "46",
+     "controllable": "0"
+    }
+   ],
+   "max_rows_seen": 10
+  },
+  "clusters": {
+   "columns": [
+    "cluster_id",
+    "wells",
+    "oil",
+    "avg_oil_bopd"
+   ],
+   "source": "daily_production + well_master.cluster_id",
+   "example_rows": [
+    {
+     "cluster_id": "LKM-GGS-I",
+     "wells": "67",
+     "oil": "132,566",
+     "avg_oil_bopd": "4,276.3"
+    },
+    {
+     "cluster_id": "LKW-GGS-I",
+     "wells": "61",
+     "oil": "114,391",
+     "avg_oil_bopd": "3,690.0"
+    }
+   ],
+   "max_rows_seen": 3
+  },
+  "top_wells": {
+   "columns": [
+    "well_id",
+    "oil",
+    "avg_oil_bopd",
+    "days_on"
+   ],
+   "source": "daily_production",
+   "example_rows": [
+    {
+     "well_id": "LKM-002",
+     "oil": "5,144",
+     "avg_oil_bopd": "165.9",
+     "days_on": "30"
+    },
+    {
+     "well_id": "LKW-016",
+     "oil": "5,551",
+     "avg_oil_bopd": "179.1",
+     "days_on": "31"
+    }
+   ],
+   "max_rows_seen": 10
+  },
+  "jobs_started": {
+   "columns": [
+    "well_id",
+    "workover_id",
+    "catalogue_job_code",
+    "intervention_class",
+    "start_date",
+    "rig_days",
+    "outcome"
+   ],
+   "source": "workover_history",
+   "example_rows": [
+    {
+     "well_id": "LKM-005",
+     "workover_id": "WO-LKM-005-005",
+     "catalogue_job_code": "GLV_REPLACE",
+     "intervention_class": "IC-07",
+     "start_date": "2024-03-14",
+     "rig_days": "0.0",
+     "outcome": "PARTIAL"
+    },
+    {
+     "well_id": "LKW-005",
+     "workover_id": "WO-LKW-005-002",
+     "catalogue_job_code": "RE_PERFORATION",
+     "intervention_class": "IC-10",
+     "start_date": "2022-08-06",
+     "rig_days": "3.0",
+     "outcome": "PARTIAL"
+    }
+   ],
+   "max_rows_seen": 25
+  }
+ },
+ "meta_keys": [
+  "month"
+ ],
+ "sample_doc_ids": [
+  "MPR-LKM-2024-03",
+  "MPR-LKW-2022-08",
+  "MPR-LKW-2024-08",
+  "MPR-LKM-2025-03",
+  "MPR-LKM-2023-01"
+ ]
+}

@@ -1,0 +1,92 @@
+sop_id: SOP-IC-14
+intervention_class: IC-14
+title: Standard Operating Procedure for Surface Wellhead and Casing Integrity Repair
+purpose: Provide mandatory technical protocols and barrier verification standards for repairing surface wellhead valves, repacking
+  seals, and remedying casing leaks.
+scope: Covers surface wellhead valve replacement, casing leak repairs, and integrity remediation across Assam assets ({n_job_codes}
+  catalogue job codes) utilizing {equipment_list}.
+applicability:
+- Leaking wellhead gate valve, master valve, or wing valve failing to isolate well pressure.
+- Sustained casing pressure observed in outer casing annulus indicating seal or casing failure.
+- Casing pinhole leak or corrosion breach detected during annual integrity survey.
+roles:
+- Wellsite supervisor
+- Workover or surface maintenance superintendent
+- Well integrity engineer
+- Rig safety officer
+ppe_and_permits:
+- Approved work permit with cold work, hot work, and well integrity repair certificates.
+- Multi-gas detector monitoring combustible gases, hydrogen sulphide, and oxygen levels.
+- Standard personal protective equipment including impact gloves, face shield, and safety boots.
+hazards:
+- hazard: Uncontrolled hydrocarbon release while breaking wellhead flange connections.
+  control: Set back-pressure valve in tubing hanger, establish dual barrier verification, and bleed cavity pressure.
+- hazard: Casing burst or collapse during high pressure integrity testing.
+  control: Limit test pressure to approved programme pressure below casing yield, and monitor annulus.
+- hazard: Hydrogen sulphide gas accumulation around wellhead cellar.
+  control: Perform continuous gas monitoring, place portable exhaust fans, and designate upwind muster.
+- hazard: Dropped heavy valves or equipment during crane hoisting operations.
+  control: Inspect certified lifting slings, use tag lines, and enforce exclusion zone beneath load.
+pre_job_checks:
+- Review wellhead inspection history, casing caliper logs, and annulus pressure records.
+- Inspect replacement wellhead valves, casing patches, seals, and packoff assemblies.
+- Verify test pump, pressure chart recorder, and certified high pressure test lines.
+- Confirm availability of approved kill brine and back-pressure valve running tools.
+- Conduct safety meeting with maintenance crew covering barrier policies and emergency actions.
+procedure:
+- phase: Well Isolation and Barrier Verification
+  steps:
+  - Establish primary barrier by pumping kill brine or installing back-pressure valve in tubing hanger.
+  - Confirm secondary barrier by testing lower master valve and annulus valves.
+  - Bleed residual pressure between barriers and observe pressure gauges for zero pressure buildup.
+  - Erect perimeter safety barriers and position fire protection equipment around wellhead cellar.
+  - Connect high pressure pumping line to casing wing valve and confirm line integrity.
+  - Review repair procedure and barrier verification checklist with wellsite supervisor.
+- phase: Surface Wellhead Disassembly and Component Replacement
+  steps:
+  - Depressurize and disconnect surface flowline from wellhead production wing valve.
+  - Remove defective wellhead wing valve, master valve, or casing head side valve.
+  - Inspect ring joint gasket grooves, seal faces, and flange bolts for corrosion or scoring.
+  - Install new API certified gate valve using fresh metal ring gasket and high-tensile studs.
+  - Torque flange bolts evenly in criss-cross pattern using calibrated hydraulic torque wrench.
+  - Inject secondary seal sealant or plastic packing into casing head housing packing port.
+  - Pressure test replaced wellhead valve body and seals to the approved test pressure.
+- phase: Subsurface Casing Integrity Repair
+  steps:
+  - When casing leak is present, rig up workover rig and install blowout preventers.
+  - Run casing scraper and clean wellbore to depth below the identified casing leak.
+  - Locate exact leak depth using retrievable test packer and pressure test in steps.
+  - Isolate leak interval using mechanical casing patch, expansion liner, or squeeze cement.
+  - Apply repair material according to manufacturer specifications and allow curing.
+  - Conduct mechanical pull test or tag top of repair to verify positive placement.
+- phase: Reassembly and Final Integrity Testing
+  steps:
+  - Pressure test repaired casing interval to the approved test pressure in the approved programme.
+  - Retrieve back-pressure valve from tubing hanger using lubricator running tool.
+  - Pressure test complete wellhead christmas tree assembly to the approved test pressure.
+  - Reconnect surface flowline and conduct hydrostatic leak check on all surface connections.
+  - Clean cellar area, dispose of oily waste fluids in designated drums, and remove barriers.
+  - Handover well to production operations with signed wellhead integrity test certificate.
+job_variants:
+  SURFACE_REPAIR:
+  - Replace damaged wellhead valves, repack casing hanger seals, and repair surface flowline manifolds.
+  - Hydrotest all new wellhead components and flange connections to the approved test pressure.
+  CASING_REPAIR:
+  - Locate casing leak depth with retrievable test packer, isolate leak with casing patch or squeeze cement.
+  - Pressure test repaired casing string to verify casing integrity to the approved test pressure.
+acceptance_criteria:
+- Replaced wellhead valves and seals hold the approved test pressure with zero leakage.
+- Repaired casing string holds test pressure over the programme hold time without pressure decay.
+- Sustained casing annulus pressure eliminated or reduced to acceptable baseline.
+post_job:
+- File wellhead inspection report, valve serial numbers, and pressure charts in integrity file.
+- Update wellhead completion schematic and barrier schematic in engineering records.
+- Submit regulatory compliance documentation for casing repair and pressure tests.
+lessons_learned:
+- Corpus records show {jobs_all_fields} surface and integrity repair jobs with {success_pct_all} success.
+- Median duration for integrity repairs is {median_rig_days_all} rig days across all asset fields.
+- Regular greasing and preventive maintenance of wellhead valves prevents valve body washouts.
+references:
+- API Specification for Wellhead and Christmas Tree Equipment.
+- Well Integrity Management and Sustained Casing Pressure Standard.
+- Asset Mechanical Maintenance and Flange Bolting Guidelines.

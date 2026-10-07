@@ -1,0 +1,65 @@
+# TC-019 factor map (SDD §7, F-01). Orchestrator-owned.
+# factor classes: SUBSURFACE | EQUIPMENT | OPERATIONAL | HUMAN_PROCESS | EXTERNAL | UNEXPLAINED
+# controllable = HUMAN_PROCESS + OPERATIONAL + EQUIPMENT; EXTERNAL and SUBSURFACE are uncontrollable.
+version: "1.0.0"
+
+controllable_classes: [HUMAN_PROCESS, OPERATIONAL, EQUIPMENT]
+
+# operations_events.event_type -> class (the event row's own factor_class wins when present).
+event_types:
+  WAIT_ON_RIG: HUMAN_PROCESS
+  WAIT_ON_MATERIAL: HUMAN_PROCESS
+  PERMIT_DELAY: HUMAN_PROCESS
+  CREW_UNAVAILABLE: HUMAN_PROCESS
+  DEFERRED_MAINTENANCE: HUMAN_PROCESS
+  MISSED_TEST: HUMAN_PROCESS
+  CHOKE_CHANGE: OPERATIONAL
+  SPM_CHANGE: OPERATIONAL
+  GL_RATE_CHANGE: OPERATIONAL
+  GRID_POWER_OUTAGE: EXTERNAL
+  BANDH_ACCESS_LOSS: EXTERNAL
+  FLOOD_ACCESS_LOSS: EXTERNAL
+
+# daily_production.downtime_reason / well_status_history.reason_code / workover failure_code -> class.
+# Wax / scale are OPERATIONAL (deposition without a treatment programme, SDD §7 row 4).
+reasons:
+  PUMP_WEAR: EQUIPMENT
+  ROD_PART: EQUIPMENT
+  SUDDEN_MECH: EQUIPMENT
+  TUBING_LEAK: EQUIPMENT
+  CASING_LEAK: EQUIPMENT
+  GL_INJ_ANOMALY: EQUIPMENT
+  GL_VALVE: EQUIPMENT
+  LIFT_INEFFICIENCY: EQUIPMENT
+  SURFACE: EQUIPMENT
+  GAS_INTERFERENCE: OPERATIONAL
+  GL_LOADING: OPERATIONAL       # liquid loading of a gas-lift well = injection set-point / design
+  GL_HEADING: OPERATIONAL       # heading instability = injection set-point tuning
+  WAX: OPERATIONAL
+  SCALE: OPERATIONAL
+  SAND: SUBSURFACE
+  WATER_CHANNELLING: SUBSURFACE
+  CHANNELLING: SUBSURFACE
+  CHANNELLING_OR_INJECTOR_BREAKTHROUGH: SUBSURFACE
+  INJECTOR_BREAKTHROUGH: SUBSURFACE
+  MULTILAYER: SUBSURFACE
+  CONING: SUBSURFACE
+  WATER_ZONE: SUBSURFACE
+  PI_DECLINE: SUBSURFACE
+  RESERVOIR_DECLINE: SUBSURFACE
+  BYPASSED_PAY: SUBSURFACE
+  PLUGGED_ABANDONED: SUBSURFACE
+  POWER_OUTAGE: EXTERNAL
+  GRID_POWER_OUTAGE: EXTERNAL
+  BANDH: EXTERNAL
+  FLOOD: EXTERNAL
+  OTHER: UNEXPLAINED
+
+# a failure explains the productivity loss of the producing days at most this long before it (precursor)
+precursor_max_days: 120
+# pre-window water-cut trend used for the water-encroachment baseline
+water_trend_days: 90
+# LOW_CONFIDENCE when |UNEXPLAINED| > this share of the gross loss (BDD-F01-S05)
+unexplained_low_confidence_pct: 15.0
+# flag NO_OPERATIONAL_ACTION_WOULD_HAVE_PREVENTED when subsurface share >= and controllable share <=
+no_action_flag: {min_subsurface_pct: 80.0, max_controllable_pct: 15.0}

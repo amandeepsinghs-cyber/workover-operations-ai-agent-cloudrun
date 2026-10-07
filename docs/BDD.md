@@ -351,8 +351,8 @@ Feature: Decline root-cause factor attribution
   @BDD-F01-S03 @api
   Scenario: Pure reservoir decline is uncontrollable
     When I GET /api/wells/LKM-090/attribution?window_days=180
-    Then "SUBSURFACE" accounts for «≥ 80%» of lost oil  # pinned at Gate P (TC-019 output; see pinned_values.md §8)
-    And the controllable share is «≤ 15%»
+    Then "SUBSURFACE" accounts for ≥ 80% of lost oil  # pinned at Gate P: measured 100.0% (TC-019, AS_OF 2026-09-23; pinned_values.md §8)
+    And the controllable share is ≤ 15%  # pinned at Gate P: measured 0.0%
     And the response flags "NO_OPERATIONAL_ACTION_WOULD_HAVE_PREVENTED"
 
   @BDD-F01-S04 @api
@@ -372,7 +372,7 @@ Feature: Decline root-cause factor attribution
   Scenario: Field-level attribution rolls up from wells
     When I GET /api/fields/Lakwa/attribution?window_days=90
     Then the field total equals the sum of its wells' totals within 0.5%
-    And the controllable share (EQUIPMENT + OPERATIONAL + HUMAN_PROCESS) is «≥ 40%»  # pinned at Gate P (TC-019 output)
+    And the controllable share (EQUIPMENT + OPERATIONAL + HUMAN_PROCESS) is ≥ 40%  # pinned at Gate P: measured 68.8% (TC-019)
     When I open the well drawer for LKW-047 and the "Decline causes" tab
     Then the waterfall bars equal the API components
 ```

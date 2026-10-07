@@ -1,0 +1,88 @@
+sop_id: SOP-IC-03
+intervention_class: IC-03
+title: Standard Operating Procedure for Tubing Leak Repair and Replacement
+purpose: Establish mandatory procedures and barrier isolation standards for detecting, retrieving, pressure testing, and replacing
+  defective production tubing strings.
+scope: Applies to all workover rig operations across Assam asset wells involving tubing leak investigation, pull, inspection,
+  and replacement covering {n_job_codes} catalogue job codes utilizing {equipment_list}.
+applicability:
+- Communication between tubing and casing annulus observed during pressure monitoring.
+- Abrupt drop in surface liquid production accompanied by equalization of tubing and casing pressures.
+- Failure to hold pressure during hydrostatic tubing testing or packer integrity verification.
+roles:
+- Wellsite supervisor
+- Workover rig superintendent
+- Production petroleum engineer
+- Rig safety officer
+ppe_and_permits:
+- Approved workover permit to work with barrier management certificate.
+- Calibrated multi-gas detector for hydrogen sulphide, combustible gases, and oxygen.
+- Mandatory personal protective equipment including impact gloves, hard hat, and safety boots.
+hazards:
+- hazard: Loss of primary well control barrier during tubing retrieval.
+  control: Maintain kill fluid column above reservoir pressure, monitor trip tank continuously, and keep hole full of brine.
+- hazard: Trapped pressure behind production casing or below tubing scale bridges.
+  control: Bleed pressure through choke manifold, monitor annulus return, and confirm zero pressure prior to unseating packer.
+- hazard: Tubing parting or thread pullout due to excessive hoisting tension.
+  control: Monitor weight indicator continuously, observe maximum allowable pulling force, and use safety slips.
+- hazard: Hydrocarbon gas release when breaking wet tubing stands.
+  control: Use certified mud bucket with drain hose connected to waste tank, and maintain continuous gas detection.
+pre_job_checks:
+- Confirm well kill status and monitor well for flow or pressure buildup.
+- Inspect workover rig mast, substructure, crown block, travelling block, and wire rope.
+- Verify blowout preventer stack certification and pressure test history.
+- Confirm supply of inspected replacement production tubing, crossover subs, and pup joints.
+- Verify hydrotesting unit calibration, test plugs, and pressure recording chart.
+procedure:
+- phase: Well Control and Rig Up
+  steps:
+  - Confirm dual well control barriers in place and bleed residual pressure to the flare system.
+  - Bullhead approved kill brine down tubing and casing until uniform fluid returns are established.
+  - Nipple down production christmas tree and inspect tubing hanger neck and seals.
+  - Nipple up blowout preventer stack including annular preventer and pipe rams on casing spool.
+  - Pressure test blowout preventer rams and lines to the approved test pressure in the approved programme.
+  - Install tubing landing sub and pull tubing hanger out of casing spool bowl.
+- phase: Pulling and Inspecting Tubing String
+  steps:
+  - Unseat production packer by pulling tubing string with calculated overpull tension.
+  - Monitor fluid displacement in trip tank to confirm well is taking correct fluid volume.
+  - Pull tubing string stand by stand, using mud bucket to contain fluid drainage on the rig floor.
+  - Inspect each tubing joint externally for corrosion pitting, rod wear grooves, or split body.
+  - Identify leaking joints by observing fluid drainage levels or by running internal hydrostatic test tool.
+  - Lay down defective tubing joints on pipe rack with red tags and record defect locations.
+- phase: Running Replacement Tubing and Testing
+  steps:
+  - Clean and inspect threads of all replacement tubing joints using wire brush and thread gauge.
+  - Measure, drift, and tally all replacement tubing joints with steel tape prior to running.
+  - Make up bottomhole assembly including seating nipple, perforated pup joint, and production packer.
+  - Run replacement tubing in hole while applying approved API thread compound to each connection.
+  - Apply precise make-up torque using calibrated power tongs with torque-turn monitoring.
+  - Hydrotest tubing string in stands to the approved test pressure in the approved programme.
+- phase: Completion Re-establishment and Handover
+  steps:
+  - Land tubing string at target depth and space out tubing hanger into casing spool.
+  - Set production packer according to manufacturer instructions and confirm mechanical lock.
+  - Pressure test casing annulus against packer to the approved test pressure in the approved programme.
+  - Nipple down blowout preventer stack and reinstall production christmas tree.
+  - Pressure test tree valves and connections to the approved test pressure in the approved programme.
+  - Handover well to production team with completed tubing tally, packer depth, and test records.
+job_variants:
+  TUBING_REPLACE:
+  - Identify corroded or split tubing joints by standing hydrotest, lay down failed joints, and run new API tubing.
+  - Record tally of pulled and replacement tubing joints, drift all new pipes, and pressure test completed string.
+acceptance_criteria:
+- Tubing string holds hydrostatic test pressure with zero pressure drop over the programme hold time.
+- Casing annulus holds the approved test pressure confirming packer seal and tubing integrity.
+- Wellhead christmas tree seals and valves hold full test pressure without leakage.
+post_job:
+- Update well completion schematic with replacement tubing dimensions, weights, and grades.
+- Send retrieved defective pipe samples for corrosion and wall thickness loss evaluation.
+- Submit workover completion dossier and return well to active operational inventory.
+lessons_learned:
+- Field database records {jobs_all_fields} jobs in this class with {success_pct_all} operational success.
+- Median duration for tubing replacement is {median_rig_days_all} rig days across all fields.
+- Drifting and standing hydrotesting every stand prevents downhole failure reoccurrence.
+references:
+- API Specification for Tubing and Casing Inspection and Handling.
+- Well Control Standards and Blowout Prevention Manual.
+- Asset Production Operations Well Integrity Policy.

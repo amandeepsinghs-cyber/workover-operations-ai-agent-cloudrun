@@ -1,0 +1,91 @@
+sop_id: SOP-IC-12
+intervention_class: IC-12
+title: Standard Operating Procedure for Zonal Isolation and Zone Transfer
+purpose: Establish operating requirements and barrier isolation standards for mechanical zone transfers, setting bridge plugs,
+  and installing straddle packer assemblies.
+scope: Covers mechanical and chemical zonal isolation operations across Assam field assets ({n_job_codes} catalogue job codes)
+  utilizing {equipment_list}.
+applicability:
+- Depletion of currently producing reservoir zone requiring permanent isolation and uphole recompletion.
+- Severe casing damage, collapse, or unauthorized perforations requiring straddle isolation.
+- Gas cap expansion or water encroachment requiring mechanical barrier between intervals.
+roles:
+- Wellsite supervisor
+- Workover rig superintendent
+- Production petroleum engineer
+- Rig safety officer
+ppe_and_permits:
+- Approved workover permit with zonal isolation and barrier abandonment certificates.
+- Standard personal protective equipment including impact gloves, hard hats, and steel toe footwear.
+- Continuous gas monitoring equipment deployed at wellhead and cellar.
+hazards:
+- hazard: Premature bridge plug setting or plug slippage under differential reservoir pressure.
+  control: Inspect plug slips, run gauge ring and junk basket prior to setting, and confirm weight set-down.
+- hazard: Crossflow between unisolated reservoir zones during recompletion.
+  control: Set positive mechanical barrier, pressure test plug, and cap with cement slurry.
+- hazard: Straddle packer elastomeric seal failure under differential pressure.
+  control: Select elastomers rated for downhole temperature and fluids, and pressure test straddle assembly.
+- hazard: Loss of primary well control during completion pulling and zone transfer.
+  control: Maintain kill fluid hydrostatic overbalance, monitor trip tank, and test blowout preventers.
+pre_job_checks:
+- Review reservoir pressure differences between current zone and prospective transfer zone.
+- Verify casing integrity, internal diameter, and previous cement bond logs across setting intervals.
+- Inspect bridge plug, straddle packer assembly, setting tools, and casing scraper.
+- Confirm availability of cement dump bailer or workstring for cement cap placement.
+- Conduct pre-job safety meeting reviewing operational sequence and barrier standards.
+procedure:
+- phase: Well Killing and Casing Preparation
+  steps:
+  - Circulate approved kill brine to achieve complete hydrostatic balance against open perforations.
+  - Nipple down wellhead tree, install blowout preventer stack, and test to the approved test pressure.
+  - Pull existing production tubing string and bottomhole assembly, laying down damaged tubulars.
+  - Run casing scraper and junk basket to clean casing wall across the planned plug setting depth.
+  - Circulate hole clean with filtered brine to remove rust, scale, and foreign debris.
+  - Pull scraper assembly out of hole and confirm clear casing drift.
+- phase: Bridge Plug Setting and Cement Capping
+  steps:
+  - Make up cast iron bridge plug or retrievable bridge plug on electric wireline or workstring.
+  - Run plug in hole slowly to verified setting depth above the depleted reservoir interval.
+  - Correlate depth with casing collar locator and activate setting tool to expand slips and packoff.
+  - Apply mechanical pull or push weight to confirm positive bridge plug anchoring.
+  - Pressure test bridge plug from surface to the approved test pressure in the approved programme.
+  - Dump cement slurry cap on top of bridge plug using wireline bailer or workstring.
+- phase: Straddle Packer Deployment and Testing
+  steps:
+  - Assemble dual straddle packer assembly with intermediate spacer pipe on workstring.
+  - Run straddle assembly into hole and position across targeted casing damage or isolated zone.
+  - Set lower and upper packer elements simultaneously using mechanical rotation or hydraulic pressure.
+  - Pressure test straddle packer seals from tubing and annulus to the approved test pressure.
+  - Verify zero communication between straddled interval and main wellbore flow path.
+  - Record setting parameters and hookload weights before releasing setting tool.
+- phase: Zone Recompletion and Handover
+  steps:
+  - Perforate new prospective reservoir zone uphole as specified in the workover programme.
+  - Run new production tubing string with completion packer and landing nipples.
+  - Set completion packer, land tubing hanger, and test annulus to the approved test pressure.
+  - Nipple down blowout preventer stack and reinstall production christmas tree.
+  - Swab well or inject lift gas to unload kill brine and initiate flow from new zone.
+  - Handover well to production operations with complete zonal transfer documentation.
+job_variants:
+  STRADDLE_PACKER:
+  - Set dual straddle packer assembly across isolated or damaged casing interval to restore integrity.
+  - Pressure test straddle seals from above and below to verify hydraulic isolation.
+  ZONE_TRANSFER:
+  - Set bridge plug above depleted reservoir interval, cap with cement, and transfer completion uphole.
+  - Perforate upper prospective sandstone reservoir zone and establish production.
+acceptance_criteria:
+- Bridge plug and cement cap hold approved hydrostatic test pressure with nil decline.
+- Zero communication verified between isolated depleted zone and active completion.
+- Successful flow initiation from newly opened reservoir interval.
+post_job:
+- Update well completion diagram showing new barrier depths, cement top, and open perforations.
+- Submit zonal isolation certificate and well history report to regulatory authorities.
+- Archive wireline logs, setting records, and pressure test charts in permanent well file.
+lessons_learned:
+- Historical campaigns report {jobs_all_fields} zonal isolation jobs with {success_pct_all} success.
+- Median duration for zonal isolation is {median_rig_days_all} rig days.
+- Running a casing scraper before setting bridge plugs ensures tight elastomeric seal engagement.
+references:
+- Well Integrity and Barrier Management Standard.
+- Downhole Mechanical Plug and Packer Setting Guidelines.
+- Corporate Well Abandonment and Recompletion Policy.

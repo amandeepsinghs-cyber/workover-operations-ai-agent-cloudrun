@@ -161,7 +161,7 @@ def test_interim_health(client):
     }
     field_statuses: dict[str, set[str]] = {}
     for w in wells:
-        assert w["health_rule"] == "INTERIM_N1"
+        assert w["health_rule"] == "TC-020"  # Stage P: INTERIM_N1 replaced by TC-020 (SDD §6.3)
         assert w["health_bucket"] in {"NOT_PRODUCING", "UNDERPERFORMING", "AT_RISK", "PRODUCING_OK"}
         assert w["status"] == status_map[w["health_bucket"]]
         assert isinstance(w["health_reason"], str) and len(w["health_reason"].strip()) > 0

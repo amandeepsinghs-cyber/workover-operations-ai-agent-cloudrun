@@ -1,0 +1,40 @@
+# TC-007 trigger + TC-005 signature thresholds (SDD §6.1–6.3; ADK spec/00 §5.4, spec/04 §8).
+# Orchestrator-owned. Trigger A tiers and persistence are the v0.3.0 constants, unchanged.
+version: "2.0.0"
+
+trigger_a:
+  watch_pct: -15.0          # residual < -15%  -> WATCH
+  flag_pct: -25.0           # residual < -25%  -> FLAG
+  urgent_pct: -40.0         # residual < -40%  -> URGENT
+  persistence_days: 7       # consecutive PRODUCING days (DC-014: NULL days neither count nor break)
+  max_staleness_days: 10    # last residual point must be within this many days of as_of (post-workover transient guard)
+
+trigger_b:
+  min_prior_run_lives: 2    # DC-044: fewer -> INSUFFICIENT_HISTORY, not a flag
+  exclude_outcomes: [IN_PROGRESS, NO_ACTION]   # NO_ACTION = engineering review, no equipment reset
+
+trigger_c:
+  water_mechanisms: [CHANNELLING, CONING, CHANNELLING_OR_INJECTOR_BREAKTHROUGH, INJECTOR_BREAKTHROUGH]
+  min_water_cut_rise_pp: 5.0   # a water mechanism only counts as a signature when water cut actually rose in the window
+  min_confidence: MEDIUM
+
+trigger_d:
+  hazard_percentile: 90     # fires when the CoxPH partial hazard >= this percentile of the field's SRP hazards
+
+health:                     # TC-020 (SDD §6.3)
+  underperforming_residual_pct: -20.0
+  underperforming_persistence_days: 7
+
+# TC-005 detectors: first-7 vs last-7 producing days of a 45-day window. Thresholds sit at roughly
+# 3x the 95th-percentile noise band of the 3-field population at AS_OF (measured, see Stage P report),
+# not fitted to any fixture well.
+signatures:
+  window_days: 45
+  edge_days: 7
+  gl_valve:   {min_inj_rate_rise_frac: 0.10, max_inj_pressure_change_kgcm2: -2.0}
+  sand:       {min_cv_ratio: 2.5, max_liquid_change_frac: -0.08}
+  pump_wear:  {min_chp_rise_kgcm2: 1.0, max_liquid_change_frac: -0.05}
+  wax:        {min_thp_rise_frac: 0.12, max_liquid_change_frac: -0.05}
+  scale:      {step_days: 10, max_step_frac: -0.20, max_chp_rise_kgcm2: 1.0}
+  tubing_leak: {max_liquid_change_frac: -0.20, max_thp_change_kgcm2: -1.0, max_chp_rise_kgcm2: 0.5}
+  gas_interference: {min_gor_rise_frac: 0.30, max_liquid_change_frac: -0.08}

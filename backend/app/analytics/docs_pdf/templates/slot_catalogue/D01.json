@@ -1,0 +1,694 @@
+{
+ "doc_type": "D01",
+ "doc_type_name": "Well completion report",
+ "n_documents": 412,
+ "missing_text": "not recorded",
+ "slots": {
+  "doc_id": {
+   "source": "corpus",
+   "examples": [
+    "DOC-COMP-LKM-083",
+    "DOC-COMP-GK-124",
+    "DOC-COMP-LKW-027"
+   ],
+   "missing_share": 0.0
+  },
+  "doc_type": {
+   "source": "corpus",
+   "examples": [
+    "D01"
+   ],
+   "missing_share": 0.0
+  },
+  "doc_type_name": {
+   "source": "corpus",
+   "examples": [
+    "Well completion report"
+   ],
+   "missing_share": 0.0,
+   "categorical_values": [
+    "Well completion report"
+   ]
+  },
+  "doc_title": {
+   "source": "corpus",
+   "examples": [
+    "Well Completion & CBL Report LKM-083",
+    "Well Completion & CBL Report GK-124",
+    "Well Completion & CBL Report LKW-027"
+   ],
+   "missing_share": 0.0
+  },
+  "doc_date": {
+   "source": "corpus",
+   "examples": [
+    "1985-09-09",
+    "1974-02-12",
+    "1979-01-24"
+   ],
+   "missing_share": 0.0
+  },
+  "field": {
+   "source": "field_master.field",
+   "examples": [
+    "Lakhmani",
+    "Geleki",
+    "Lakwa"
+   ],
+   "missing_share": 0.0,
+   "categorical_values": [
+    "Geleki",
+    "Lakhmani",
+    "Lakwa"
+   ]
+  },
+  "asset": {
+   "source": "field_master.asset",
+   "examples": [
+    "Assam"
+   ],
+   "missing_share": 0.0,
+   "categorical_values": [
+    "Assam"
+   ]
+  },
+  "as_of": {
+   "source": "settings.AS_OF",
+   "examples": [
+    "2026-09-23"
+   ],
+   "missing_share": 0.0
+  },
+  "well_id": {
+   "source": "well_master.well_id",
+   "examples": [
+    "LKM-083",
+    "GK-124",
+    "LKW-027"
+   ],
+   "missing_share": 0.0
+  },
+  "cluster_id": {
+   "source": "well_master.cluster_id",
+   "examples": [
+    "LKM-GGS-II",
+    "GK-SW",
+    "LKW-GGS-I"
+   ],
+   "missing_share": 0.0,
+   "categorical_values": [
+    "GK-CENTRAL",
+    "GK-NE",
+    "GK-SW",
+    "LKM-GGS-I",
+    "LKM-GGS-II",
+    "LKW-GGS-I",
+    "LKW-GGS-II",
+    "LKW-GGS-III"
+   ]
+  },
+  "spud_date": {
+   "source": "well_master.spud_date",
+   "examples": [
+    "1985-03-27",
+    "1973-11-15",
+    "1978-11-06"
+   ],
+   "missing_share": 0.0
+  },
+  "completion_date": {
+   "source": "well_master.completion_date",
+   "examples": [
+    "1985-09-09",
+    "1974-02-12",
+    "1979-01-24"
+   ],
+   "missing_share": 0.0
+  },
+  "current_zone": {
+   "source": "well_master.current_zone",
+   "examples": [
+    "Tipam",
+    "Barail",
+    "Lakadong"
+   ],
+   "missing_share": 0.0,
+   "categorical_values": [
+    "Barail",
+    "Lakadong",
+    "Tipam"
+   ]
+  },
+  "perf_top_m": {
+   "source": "well_master.perf_top_m",
+   "examples": [
+    "2,756.4",
+    "2,634.9",
+    "2,584.7"
+   ],
+   "missing_share": 0.0
+  },
+  "perf_bottom_m": {
+   "source": "well_master.perf_bottom_m",
+   "examples": [
+    "2,790.6",
+    "2,663.6",
+    "2,622.0"
+   ],
+   "missing_share": 0.0
+  },
+  "total_depth_md_m": {
+   "source": "well_master.total_depth_md_m",
+   "examples": [
+    "2,843.1",
+    "2,743.5",
+    "2,676.8"
+   ],
+   "missing_share": 0.0
+  },
+  "total_depth_tvd_m": {
+   "source": "well_master.total_depth_tvd_m",
+   "examples": [
+    "2,784.2",
+    "2,727.7",
+    "2,599.1"
+   ],
+   "missing_share": 0.0
+  },
+  "lift_type": {
+   "source": "well_master.lift_type",
+   "examples": [
+    "GAS_LIFT",
+    "SRP",
+    "NATURAL"
+   ],
+   "missing_share": 0.0,
+   "categorical_values": [
+    "GAS_LIFT",
+    "NATURAL",
+    "SRP"
+   ]
+  },
+  "plunger_diameter_in": {
+   "source": "well_master.plunger_diameter_in",
+   "examples": [
+    "1.25",
+    "1.50"
+   ],
+   "missing_share": 0.364
+  },
+  "stroke_length_in": {
+   "source": "well_master.stroke_length_in",
+   "examples": [
+    "100.0",
+    "54.0",
+    "74.0"
+   ],
+   "missing_share": 0.364
+  },
+  "pump_setting_depth_m": {
+   "source": "well_master.pump_setting_depth_m",
+   "examples": [
+    "2,497.8",
+    "2,529.1",
+    "3,248.0"
+   ],
+   "missing_share": 0.364
+  },
+  "rod_string_grade": {
+   "source": "well_master.rod_string_grade",
+   "examples": [
+    "D",
+    "K",
+    "C"
+   ],
+   "missing_share": 0.364,
+   "categorical_values": [
+    "C",
+    "D",
+    "K",
+    "not recorded"
+   ]
+  },
+  "pump_type": {
+   "source": "well_master.pump_type",
+   "examples": [
+    "INSERT",
+    "TUBING"
+   ],
+   "missing_share": 0.364,
+   "categorical_values": [
+    "INSERT",
+    "TUBING",
+    "not recorded"
+   ]
+  },
+  "casing_vented": {
+   "source": "well_master.casing_vented",
+   "examples": [
+    "No",
+    "Yes"
+   ],
+   "missing_share": 0.0,
+   "categorical_values": [
+    "No",
+    "Yes"
+   ]
+  },
+  "tubing_size_in": {
+   "source": "well_master.tubing_size_in",
+   "examples": [
+    "3.500",
+    "2.875"
+   ],
+   "missing_share": 0.0
+  },
+  "casing_size_in": {
+   "source": "well_master.casing_size_in",
+   "examples": [
+    "7.000",
+    "5.500"
+   ],
+   "missing_share": 0.0
+  },
+  "latitude": {
+   "source": "well_master.latitude",
+   "examples": [
+    "26.85332",
+    "26.94608",
+    "27.09164"
+   ],
+   "missing_share": 0.0
+  },
+  "longitude": {
+   "source": "well_master.longitude",
+   "examples": [
+    "94.71574",
+    "94.79128",
+    "94.63598"
+   ],
+   "missing_share": 0.0
+  },
+  "well_status": {
+   "source": "well_master.status",
+   "examples": [
+    "ACTIVE",
+    "IDLE"
+   ],
+   "missing_share": 0.0,
+   "categorical_values": [
+    "ACTIVE",
+    "IDLE"
+   ]
+  },
+  "perf_interval_m": {
+   "source": "well_master.perf_bottom_m - perf_top_m",
+   "examples": [
+    "34.2",
+    "28.7",
+    "37.3"
+   ],
+   "missing_share": 0.0
+  },
+  "facility_id": {
+   "source": "facility_master.facility_id",
+   "examples": [
+    "LKM-GGS-II",
+    "GGS-01",
+    "LKW-GGS-I"
+   ],
+   "missing_share": 0.0,
+   "categorical_values": [
+    "LKM-GGS-I",
+    "LKM-GGS-II",
+    "LKW-GGS-I",
+    "LKW-GGS-II",
+    "LKW-GGS-III"
+   ]
+  },
+  "facility_name": {
+   "source": "facility_master.name",
+   "examples": [
+    "Lakhmani Group Gathering Station II",
+    "Gas Gathering Station 1 (Geleki South)",
+    "Lakwa Group Gathering Station I"
+   ],
+   "missing_share": 0.0,
+   "categorical_values": [
+    "Lakhmani Group Gathering Station I",
+    "Lakhmani Group Gathering Station II",
+    "Lakwa Group Gathering Station I",
+    "Lakwa Group Gathering Station II",
+    "Lakwa Group Gathering Station III"
+   ]
+  },
+  "prod_casing_od_in": {
+   "source": "casing_tally.od_in[PRODUCTION]",
+   "examples": [
+    "7.000",
+    "5.500"
+   ],
+   "missing_share": 0.0
+  },
+  "prod_casing_weight_ppf": {
+   "source": "casing_tally.weight_ppf[PRODUCTION]",
+   "examples": [
+    "26.0",
+    "17.0",
+    "15.5"
+   ],
+   "missing_share": 0.0
+  },
+  "prod_casing_grade": {
+   "source": "casing_tally.grade[PRODUCTION]",
+   "examples": [
+    "L-80",
+    "N-80",
+    "J-55"
+   ],
+   "missing_share": 0.0
+  },
+  "prod_casing_shoe_m": {
+   "source": "casing_tally.shoe_m[PRODUCTION]",
+   "examples": [
+    "2,835.5",
+    "2,735.7",
+    "2,672.1"
+   ],
+   "missing_share": 0.0
+  },
+  "cement_top_m": {
+   "source": "casing_tally.cement_top_m[PRODUCTION]",
+   "examples": [
+    "2,415.8",
+    "2,302.6",
+    "1,988.4"
+   ],
+   "missing_share": 0.0
+  },
+  "casing_install_date": {
+   "source": "casing_tally.install_date[PRODUCTION]",
+   "examples": [
+    "1985-09-09",
+    "1974-02-12",
+    "1979-01-24"
+   ],
+   "missing_share": 0.0
+  },
+  "n_casing_strings": {
+   "source": "count(casing_tally)",
+   "examples": [
+    "3"
+   ],
+   "missing_share": 0.0
+  },
+  "cement_above_perf_m": {
+   "source": "well_master.perf_top_m - casing_tally.cement_top_m",
+   "examples": [
+    "340.6",
+    "332.3",
+    "596.3"
+   ],
+   "missing_share": 0.0
+  },
+  "cemented_length_m": {
+   "source": "casing_tally.shoe_m - cement_top_m",
+   "examples": [
+    "419.7",
+    "433.1",
+    "683.7"
+   ],
+   "missing_share": 0.0
+  },
+  "surface_casing_shoe_m": {
+   "source": "casing_tally.shoe_m[SURFACE]",
+   "examples": [
+    "574.4",
+    "543.0",
+    "700.5"
+   ],
+   "missing_share": 0.0
+  },
+  "tubing_install_date": {
+   "source": "tubing_string.install_date",
+   "examples": [
+    "1984-12-22",
+    "1970-06-23",
+    "2006-08-25"
+   ],
+   "missing_share": 0.85,
+   "categorical_values": [
+    "not recorded"
+   ]
+  },
+  "tubing_workover_id": {
+   "source": "tubing_string.workover_id",
+   "examples": [],
+   "missing_share": 1.0,
+   "categorical_values": [
+    "not recorded"
+   ]
+  },
+  "pump_top_m": {
+   "source": "tubing_string.top_m[PUMP]",
+   "examples": [
+    "3,355.2",
+    "2,833.8",
+    "2,693.9"
+   ],
+   "missing_share": 0.925,
+   "categorical_values": [
+    "not recorded"
+   ]
+  },
+  "anchor_top_m": {
+   "source": "tubing_string.top_m[ANCHOR]",
+   "examples": [
+    "3,362.5",
+    "2,841.1",
+    "2,701.2"
+   ],
+   "missing_share": 0.925,
+   "categorical_values": [
+    "not recorded"
+   ]
+  },
+  "n_tubing_components": {
+   "source": "count(tubing_string)",
+   "examples": [
+    "0",
+    "2",
+    "12"
+   ],
+   "missing_share": 0.0
+  },
+  "n_perf_intervals": {
+   "source": "count(perforation_intervals)",
+   "examples": [
+    "2",
+    "1"
+   ],
+   "missing_share": 0.0
+  },
+  "n_open_perfs": {
+   "source": "count(perforation_intervals[OPEN])",
+   "examples": [
+    "1"
+   ],
+   "missing_share": 0.0
+  },
+  "n_formations": {
+   "source": "count(formation_tops)",
+   "examples": [
+    "4",
+    "5",
+    "7"
+   ],
+   "missing_share": 0.0
+  },
+  "zone_top_md_m": {
+   "source": "formation_tops.top_md_m[current_zone]",
+   "examples": [
+    "2,660.6",
+    "2,571.5",
+    "2,497.8"
+   ],
+   "missing_share": 0.0
+  },
+  "zone_lithology": {
+   "source": "formation_tops.lithology[current_zone]",
+   "examples": [
+    "Massive sandstone, minor shale",
+    "Sand-shale-coal alternation",
+    "Limestone and sandstone (Sylhet)"
+   ],
+   "missing_share": 0.0,
+   "categorical_values": [
+    "Limestone and sandstone (Sylhet)",
+    "Massive sandstone, minor shale",
+    "Sand-shale-coal alternation"
+   ]
+  },
+  "drilling_days": {
+   "source": "well_master.completion_date - spud_date",
+   "examples": [
+    "166",
+    "89",
+    "79"
+   ],
+   "missing_share": 0.0
+  },
+  "initial_perf_date": {
+   "source": "perforation_intervals.perf_date",
+   "examples": [
+    "1985-09-09",
+    "1974-02-12",
+    "1979-01-24"
+   ],
+   "missing_share": 0.0
+  },
+  "initial_spf": {
+   "source": "perforation_intervals.spf",
+   "examples": [
+    "4",
+    "6"
+   ],
+   "missing_share": 0.0
+  }
+ },
+ "tables": {
+  "casing": {
+   "columns": [
+    "string_type",
+    "od_in",
+    "weight_ppf",
+    "grade",
+    "top_m",
+    "shoe_m",
+    "cement_top_m",
+    "install_date"
+   ],
+   "source": "casing_tally",
+   "example_rows": [
+    {
+     "string_type": "CONDUCTOR",
+     "od_in": "20.000",
+     "weight_ppf": "94.0",
+     "grade": "K-55",
+     "top_m": "0.0",
+     "shoe_m": "41.5",
+     "cement_top_m": "0.0",
+     "install_date": "1985-09-09"
+    },
+    {
+     "string_type": "CONDUCTOR",
+     "od_in": "20.000",
+     "weight_ppf": "94.0",
+     "grade": "K-55",
+     "top_m": "0.0",
+     "shoe_m": "53.6",
+     "cement_top_m": "0.0",
+     "install_date": "1974-02-12"
+    }
+   ],
+   "max_rows_seen": 3
+  },
+  "tubing": {
+   "columns": [
+    "seq",
+    "component",
+    "od_in",
+    "length_m",
+    "top_m",
+    "install_date",
+    "workover_id"
+   ],
+   "source": "tubing_string",
+   "example_rows": [
+    {
+     "seq": "1",
+     "component": "TUBING",
+     "od_in": "2.875",
+     "length_m": "2,885.3",
+     "top_m": "0.0",
+     "install_date": "1984-12-22",
+     "workover_id": "not recorded"
+    },
+    {
+     "seq": "1",
+     "component": "TUBING",
+     "od_in": "2.875",
+     "length_m": "600.0",
+     "top_m": "0.0",
+     "install_date": "1970-06-23",
+     "workover_id": "not recorded"
+    }
+   ],
+   "max_rows_seen": 12
+  },
+  "perfs": {
+   "columns": [
+    "zone",
+    "top_m",
+    "bottom_m",
+    "spf",
+    "perf_date",
+    "status"
+   ],
+   "source": "perforation_intervals",
+   "example_rows": [
+    {
+     "zone": "Tipam",
+     "top_m": "2,756.4",
+     "bottom_m": "2,790.6",
+     "spf": "4",
+     "perf_date": "1985-09-09",
+     "status": "OPEN"
+    },
+    {
+     "zone": "Tipam",
+     "top_m": "2,634.9",
+     "bottom_m": "2,663.6",
+     "spf": "6",
+     "perf_date": "1974-02-12",
+     "status": "OPEN"
+    }
+   ],
+   "max_rows_seen": 2
+  },
+  "formations": {
+   "columns": [
+    "formation",
+    "top_md_m",
+    "bottom_md_m",
+    "lithology"
+   ],
+   "source": "formation_tops",
+   "example_rows": [
+    {
+     "formation": "Alluvium",
+     "top_md_m": "0.0",
+     "bottom_md_m": "361.1",
+     "lithology": "Unconsolidated sand and clay"
+    },
+    {
+     "formation": "Alluvium",
+     "top_md_m": "0.0",
+     "bottom_md_m": "428.9",
+     "lithology": "Unconsolidated sand and clay"
+    }
+   ],
+   "max_rows_seen": 7
+  }
+ },
+ "meta_keys": [
+  "legacy_doc_type"
+ ],
+ "sample_doc_ids": [
+  "DOC-COMP-LKM-083",
+  "DOC-COMP-GK-124",
+  "DOC-COMP-LKW-027",
+  "DOC-COMP-LKW-002",
+  "DOC-COMP-LKW-119"
+ ]
+}

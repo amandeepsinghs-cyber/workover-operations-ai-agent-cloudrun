@@ -1,0 +1,92 @@
+sop_id: SOP-IC-05
+intervention_class: IC-05
+title: Standard Operating Procedure for Scale Removal and Scale Inhibition
+purpose: Define mandatory standards and operational execution steps for identifying, removing, and inhibiting mineral scale
+  deposits in wellbores and completions.
+scope: Covers scale dissolver treatments, acid bullheading, and squeeze inhibition across Assam field wells ({n_job_codes}
+  catalogue job codes) utilizing {equipment_list}.
+applicability:
+- Gradual or sudden productivity decline with evidence of carbonate or sulphate scale on retrieved equipment.
+- Scale deposition identified in surface chokes, flowlines, or subsurface safety valves.
+- Water analysis showing high scaling tendency index for calcium carbonate or barium sulphate.
+roles:
+- Wellsite supervisor
+- Pumping supervisor
+- Production petroleum engineer
+- Radiation and chemical safety officer
+ppe_and_permits:
+- Chemical handling permit to work with acid and scale inhibitor endorsements.
+- Full chemical suit, neoprene gloves, face shield, and chemical vapor respirator.
+- NORM survey radiation monitor and personal dosimeters for scale waste handling.
+hazards:
+- hazard: Skin burns or acid vapor inhalation during acid mixing and bullheading.
+  control: Use closed system loading lines, wear complete chemical protective suit, and station emergency eyewash.
+- hazard: Naturally Occurring Radioactive Material (NORM) exposure from scale deposits.
+  control: Survey all recovered scale with calibrated radiation meter, isolate contaminated tubulars, and store in designated
+    yard.
+- hazard: Corrosion failure of production tubing during acid contact time.
+  control: Add certified corrosion inhibitor with intensifier, monitor temperature, and limit acid contact duration.
+- hazard: High pressure pumping line rupture during chemical injection.
+  control: Install safety iron restraints, pressure test lines to the approved test pressure, and clear exclusion zone.
+pre_job_checks:
+- Confirm mineralogical scale composition from laboratory X-ray diffraction analysis.
+- Check volume and concentration of acid, chelating agent, scale inhibitor, and mutual solvent.
+- Perform acid compatibility test with reservoir crude to rule out sludge or emulsion formation.
+- Inspect high pressure pump truck, treating iron, check valves, and pressure relief valves.
+- Calibrate radiation survey instrument for NORM screening of equipment and fluids.
+procedure:
+- phase: Pre-Treatment Rig Up and Line Testing
+  steps:
+  - Set up perimeter safety barriers and post chemical hazard warning signs around the wellhead.
+  - Connect high pressure pumping iron between pump truck manifold and wellhead injection valve.
+  - Install dual check valves and emergency pressure relief valve in the discharge line.
+  - Pressure test surface pumping manifold to the approved test pressure in the approved programme.
+  - Verify emergency eyewash station and chemical spill neutralization kits are operational.
+  - Perform pre-treatment communication check and review maximum allowable surface treating pressure.
+- phase: Acid Bullheading and Scale Dissolution
+  steps:
+  - Pump pre-flush brine containing mutual solvent and iron control additives down tubing.
+  - Inject formulated scale dissolver or sequestered acid blend at specified matrix pump rate.
+  - Monitor injection pressure and pump rate continuously to stay below formation fracture pressure.
+  - Displace scale dissolver into the target completion interval with compatible displacement fluid.
+  - Shut in well for the programme soak duration to allow chemical reaction with scale deposits.
+  - Record pressure decline during the soaking period to evaluate near-wellbore breakdown.
+- phase: Scale Inhibitor Squeeze and Overflush
+  steps:
+  - Mix scale inhibitor chemical solution in clean tank with filtered formation-compatible brine.
+  - Pump scale inhibitor squeeze pill into the perforated zone at regulated matrix injection rate.
+  - Pump overflush brine volume to push inhibitor pill into the near-wellbore formation matrix.
+  - Shut in well for the specified adsorption dwell period to allow chemical retention on rock grains.
+  - Monitor wellhead pressure during the shut-in period for thermal stabilization.
+  - Prepare surface production manifold for controlled clean-up flowback.
+- phase: Flowback and Effluent Management
+  steps:
+  - Open well on calibrated small choke and flow back spent acid and effluent to dedicated tank.
+  - Sample return fluids and measure pH until returns reach neutral formation water levels.
+  - Screen returned solids with NORM radiation meter and record dose rate readings.
+  - Neutralize spent acid in collection tank with soda ash before authorized transfer.
+  - Disconnect pumping iron, flush lines with fresh water, and conduct post-job site inspection.
+  - Handover well to production team and start periodic residual inhibitor concentration sampling.
+job_variants:
+  SCALE_ACID_BULLHEAD:
+  - Bullhead sequestered hydrochloric acid or chelating chemical blend to dissolve carbonate scale.
+  - Maintain surface treating pressure below formation fracture pressure throughout pumping.
+  SCALE_INHIBITOR:
+  - Perform scale inhibitor squeeze treatment into reservoir pore space with calculated overflush.
+  - Shut in well for adsorption period and implement routine residual inhibitor monitoring.
+acceptance_criteria:
+- Significant reduction in injection resistance or marked increase in production fluid delivery.
+- Return fluids confirm neutralization to neutral pH baseline.
+- Residual scale inhibitor concentration exceeds minimum effective threshold in return brine.
+post_job:
+- Record total chemical volumes, treating pressures, and soaking times in completion archive.
+- Store all NORM contaminated waste in labeled drums within licensed storage facility.
+- Submit post-treatment water analysis report and chemical consumption log.
+lessons_learned:
+- Corpus records {jobs_all_fields} scale treatment jobs across asset fields with {success_pct_all} success.
+- Median duration for scale intervention is {median_rig_days_all} rig days.
+- Maintaining inhibitor residual above protective threshold prevents recurring scale formation.
+references:
+- Scale Management and Chemical Inhibition Standard.
+- NORM Safety and Environmental Protection Manual.
+- Chemical Pumping and Well Stimulation Safety Protocol.

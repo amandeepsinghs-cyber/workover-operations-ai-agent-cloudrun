@@ -1,0 +1,93 @@
+sop_id: SOP-IC-01
+intervention_class: IC-01
+title: Standard Operating Procedure for Sucker Rod Pump Overhaul and Replacement
+purpose: Establish mandatory operational requirements and barrier verification standards for pulling, inspecting, overhauling,
+  and reinstalling subsurface sucker rod pump assemblies.
+scope: Applies to sucker rod pump completions across Assam producing assets covering {n_job_codes} catalogue job codes utilizing
+  {equipment_list}.
+applicability:
+- Dynamometer survey indicating traveling or standing valve failure, barrel slippage, or fluid pound.
+- Acoustic fluid level survey showing elevated fluid column above pump intake with nil surface fluid delivery.
+- Loss of liquid displacement to the group gathering station despite continuous mechanical rod reciprocation.
+roles:
+- Wellsite supervisor
+- Workover rig superintendent
+- Production petroleum engineer
+- Rig safety officer
+ppe_and_permits:
+- Approved Permit to Work with cold work authorization displayed at the doghouse.
+- Multi-gas detector with certified calibration for combustible gases and toxic atmospheres.
+- Full personal protective equipment including impact gloves, chemical goggles, and safety boots.
+hazards:
+- hazard: Trapped pressure under the stuffing box or rod blowout preventer.
+  control: Bleed down flowline and annulus to the group gathering station header, and confirm zero pressure on dual calibrated
+    gauges.
+- hazard: Parted sucker rod string dropping downhole during retrieval.
+  control: Inspect rod elevators prior to each stand pull, engage safety latches, and maintain rod blowout preventer ready
+    for immediate closure.
+- hazard: Hydrocarbon spillage and local environmental contamination during pump retrieval.
+  control: Position continuous drip trays under wellhead flange, engage rubber rod wiper, and collect drained fluid into containment
+    tank.
+- hazard: Hydrogen sulphide gas accumulation in the cellar or around the wellhead.
+  control: Continuous air monitoring with audible alarms, forced draft ventilation in enclosed areas, and escape breathing
+    apparatus stationed upwind.
+pre_job_checks:
+- Review recent dynamometer card, fluid level survey, and production test history.
+- Verify pulling unit mast inspection certificate, guy line anchors, and foundation stability.
+- Confirm kill brine volume, density, and compatibility with reservoir formation fluids.
+- Inspect replacement insert pump or tubing pump assembly, valve cups, and seating mandrel.
+- Conduct pre-job safety meeting with rig crew and review barrier policy.
+procedure:
+- phase: Preparation and Well Kill
+  steps:
+  - Isolate beam pumping unit prime mover, apply mechanical brake, and attach lockout tagout device.
+  - Bleed residual pressure from tubing and casing annulus to the group gathering station header.
+  - Connect high pressure pumping line to the casing wing valve and pressure test lines to the approved test pressure in the
+    approved programme.
+  - Pump approved kill brine down casing annulus until complete well dead condition is confirmed with zero surface pressure.
+  - Remove polished rod clamp and disconnect bridle from polished rod hanger.
+  - Rig up pulling unit work floor, rod transfer table, and rod elevators.
+- phase: Rod String Retrieval and Inspection
+  steps:
+  - Install and function test rod blowout preventer on the wellhead tee.
+  - Unseat rod pump from bottom seating nipple by pulling rod string with gentle tension.
+  - Pull sucker rod string stand by stand while inspecting rod bodies, pins, and couplings for wear or corrosion.
+  - Rack sucker rods on elevated stands with protective thread protectors and timber spacers.
+  - Retrieve bottomhole pump assembly and place on designated inspection bench.
+  - Examine pump barrel, plunger, traveling valve, and standing valve for mechanical scoring or solids scoring.
+- phase: Pump Overhaul and Reinstallation
+  steps:
+  - Inspect seating cup assembly or mechanical lock mandrel on the replacement pump.
+  - Perform shop or wellsite vacuum test on traveling and standing ball and seat assemblies.
+  - Make up replacement pump to rod string using manufacturer recommended torque specifications.
+  - Run rod string in hole while applying approved API thread compound to each clean coupling pin.
+  - Tag bottom seating nipple gently, record running depth tally, and set pump into seat.
+  - Space out polished rod string to prevent bottom pump tagging at lowest point of stroke.
+- phase: Well Restart and Handover
+  steps:
+  - Install polished rod stuffing box with fresh packing elements and tighten gland nut evenly.
+  - Reinstall polished rod clamp at measured space-out height and reconnect bridle cables.
+  - Pressure test tubing string against standing valve to the approved test pressure in the approved programme.
+  - Remove lockout tagout from pumping unit controller and start prime mover on hand rotation check.
+  - Monitor surface fluid return to the group gathering station and verify continuous liquid flow.
+  - Record acoustic fluid level, motor current draw, and surface pumping unit stroke rate.
+job_variants:
+  PUMP_OVERHAUL:
+  - Inspect pump barrel for score marks, replace worn valve balls and seats, and replace seating cups.
+  - Perform vacuum test on suction and discharge valves prior to running pump into the well.
+acceptance_criteria:
+- Pressure test of tubing against standing valve holds the approved test pressure with nil drop.
+- Fluid displacement confirmed at surface flowline header with consistent stroke displacement.
+- Dynamometer survey confirms full pump barrel fillage without severe gas interference.
+post_job:
+- Record final space-out measurements, pump type, and seating depth in well files.
+- Transport decommissioned pump assembly to central mechanical workshop with tag report.
+- File daily workover report and handover well to production operations.
+lessons_learned:
+- Historical campaigns record {jobs_all_fields} interventions for this class with {success_pct_all} success rate.
+- Median rig intervention duration is {median_rig_days_all} rig days across all asset fields.
+- Proper rod space-out prevents bottom tagging and extends run life significantly.
+references:
+- Artificial Lift Operating Manual for Sucker Rod Pumping Systems.
+- Well Control and Wellhead Maintenance Guidelines.
+- Approved Field Intervention Programme.

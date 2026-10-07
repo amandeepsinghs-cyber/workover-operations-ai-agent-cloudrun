@@ -1,0 +1,9 @@
+# Intervention SLAs used by TC-019 deferred-maintenance re-classification (SDD §7 row 5).
+# Losses that accrue after a trigger fired AND the SLA elapsed are HUMAN_PROCESS / DEFERRED_MAINTENANCE.
+version: "1.0.0"
+rig_job_days: 14
+rigless_job_days: 3
+# trigger used to date "the moment the organisation could have known" inside a precursor segment:
+# productivity ratio actual / (runtime x expected) at or below this for N consecutive producing days
+detect_ratio: 0.75
+detect_persistence_days: 7
