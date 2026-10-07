@@ -46,3 +46,6 @@ backend/tests/baseline/
 #   cd backend && uv run python -m app.analytics.docs_pdf.build
 backend/app/data/docs_pdf/
 backend/app/data/index/
+
+# v0.4 (D-23): dist is built in the Docker web stage
+frontend/dist/

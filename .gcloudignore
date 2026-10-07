@@ -1,11 +1,40 @@
+# WellPulse upload filter for `gcloud builds submit` / `gcloud run deploy --source` (Stage W).
+# gcloud does NOT read .gitignore or .dockerignore; this file is the upload filter. Keep in sync
+# with .dockerignore (the Docker context is whatever gets uploaded, then .dockerignore applies).
+.gcloudignore
 .git
-.venv
-backend/.venv
-node_modules
-frontend/node_modules
-archive
+.gitignore
+.vscode
+.idea
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
 *.log
 .DS_Store
-backend/tests/baseline
-.pytest_cache
-.ruff_cache
+*.swp
+
+# Secrets: never uploaded
+.env
+.env.local
+*.pem
+*.key
+
+# Local environments / deps (rebuilt in the image)
+.venv/
+backend/.venv/
+node_modules/
+frontend/node_modules/
+
+# Built in the image (stage 1 / stage 2, D-18)
+frontend/dist/
+backend/app/data/docs_pdf/
+backend/app/data/index/
+backend/app/data/lake_export/
+
+# Not needed for the build
+backend/tests/
+archive/
+docs/
+lakehouse/
+verbatim.md

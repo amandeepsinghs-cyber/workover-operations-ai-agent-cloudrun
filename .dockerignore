@@ -1,11 +1,48 @@
+# WellPulse Docker build context (Stage W, SDD §17.1). Keep in sync with .gcloudignore.
+# VCS / tooling
 .git
+.gitignore
+.vscode
+.idea
+**/__pycache__
+**/*.py[cod]
+**/.pytest_cache
+**/.ruff_cache
+*.log
+**/*.log
+.DS_Store
+**/*.swp
+
+# Secrets: never in the image or the upload
+.env
+**/.env
+**/.env.local
+*.pem
+*.key
+
+# Local environments / deps (rebuilt in the image)
 .venv
 backend/.venv
 node_modules
 frontend/node_modules
+
+# Built in stage 1 (never copied from the host)
+frontend/dist
+
+# Built in stage 2 (D-18: git-ignored, regenerated deterministically)
+backend/app/data/docs_pdf
+backend/app/data/index
+backend/app/data/lake_export
+
+# Not needed at runtime
+backend/tests
 archive
-*.log
-.DS_Store
-backend/tests/baseline
-.pytest_cache
-.ruff_cache
+docs
+lakehouse
+verbatim.md
+README.md
+run_local.sh
+deploy/*.md
+deploy/smoke_test.py
+deploy/deploy.sh
+deploy/env.cloudrun.yaml
