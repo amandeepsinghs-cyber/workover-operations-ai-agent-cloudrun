@@ -50,7 +50,17 @@ def to_date_or_none(d: Any) -> datetime.date | None:
 
 
 def load_landing_document_index() -> pd.DataFrame:
-    """Read and concatenate document_index from all landing folders."""
+    """Document metadata for enrichment.
+
+    Prefers Stage O's authoritative corpus index (``data/index/document_index.parquet``, whose
+    ``path`` is relative to ``docs_pdf/`` and therefore to ``gs://<bucket>/documents/``); falls back
+    to the landing ``document_index`` tables.
+    """
+    corpus = C.DATA_DIR / "index" / "document_index.parquet"
+    if corpus.exists():
+        d = pq.read_table(corpus).to_pandas()
+        d["gcs_uri"] = "gs://" + C.BUCKET + "/" + C.DOCUMENTS_PREFIX + "/" + d["path"].astype(str)
+        return d[["doc_id", "well_id", "doc_type", "doc_date", "gcs_uri"]].drop_duplicates(subset=["doc_id"])
     dfs: list[pd.DataFrame] = []
     for folder in ["geleki", "lakwa", "lakhmani", "asset"]:
         p = C.LANDING_DIR / folder / "document_index.parquet"
@@ -136,13 +146,15 @@ def build_chunk_frame(
 
     # char_count and chunk_id
     res["char_count"] = res["text"].fillna("").astype(str).str.len()
-    res["chunk_id"] = (
+    derived_id = (
         res["doc_id"].astype(str)
         + ":p"
         + res["page"].fillna(1).astype(int).astype(str)
         + ":c"
         + res["chunk_seq"].fillna(0).astype(int).astype(str)
     )
+    # keep the TF-IDF index's own chunk_id (e.g. "CBL-GK-001-2025#p1") so TC-026 hits join 1:1
+    res["chunk_id"] = res["chunk_id"].fillna(derived_id) if "chunk_id" in res.columns else derived_id
 
     # Dates and timestamps
     res["doc_date"] = res["doc_date"].apply(to_date_or_none)

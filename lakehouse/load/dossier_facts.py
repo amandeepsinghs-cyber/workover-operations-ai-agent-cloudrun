@@ -79,7 +79,10 @@ def parse_fact_number(val_str: str) -> float | None:
 
 
 def load_landing_document_index() -> pd.DataFrame:
-    """Read and concatenate document_index from all landing folders."""
+    """Document metadata: Stage O corpus index if present (authoritative), else landing document_index."""
+    corpus = C.DATA_DIR / "index" / "document_index.parquet"
+    if corpus.exists():
+        return pq.read_table(corpus).to_pandas().drop_duplicates(subset=["doc_id"])
     dfs: list[pd.DataFrame] = []
     for folder in ["geleki", "lakwa", "lakhmani", "asset"]:
         p = C.LANDING_DIR / folder / "document_index.parquet"

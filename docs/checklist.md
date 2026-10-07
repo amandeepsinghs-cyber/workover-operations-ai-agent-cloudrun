@@ -297,7 +297,7 @@
 - [x] `wellpulse_bronze`, `wellpulse_silver` and `wellpulse_gold` exist in `asia-south1`; Silver `daily_production` is partitioned by `production_date` and clustered by `field, well_id`
 - [x] Silver row counts = Bronze; Gold `field_kpi_monthly` = TC-028 output
 - [x] Parquet vs. BigQuery parity test green; the app runs with `DATA_BACKEND=bigquery`
-- [ ] Silver `doc_chunks` mirrors the TF-IDF index from D1–D11 (D-17; Vertex AI Search optional later, verbatim §5) — table + re-runnable loader in place; populate after Stage O builds `data/index/doc_chunks.parquet` (`lakehouse/load/doc_chunks.py`)
+- [x] Silver `doc_chunks` mirrors the TF-IDF index from D1–D11 (D-17; Vertex AI Search optional later, verbatim §5) — 28,675 chunks / 20,966 docs = `data/index/doc_chunks.parquet`; `gold.dossier_facts` 1,522,055 facts; 41,932 objects (155 MB) in `documents/`
 - [x] Production-store decision record (BigQuery vs. alternatives) recorded in [`SDD.md`](./SDD.md) §15.2 (verbatim §3) — full record: `lakehouse/decision_record.md`
 - [ ] [O] Commit + push after Gate X passes: `git commit -m "v0.4(X): medallion lakehouse — Gate X passed" && git push origin main`
 
