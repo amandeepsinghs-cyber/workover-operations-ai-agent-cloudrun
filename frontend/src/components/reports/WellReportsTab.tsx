@@ -236,6 +236,29 @@ export const WellReportsTab: React.FC<WellReportsTabProps> = ({ well }) => {
     }
   };
 
+  // Stage S (F-06, TC-023): pre-job field dossier PDF (2-4 pages, every number fact-slotted).
+  const [dossierBusy, setDossierBusy] = useState<boolean>(false);
+  const [dossierInfo, setDossierInfo] = useState<{ pages: number; highlights: string[]; pdf_url: string } | null>(null);
+  const handleGenerateDossier = async () => {
+    setDossierBusy(true);
+    const win = window.open('', '_blank'); // open synchronously so the popup is not blocked
+    try {
+      const res = await fetch(`/api/wells/${encodeURIComponent(well.id)}/dossier?refresh=false`, { method: 'POST' });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const env = (await res.json()) as Envelope<{ pages: number; highlights: string[]; pdf_url: string } | null>;
+      if (!env.data) throw new Error(env.message || 'dossier unavailable');
+      setDossierInfo(env.data);
+      if (win) win.location.href = env.data.pdf_url;
+      else window.open(env.data.pdf_url, '_blank');
+    } catch (err) {
+      if (win) win.close();
+      console.error('Failed to generate field dossier:', err);
+      alert('Failed to generate the field dossier. Please retry.');
+    } finally {
+      setDossierBusy(false);
+    }
+  };
+
   const typeBadge = (t: string) => (
     <span className="text-[9px] font-mono px-1.5 py-0.5 rounded border border-border bg-[#0d1117] text-textMuted">
       {t}
@@ -281,16 +304,41 @@ export const WellReportsTab: React.FC<WellReportsTabProps> = ({ well }) => {
           })}
         </div>
 
-        <button
-          onClick={handleExportDossier}
-          disabled={isExporting}
-          className="flex items-center gap-1.5 px-3 py-1.5 bg-[#0d1117] hover:bg-surface text-emerald-400 hover:text-emerald-300 border border-emerald-500/40 hover:border-emerald-400 rounded-lg text-xs font-mono font-semibold transition-all shadow-sm"
-          title="Download the engineering dossier (JSON)"
-        >
-          <Download className={`w-3.5 h-3.5 ${isExporting ? 'animate-bounce' : ''}`} />
-          <span>{isExporting ? 'Exporting...' : 'Export Dossier'}</span>
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={handleGenerateDossier}
+            disabled={dossierBusy}
+            className="flex items-center gap-1.5 px-3 py-1.5 bg-[#0d1117] hover:bg-surface text-sky-300 hover:text-sky-200 border border-sky-500/40 hover:border-sky-400 rounded-lg text-xs font-mono font-semibold transition-all shadow-sm"
+            title="Generate the pre-job field dossier PDF (history, construction & lithology, NBA + SOP, hazards)"
+          >
+            {dossierBusy ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <FileText className="w-3.5 h-3.5" />}
+            <span>{dossierBusy ? 'Building dossier...' : 'Generate field dossier'}</span>
+          </button>
+          <button
+            onClick={handleExportDossier}
+            disabled={isExporting}
+            className="flex items-center gap-1.5 px-3 py-1.5 bg-[#0d1117] hover:bg-surface text-emerald-400 hover:text-emerald-300 border border-emerald-500/40 hover:border-emerald-400 rounded-lg text-xs font-mono font-semibold transition-all shadow-sm"
+            title="Download the engineering dossier (JSON)"
+          >
+            <Download className={`w-3.5 h-3.5 ${isExporting ? 'animate-bounce' : ''}`} />
+            <span>{isExporting ? 'Exporting...' : 'Export Dossier'}</span>
+          </button>
+        </div>
       </div>
+
+      {dossierInfo && (
+        <div className="text-[11px] font-mono text-sky-200/90 bg-sky-950/30 border border-sky-800/50 rounded-lg px-3 py-2 flex items-start gap-2">
+          <FileText className="w-3.5 h-3.5 mt-0.5 shrink-0" />
+          <div className="flex-1">
+            {dossierInfo.highlights.map((h, i) => (
+              <div key={i}>• {h}</div>
+            ))}
+          </div>
+          <a href={dossierInfo.pdf_url} target="_blank" rel="noreferrer" className="flex items-center gap-1 text-sky-300 hover:text-white">
+            <ExternalLink className="w-3 h-3" /> PDF ({dossierInfo.pages} pp)
+          </a>
+        </div>
+      )}
 
       {status === 'loading' && (
         <div className="flex items-center gap-2 text-xs font-mono text-textMuted p-4">

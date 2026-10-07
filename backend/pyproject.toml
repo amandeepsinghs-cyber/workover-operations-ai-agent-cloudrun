@@ -5,6 +5,7 @@ description = "WellPulse FastAPI backend (well operations intelligence & voice c
 requires-python = ">=3.11,<3.12"
 dependencies = [
     "fastapi>=0.110",
+    "google-adk>=2.11.0",
     "google-cloud-bigquery>=3.25",
     "google-cloud-bigquery-storage>=2.25",
     "google-cloud-storage>=2.16",
@@ -31,11 +32,15 @@ package = false
 testpaths = ["tests"]
 pythonpath = ["."]
 asyncio_mode = "auto"
+markers = [
+    "live_llm: calls the real gemini-3.8-flash on Vertex AI (run with WELLPULSE_LIVE_LLM=1)",
+]
 
 [dependency-groups]
 dev = [
     "httpx>=0.28.1",
     "pytest>=9.1.1",
     "pytest-asyncio>=1.4.0",
+    "pytest-bdd>=9.0.0",
     "ruff>=0.16.10",
 ]

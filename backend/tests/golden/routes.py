@@ -33,12 +33,18 @@ ROUTES: list[tuple[str, str, str, dict | None]] = [
     ("well_export", "GET", "/api/wells/{well}/export", None),
     ("well_recommendations", "POST", "/api/wells/{well}/recommendations", None),
     ("well_chat_fallback", "POST", "/api/wells/{well}/chat", _CHAT_BODY),
-    ("well_audio_fallback", "POST", "/api/wells/{well}/audio", _AUDIO_BODY),
     ("well_not_found", "GET", "/api/wells/NOPE-000", None),
 ]
 
+# v0.4 Stage V (D-20): the legacy per-well audio POST and per-well live websocket were removed;
+# voice is served by ``WS /ws/live`` (Stage L) and text by ``POST /api/chat`` (ADK agent). Their
+# v0.3 golden files (well_audio_fallback / well_live_ws) are kept for history only; the test now
+# asserts these routes are gone.
 WS_LIVE_NAME = "well_live_ws"
 WS_LIVE_PATH = "/api/wells/{well}/live"
+REMOVED_ROUTES: list[tuple[str, str, dict | None]] = [
+    ("POST", "/api/wells/{well}/audio", _AUDIO_BODY),
+]
 
 # Expected HTTP status per route (default 200).
 EXPECTED_STATUS = {"well_not_found": 404}

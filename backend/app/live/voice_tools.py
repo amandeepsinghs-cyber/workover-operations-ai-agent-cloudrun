@@ -323,38 +323,9 @@ def _v_well_summary(well_id: str) -> dict[str, Any]:
     return out
 
 
-@register_voice_tool(
-    name="well_workovers",
-    description=(
-        "Workover / intervention history of one well (date, job type, findings, outcome, rig-days). "
-        "Use for 'pichla workover', 'what was done on this well before'."
-    ),
-)
-def _v_well_workovers(well_id: str, limit: int = 3) -> dict[str, Any]:
-    w = _find_well(well_id)
-    if w is None:
-        return _not_found(well_id)
-    wos = list(w.get("workovers") or [])
-    wos.sort(key=lambda x: str(x.get("date", "")), reverse=True)
-    return {"status": "OK", "well_id": w.get("id"), "total": len(wos), "workovers": wos[: max(1, min(int(limit or 3), 10))]}
-
-
-@register_voice_tool(
-    name="well_recommendation",
-    description=(
-        "Recommended next intervention for one well (title, urgency, action items, risk mitigation; "
-        "cost as band only). Use for 'what should we do', 'kya karein', 'recommend'."
-    ),
-    action_kind="nba",
-)
-def _v_well_recommendation(well_id: str) -> dict[str, Any]:
-    w = _find_well(well_id)
-    if w is None:
-        return _not_found(well_id)
-    fn = _resolve([("app.services.ai_agent", "generate_structured_recommendation")])
-    if fn is None:
-        return {"status": "UNAVAILABLE", "message": "recommendation engine not available"}
-    return {"status": "OK", "well_id": w.get("id"), "recommendation": fn(w)}
+# Stage V: the legacy ``well_workovers`` (covered by ``well_profile`` construction/workover history) and
+# ``well_recommendation`` (superseded by TC-022 ``next_best_action``) voice tools were removed so the
+# registry fits SDD §11.3's <= 12 voice tools.
 
 
 @register_voice_tool(
@@ -539,8 +510,8 @@ def _v_classify_intervention(well_id: str = "", top_k: int = 3) -> dict[str, Any
 
 # ---------------------------------------------------------------------------
 # Stage R: TC-022 next best action + TC-027 counterfactual (SDD §9.1/9.2). Cost as band + rig-days only.
-# Registry is now 13 tools (> SDD §11.3's 12): Stage V trims the legacy well_summary / well_workovers /
-# well_recommendation tools (well_recommendation is now TC-022 rank-1 anyway).
+# Stage V trimmed the legacy well_workovers / well_recommendation tools: registry is 11 (<= 12, SDD §11.3),
+# leaving one slot for the Stage S dossier tool.
 # ---------------------------------------------------------------------------
 @register_voice_tool(
     name="next_best_action",
@@ -581,3 +552,27 @@ def _v_compare_interventions(well_id: str, alternative: str, recommended: str = 
 
     return compare_interventions(well_id.strip().upper(), recommended_job=recommended or None,
                                  alternative_job=alternative).envelope()
+
+
+# ---------------------------------------------------------------------------
+# Stage V: TC-023 field dossier (Stage S builder) — the 12th voice tool (SDD §11.3 cap). RBAC capability
+# ``docs.sop_dossier`` via rbac.VOICE_TOOL_CAPABILITY["dossier"]. Voice payload: highlights + PDF link only.
+# ---------------------------------------------------------------------------
+@register_voice_tool(
+    name="dossier",
+    description=(
+        "TC-023: field-dispatch history pack (dossier PDF) for one well: three highlights, sections, sources and "
+        "the PDF link. Give well_id. Use for 'I'm going to the field tomorrow', 'history pack', "
+        "'kal LKW-047 ja raha hoon, iski poori history de do'."
+    ),
+    action_kind="dossier",
+)
+def _v_dossier(well_id: str) -> dict[str, Any]:
+    from app.analytics.tools.dossier import build_well_dossier
+
+    env = build_well_dossier(well_id.strip().upper(), refresh=False).envelope()
+    data = env.get("data")
+    if isinstance(data, dict):  # voice payload: highlights + link; the full pack is the PDF on screen
+        keep = ("doc_id", "well_id", "as_of", "pdf_url", "pages", "highlights", "n_facts")
+        env["data"] = {k: data[k] for k in keep if k in data} | {"n_sources": len(data.get("sources") or [])}
+    return env

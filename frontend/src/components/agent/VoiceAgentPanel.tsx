@@ -13,6 +13,7 @@ import {
   Play,
   Zap,
   Square,
+  AlertTriangle,
 } from 'lucide-react';
 import { ChatMessage, Recommendation, WellDetail } from '../../types/well';
 import {
@@ -23,9 +24,14 @@ import {
   ToolCallEvent,
 } from '../../live/liveClient';
 import { audioPlayer } from '../../live/audioPlayer';
+import { postChat, ChatAction, ChatArtifact as ChatArtifactType } from '../../api/chat';
+import { ChatArtifact } from './ChatArtifact';
 
 interface VoiceAgentPanelProps {
-  well: WellDetail;
+  well?: WellDetail | null;
+  field?: string | null;
+  screen?: string | null;
+  onAgentAction?: (a: ChatAction) => void;
 }
 
 type AgentLanguage = 'hinglish' | 'english' | 'hindi';
@@ -46,12 +52,19 @@ export type LiveChatMessage = Omit<ChatMessage, 'recommendation'> & {
   tools?: ToolCallInfo[];
   live?: boolean;
   recommendation?: SafeRecommendation;
+  artifacts?: ChatArtifactType[];
+  status?: 'ok' | 'degraded';
 };
 
-export const VoiceAgentPanel: React.FC<VoiceAgentPanelProps> = ({ well }) => {
+export const VoiceAgentPanel: React.FC<VoiceAgentPanelProps> = ({
+  well,
+  field,
+  screen,
+  onAgentAction,
+}) => {
   const [messages, setMessages] = useState<LiveChatMessage[]>([]);
   const [inputPrompt, setInputPrompt] = useState<string>('');
-  const [language, setLanguage] = useState<AgentLanguage>('english');
+  const [language, setLanguage] = useState<AgentLanguage>('hinglish');
   const [currentRecommendation, setCurrentRecommendation] = useState<SafeRecommendation | null>(null);
 
   // Live client states
@@ -68,21 +81,13 @@ export const VoiceAgentPanel: React.FC<VoiceAgentPanelProps> = ({ well }) => {
   const [isProcessing, setIsProcessing] = useState<boolean>(false);
   const [voices, setVoices] = useState<SpeechSynthesisVoice[]>([]);
 
-  // Legacy fallback voice states (for text mode when Live mode is OFF)
-  const [legacyListening, setLegacyListening] = useState<boolean>(false);
-  const [legacyRecordingSeconds, setLegacyRecordingSeconds] = useState<number>(0);
+  // Speech synthesis speaking state (for text mode TTS replay)
   const [legacySpeaking, setLegacySpeaking] = useState<boolean>(false);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const isTalkingRef = useRef<boolean>(false);
   const currentUserMsgIdRef = useRef<string | null>(null);
   const currentAgentMsgIdRef = useRef<string | null>(null);
-
-  // Legacy MediaRecorder refs
-  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
-  const mediaStreamRef = useRef<MediaStream | null>(null);
-  const audioChunksRef = useRef<Blob[]>([]);
-  const timerIntervalRef = useRef<any>(null);
 
   // 1. LiveClient instance per panel in useRef
   const clientRef = useRef<LiveClient | null>(null);
@@ -273,17 +278,46 @@ export const VoiceAgentPanel: React.FC<VoiceAgentPanelProps> = ({ well }) => {
         setFirstAudioLatency(latencyMs);
       },
 
+      onAction: (kind, payload: any) => {
+        if (!onAgentAction) return;
+        let targetScreen: ChatAction['screen'] | null = null;
+        if (kind === 'field_history_chart') targetScreen = 'field_history';
+        else if (kind === 'field_comparison') targetScreen = 'field_compare';
+        else if (kind === 'health_buckets') targetScreen = 'field_health';
+        else if (kind === 'priority_queue') targetScreen = 'priority';
+        else if (
+          ['well_profile', 'well_production_chart', 'nba', 'counterfactual'].includes(kind)
+        ) {
+          targetScreen = 'well';
+        }
+
+        if (targetScreen) {
+          onAgentAction({
+            kind: 'navigate',
+            screen: targetScreen,
+            field: payload?.field ?? payload?.data?.field ?? field ?? null,
+            well_id: payload?.well_id ?? payload?.data?.well_id ?? well?.id ?? null,
+            source_tool: kind,
+          });
+        }
+      },
+
       onInterrupted: () => {
         currentUserMsgIdRef.current = null;
         currentAgentMsgIdRef.current = null;
       },
     });
-  }, [client]);
+  }, [client, onAgentAction, field, screen, well?.id]);
 
   // Connect when Live mode is ON; disconnect on unmount and when Live mode is turned OFF
   useEffect(() => {
     if (isLiveMode) {
-      client.connect({ well_id: well.id, language });
+      client.connect({
+        well_id: well?.id,
+        field: field ?? undefined,
+        screen: screen ?? undefined,
+        language,
+      });
     } else {
       client.disconnect();
     }
@@ -292,18 +326,22 @@ export const VoiceAgentPanel: React.FC<VoiceAgentPanelProps> = ({ well }) => {
     };
   }, [isLiveMode, client]);
 
-  // When well.id changes while Live is on: setContext({ well_id: well.id }) without reconnecting
-  const prevWellIdRef = useRef<string>(well.id);
+  // When well?.id, field, or screen changes while Live is on: setContext without reconnecting
+  const prevWellIdRef = useRef<string | null | undefined>(well?.id);
   useEffect(() => {
-    if (prevWellIdRef.current !== well.id) {
-      prevWellIdRef.current = well.id;
+    if (prevWellIdRef.current !== well?.id) {
+      prevWellIdRef.current = well?.id;
       currentUserMsgIdRef.current = null;
       currentAgentMsgIdRef.current = null;
       if (isLiveMode) {
-        client.setContext({ well_id: well.id });
+        client.setContext({
+          well_id: well?.id ?? undefined,
+          field: field ?? undefined,
+          screen: screen ?? undefined,
+        });
       }
     }
-  }, [well.id, isLiveMode, client]);
+  }, [well?.id, field, screen, isLiveMode, client]);
 
   // When language changes while Live is on: setContext({ language }) without reconnecting
   const prevLanguageRef = useRef<AgentLanguage>(language);
@@ -343,25 +381,16 @@ export const VoiceAgentPanel: React.FC<VoiceAgentPanelProps> = ({ well }) => {
     };
   }, []);
 
-  // Cleanup legacy MediaRecorder, audio streams, and speech on unmount
+  // Cleanup speech on unmount
   useEffect(() => {
     return () => {
-      if (timerIntervalRef.current) clearInterval(timerIntervalRef.current);
-      if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
-        try {
-          mediaRecorderRef.current.stop();
-        } catch (_) {}
-      }
-      if (mediaStreamRef.current) {
-        mediaStreamRef.current.getTracks().forEach((track) => track.stop());
-      }
       if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
         window.speechSynthesis.cancel();
       }
     };
   }, []);
 
-  // Reset or initialize context whenever well or language changes
+  // Reset or initialize context whenever well, field, or language changes
   useEffect(() => {
     if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
       window.speechSynthesis.cancel();
@@ -369,16 +398,34 @@ export const VoiceAgentPanel: React.FC<VoiceAgentPanelProps> = ({ well }) => {
     setLegacySpeaking(false);
 
     let greetingText = '';
-    if (language === 'hinglish') {
-      greetingText = `Operational context loaded for **${well.name}** (${well.current_metrics.oil_bopd} BOPD, ${well.status.toUpperCase()}). Pichla workover, wax problem, ya recommendations ke baare mein puchhiye.`;
-    } else if (language === 'hindi') {
-      greetingText = `**${well.name}** की जानकारी उपलब्ध है (${well.current_metrics.oil_bopd} बीओपीडी, ${well.status})। आप वर्कओवर इतिहास या सुधार सिफारिशों के बारे में पूछ सकते हैं।`;
+    if (well) {
+      if (language === 'hinglish') {
+        greetingText = `Operational context loaded for **${well.name}** (${well.current_metrics.oil_bopd} BOPD, ${well.status.toUpperCase()}). Pichla workover, wax problem, ya recommendations ke baare mein puchhiye.`;
+      } else if (language === 'hindi') {
+        greetingText = `**${well.name}** की जानकारी उपलब्ध है (${well.current_metrics.oil_bopd} बीओपीडी, ${well.status})। आप वर्कओवर इतिहास या सुधार सिफारिशों के बारे में पूछ सकते हैं।`;
+      } else {
+        greetingText = `Live operational context loaded for **${well.name}** (${well.current_metrics.oil_bopd} BOPD, ${well.status.toUpperCase()}). Ask me what happened to this well, past workovers, or remediation steps.`;
+      }
+    } else if (field) {
+      if (language === 'hinglish') {
+        greetingText = `Operational context loaded for **${field}** field. Field production, health buckets, ya priority queue ke baare mein puchhiye.`;
+      } else if (language === 'hindi') {
+        greetingText = `**${field}** फील्ड की जानकारी उपलब्ध है। उत्पादन, हेल्थ बकेट्स या प्राथमिकता सूची के बारे में पूछ सकते हैं।`;
+      } else {
+        greetingText = `Operational context loaded for **${field}** field. Ask about field production history, health buckets, or priority candidates.`;
+      }
     } else {
-      greetingText = `Live operational context loaded for **${well.name}** (${well.current_metrics.oil_bopd} BOPD, ${well.status.toUpperCase()}). Ask me what happened to this well, past workovers, or remediation steps.`;
+      if (language === 'hinglish') {
+        greetingText = `Assam Asset operations copilot active. Kisi bhi field ya well ke baare mein puchhiye.`;
+      } else if (language === 'hindi') {
+        greetingText = `असम एसेट ऑपरेशंस कोपायलट सक्रिय है। किसी भी फील्ड या वेल के बारे में पूछ सकते हैं।`;
+      } else {
+        greetingText = `Assam Asset operations copilot active. Ask about any field, priority candidates, or select a wellhead.`;
+      }
     }
 
     const greeting: LiveChatMessage = {
-      id: `init-${well.id}-${Date.now()}`,
+      id: `init-${well?.id || field || 'fleet'}-${Date.now()}`,
       sender: 'agent',
       timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
       text: greetingText,
@@ -386,7 +433,7 @@ export const VoiceAgentPanel: React.FC<VoiceAgentPanelProps> = ({ well }) => {
 
     setMessages([greeting]);
     setCurrentRecommendation(null);
-  }, [well.id, language]);
+  }, [well?.id, field, language]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -603,148 +650,7 @@ export const VoiceAgentPanel: React.FC<VoiceAgentPanelProps> = ({ well }) => {
     setIsMuted(!isMuted);
   };
 
-  // Legacy MediaRecorder functions (ONLY when Live mode is OFF)
-  const startAudioRecording = async () => {
-    if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
-      window.speechSynthesis.cancel();
-    }
-    setLegacySpeaking(false);
-
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      mediaStreamRef.current = stream;
-      audioChunksRef.current = [];
-
-      let mimeType = 'audio/webm';
-      if (MediaRecorder.isTypeSupported('audio/webm;codecs=opus')) {
-        mimeType = 'audio/webm;codecs=opus';
-      } else if (MediaRecorder.isTypeSupported('audio/webm')) {
-        mimeType = 'audio/webm';
-      } else if (MediaRecorder.isTypeSupported('audio/mp4')) {
-        mimeType = 'audio/mp4';
-      }
-
-      const recorder = new MediaRecorder(stream, { mimeType });
-
-      recorder.ondataavailable = (event) => {
-        if (event.data && event.data.size > 0) {
-          audioChunksRef.current.push(event.data);
-        }
-      };
-
-      recorder.onstop = async () => {
-        const recordedMime = recorder.mimeType || mimeType;
-        const audioBlob = new Blob(audioChunksRef.current, { type: recordedMime });
-
-        if (mediaStreamRef.current) {
-          mediaStreamRef.current.getTracks().forEach((track) => track.stop());
-          mediaStreamRef.current = null;
-        }
-
-        if (audioBlob.size > 0) {
-          await sendAudioToGemini(audioBlob, recordedMime);
-        }
-      };
-
-      mediaRecorderRef.current = recorder;
-      recorder.start(250);
-      setLegacyListening(true);
-      setLegacyRecordingSeconds(0);
-
-      if (timerIntervalRef.current) clearInterval(timerIntervalRef.current);
-      timerIntervalRef.current = setInterval(() => {
-        setLegacyRecordingSeconds((prev) => prev + 1);
-      }, 1000);
-    } catch (err: any) {
-      console.warn('Microphone access failed:', err);
-      alert('Could not access microphone. Please allow microphone permissions in your browser or type your question below.');
-      setLegacyListening(false);
-    }
-  };
-
-  const stopAudioRecording = () => {
-    if (timerIntervalRef.current) {
-      clearInterval(timerIntervalRef.current);
-      timerIntervalRef.current = null;
-    }
-
-    if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
-      try {
-        mediaRecorderRef.current.stop();
-      } catch (e) {
-        console.warn('Recorder stop error:', e);
-      }
-    }
-    setLegacyListening(false);
-  };
-
-  const sendAudioToGemini = async (audioBlob: Blob, mimeType: string) => {
-    setIsProcessing(true);
-
-    try {
-      const base64Data = await new Promise<string>((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onloadend = () => {
-          const res = reader.result as string;
-          const base64 = res.split(',')[1];
-          resolve(base64);
-        };
-        reader.onerror = reject;
-        reader.readAsDataURL(audioBlob);
-      });
-
-      const response = await fetch(`/api/wells/${well.id}/audio`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          audio_base64: base64Data,
-          mime_type: mimeType,
-          language: language,
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error(`Server returned HTTP ${response.status}`);
-      }
-
-      const data = await response.json();
-
-      const userMessage: LiveChatMessage = {
-        id: `user-${Date.now()}`,
-        sender: 'user',
-        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-        text: `🎙️ ${data.user_transcript || 'Voice query'}`,
-      };
-
-      const agentMessage: LiveChatMessage = {
-        id: `agent-${Date.now()}`,
-        sender: 'agent',
-        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-        text: data.response,
-        recommendation: data.recommendation || undefined,
-      };
-
-      setMessages((prev) => [...prev, userMessage, agentMessage]);
-      if (data.recommendation) {
-        setCurrentRecommendation(data.recommendation);
-      }
-
-      speakText(data.response);
-    } catch (err) {
-      console.error('Gemini audio processing error:', err);
-      const errorMessage: LiveChatMessage = {
-        id: `err-${Date.now()}`,
-        sender: 'agent',
-        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-        text: 'Failed to process voice query. Please try again or type your question.',
-      };
-      setMessages((prev) => [...prev, errorMessage]);
-    } finally {
-      setIsProcessing(false);
-    }
-  };
-
-  // Text message send path: uses POST /api/wells/{id}/chat when Live mode is OFF or not connected/resumed
+  // Text message send path: uses POST /api/chat (ADK tool-grounded agent)
   const handleSendMessage = async (textToSend: string, fromVoice: boolean = false) => {
     if (!textToSend.trim() || isProcessing) return;
 
@@ -760,29 +666,44 @@ export const VoiceAgentPanel: React.FC<VoiceAgentPanelProps> = ({ well }) => {
     setIsProcessing(true);
 
     try {
-      const response = await fetch(`/api/wells/${well.id}/chat`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: textToSend, language: language }),
+      const reply = await postChat({
+        message: textToSend,
+        language,
+        field: (field as any) || (well?.field as any) || null,
+        well_id: well?.id ?? null,
+        screen: screen ?? null,
       });
 
-      const data = await response.json();
+      const tools: ToolCallInfo[] = (reply.tool_calls || []).map((t) => ({
+        name: t.name,
+        status: t.status,
+        duration_ms: t.duration_ms,
+      }));
 
       const agentMessage: LiveChatMessage = {
         id: `agent-${Date.now()}`,
         sender: 'agent',
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-        text: data.response,
-        recommendation: data.recommendation || undefined,
+        text: reply.response,
+        tools: tools.length > 0 ? tools : undefined,
+        artifacts: reply.artifacts && reply.artifacts.length > 0 ? reply.artifacts : undefined,
+        recommendation: reply.recommendation || undefined,
+        status: reply.status,
       };
 
       setMessages((prev) => [...prev, agentMessage]);
-      if (data.recommendation) {
-        setCurrentRecommendation(data.recommendation);
+      if (reply.recommendation) {
+        setCurrentRecommendation(reply.recommendation);
       }
 
-      if (fromVoice) {
-        speakText(data.response);
+      if (reply.actions && reply.actions.length > 0 && onAgentAction) {
+        for (const act of reply.actions) {
+          onAgentAction(act);
+        }
+      }
+
+      if (fromVoice && reply.response) {
+        speakText(reply.response);
       }
     } catch (err) {
       console.error('Chat error:', err);
@@ -831,29 +752,50 @@ export const VoiceAgentPanel: React.FC<VoiceAgentPanelProps> = ({ well }) => {
   // Language-Specific Suggested Prompts
   const suggestedPrompts =
     language === 'hinglish'
-      ? [
-          'What happened to this well?',
-          'Pichla workover kisne kiya tha?',
-          'Water cut aur wax risk kya hai?',
-          'Engineering recommendation batao',
-        ]
+      ? well
+        ? [
+            'What happened to this well?',
+            'Pichla workover kisne kiya tha?',
+            'Water cut aur wax risk kya hai?',
+            'Engineering recommendation batao',
+          ]
+        : [
+            'Kaun se wells highest priority par hain?',
+            'Lakwa vs Geleki field compare karo',
+            'Underperforming wells ki health report dikhao',
+            '5 year field production history batao',
+          ]
       : language === 'hindi'
+      ? well
+        ? [
+            'इस कुएं को क्या हुआ?',
+            'पिछला वर्कओवर किसने किया था?',
+            'वॉटर कट और स्केल का क्या खतरा है?',
+            'सुधार की सिफारिश बताएं',
+          ]
+        : [
+            'प्राथमिकता वाले कुओं की सूची दिखाएं',
+            'फील्ड उत्पादन की तुलना करें',
+            'एट-रिस्क कुओं की स्थिति बताएं',
+            '5 साल का फील्ड इतिहास बताएं',
+          ]
+      : well
       ? [
-          'इस कुएं को क्या हुआ?',
-          'पिछला वर्कओवर किसने किया था?',
-          'वॉटर कट और स्केल का क्या खतरा है?',
-          'सुधार की सिफारिश बताएं',
-        ]
-      : [
           'What happened to this well?',
           'Why did this well trip / fail?',
           'Who supervised the last workover?',
           'Recommend engineering action',
+        ]
+      : [
+          'Show high priority intervention candidates',
+          'Compare Lakwa and Geleki performance',
+          'Show health buckets and at-risk wells',
+          '5-year field production history',
         ];
 
   // Derived state flags for Voice UI
   const isLiveReady = isLiveMode && (liveStatus === 'connected' || liveStatus === 'resumed');
-  const activeListening = isLiveMode ? voiceState === 'listening' : legacyListening;
+  const activeListening = isLiveMode && voiceState === 'listening';
   const activeSpeaking = isLiveMode ? voiceState === 'speaking' : legacySpeaking;
   const activeThinking = isLiveMode ? voiceState === 'thinking' : isProcessing;
 
@@ -1037,22 +979,15 @@ export const VoiceAgentPanel: React.FC<VoiceAgentPanelProps> = ({ well }) => {
             }`}
           >
             {activeListening ? (
-              isLiveMode ? (
-                isOpenMic ? (
-                  <>
-                    <span className="w-2 h-2 rounded-full bg-red-500 animate-ping"></span>
-                    <span>Listening (open mic)</span>
-                  </>
-                ) : (
-                  <>
-                    <span className="w-2 h-2 rounded-full bg-red-500 animate-ping"></span>
-                    <span>🔴 Listening to voice... (Hold to talk)</span>
-                  </>
-                )
+              isOpenMic ? (
+                <>
+                  <span className="w-2 h-2 rounded-full bg-red-500 animate-ping"></span>
+                  <span>Listening (open mic)</span>
+                </>
               ) : (
                 <>
                   <span className="w-2 h-2 rounded-full bg-red-500 animate-ping"></span>
-                  <span>🔴 Recording voice ({legacyRecordingSeconds}s)... Click Stop when done</span>
+                  <span>🔴 Listening to voice... (Hold to talk)</span>
                 </>
               )
             ) : (
@@ -1110,6 +1045,14 @@ export const VoiceAgentPanel: React.FC<VoiceAgentPanelProps> = ({ well }) => {
                     : 'bg-[#0d1117] text-textMain border border-border rounded-tl-none shadow-md'
                 }`}
               >
+                {/* Degraded model badge */}
+                {msg.status === 'degraded' && (
+                  <div className="mb-2 flex items-center gap-1.5 text-[10px] font-mono text-amber-300 bg-amber-950/40 border border-amber-700/50 px-2 py-0.5 rounded">
+                    <AlertTriangle className="w-3 h-3 text-amber-400 shrink-0" />
+                    <span>Model unavailable — showing tool output</span>
+                  </div>
+                )}
+
                 {/* Tool call trace line inside agent bubble */}
                 {msg.tools && msg.tools.length > 0 && (
                   <div className={`${msg.text ? 'mb-2' : ''} space-y-1`}>
@@ -1143,6 +1086,15 @@ export const VoiceAgentPanel: React.FC<VoiceAgentPanelProps> = ({ well }) => {
                     {renderFormattedText(msg.text)}
                   </div>
                 ) : null}
+
+                {/* Artifacts rendered via ChatArtifact */}
+                {msg.artifacts && msg.artifacts.length > 0 && (
+                  <div className="mt-2 space-y-2">
+                    {msg.artifacts.map((art, idx) => (
+                      <ChatArtifact key={idx} artifact={art} />
+                    ))}
+                  </div>
+                )}
 
                 {/* Structured Recommendation in-line card */}
                 {msg.recommendation && (
@@ -1271,7 +1223,17 @@ export const VoiceAgentPanel: React.FC<VoiceAgentPanelProps> = ({ well }) => {
           }}
           className="flex items-center gap-2"
         >
-          {isLiveMode ? (
+          {!isLiveSupported() ? (
+            <button
+              type="button"
+              disabled
+              title="Voice unavailable in this browser — use text"
+              className="flex items-center gap-1.5 px-3 py-2.5 rounded-lg bg-[#0d1117] text-textMuted border border-border/50 font-mono text-xs opacity-50 shrink-0 cursor-not-allowed"
+            >
+              <MicOff className="w-4 h-4 text-textMuted" />
+              <span className="hidden sm:inline">Voice unavailable</span>
+            </button>
+          ) : isLiveMode ? (
             isLiveReady ? (
               <>
                 {/* Open mic toggle */}
@@ -1320,33 +1282,19 @@ export const VoiceAgentPanel: React.FC<VoiceAgentPanelProps> = ({ well }) => {
                 className="flex items-center gap-1.5 px-3 py-2.5 rounded-lg bg-[#0d1117] text-textMuted border border-border/50 font-mono text-xs opacity-50 shrink-0 cursor-not-allowed"
               >
                 <Mic className="w-4 h-4 text-textMuted" />
-                <span>Hold to talk</span>
+                <span>{liveStatus === 'connecting' ? 'Connecting...' : 'Hold to talk'}</span>
               </button>
             )
           ) : (
-            /* Legacy Voice Button when Live mode is OFF */
-            legacyListening ? (
-              <button
-                type="button"
-                onClick={stopAudioRecording}
-                title="Click to stop recording"
-                className="flex items-center gap-1.5 px-3 py-2.5 rounded-lg bg-red-600 hover:bg-red-700 text-white border border-red-400 font-mono text-xs font-semibold shadow-lg shadow-red-600/40 animate-pulse transition-all shrink-0"
-              >
-                <Square className="w-3.5 h-3.5 fill-current" />
-                <span>Stop ({legacyRecordingSeconds}s)</span>
-              </button>
-            ) : (
-              <button
-                type="button"
-                onClick={startAudioRecording}
-                disabled={isProcessing}
-                title="Click to record voice"
-                className="flex items-center gap-1.5 px-3 py-2.5 rounded-lg bg-[#0d1117] text-emerald-400 hover:text-white hover:bg-emerald-600/30 border border-emerald-500/50 hover:border-emerald-400 font-mono text-xs font-medium transition-all shrink-0 disabled:opacity-40"
-              >
-                <Mic className="w-4 h-4 text-emerald-400" />
-                <span>Voice</span>
-              </button>
-            )
+            <button
+              type="button"
+              onClick={() => setIsLiveMode(true)}
+              title="Switch to Gemini Live Voice"
+              className="flex items-center gap-1.5 px-3 py-2.5 rounded-lg bg-[#0d1117] text-emerald-400 hover:text-white hover:bg-emerald-600/30 border border-emerald-500/50 hover:border-emerald-400 font-mono text-xs font-medium transition-all shrink-0"
+            >
+              <Mic className="w-4 h-4 text-emerald-400" />
+              <span>Live Voice</span>
+            </button>
           )}
 
           <input
@@ -1355,22 +1303,22 @@ export const VoiceAgentPanel: React.FC<VoiceAgentPanelProps> = ({ well }) => {
             onChange={(e) => setInputPrompt(e.target.value)}
             placeholder={
               activeListening
-                ? isLiveMode
-                  ? isOpenMic
-                    ? 'Listening continuously (open mic)...'
-                    : 'Listening to your voice... Release to send'
-                  : `Recording voice in ${language.toUpperCase()}... Click Stop & Send when done`
+                ? isOpenMic
+                  ? 'Listening continuously (open mic)...'
+                  : 'Listening to your voice... Release to send'
                 : isLiveMode && isLiveReady
                 ? language === 'hinglish'
                   ? 'Type or hold Space to talk with Gemini Live...'
                   : language === 'hindi'
                   ? 'टाइप करें या बोलने के लिए Space दबाए रखें...'
                   : 'Type or hold Space to talk with Gemini Live...'
+                : !isLiveSupported()
+                ? 'Voice unavailable in this browser — use text'
                 : language === 'hinglish'
-                ? 'Type in Hinglish or English... (or click Voice to speak)'
+                ? 'Type in Hinglish or English...'
                 : language === 'hindi'
-                ? 'हिंदी में टाइप करें... (या बोलने के लिए Voice दबाएं)'
-                : 'Type well query for text response... (or click Voice to speak)'
+                ? 'हिंदी में टाइप करें...'
+                : 'Type well or field query...'
             }
             disabled={activeListening || (!isLiveMode && isProcessing)}
             className="flex-1 bg-[#0d1117] border border-border text-xs px-3 py-2.5 rounded-lg text-white placeholder-textMuted focus:outline-none focus:border-accent font-sans"

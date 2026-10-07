@@ -38,17 +38,16 @@ def test_http_route_shape(client, name, method, template, body):
         assert not errors, f"{method} {path} shape drift:\n" + "\n".join(errors[:20])
 
 
-def test_live_websocket_shape(client):
-    golden = _load(R.WS_LIVE_NAME)["schema"]
+def test_legacy_audio_and_well_live_routes_removed(client):
+    """D-20 (v0.4 Stage V): ``POST /api/wells/{id}/audio`` and ``WS /api/wells/{id}/live`` are gone."""
+    from starlette.websockets import WebSocketDisconnect
+
     for w in R.GOLDEN_WELLS:
-        with client.websocket_connect(R.WS_LIVE_PATH.format(well=w)) as ws:
-            assert not validate(ws.receive_json(), golden["ready"])
-            ws.send_json({"type": "ping"})
-            assert not validate(ws.receive_json(), golden["pong"])
-            ws.send_json({"type": "message", "text": "What happened to this well?", "language": "english"})
-            assert ws.receive_json()["type"] == "thinking"
-            errors = validate(ws.receive_json(), golden["response"])
-            assert not errors, "\n".join(errors)
+        for method, template, body in R.REMOVED_ROUTES:
+            resp = client.request(method, template.format(well=w), json=body)
+            assert resp.status_code in (404, 405), f"{method} {template}: {resp.status_code}"
+        with pytest.raises(WebSocketDisconnect), client.websocket_connect(R.WS_LIVE_PATH.format(well=w)) as ws:
+            ws.receive_json()
 
 
 def test_every_api_route_has_a_golden_snapshot():
@@ -56,7 +55,6 @@ def test_every_api_route_has_a_golden_snapshot():
     from app.main import app
 
     covered = {t.split("?")[0].replace("{well}", "{well_id}") for _, _, t, _ in R.ROUTES}
-    covered.add(R.WS_LIVE_PATH.replace("{well}", "{well_id}"))
     # Parametrised report route is covered by its four concrete report types.
     covered.add("/api/wells/{well_id}/reports/{report_type}")
     live = {

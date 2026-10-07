@@ -24,3 +24,15 @@ APP_DIR = Path(__file__).resolve().parent
 DATA_DIR = APP_DIR / "data"
 LANDING_DIR = Path(os.getenv("WELLPULSE_LANDING_DIR", str(DATA_DIR / "landing")))
 MODEL_DIR = APP_DIR / "analytics" / "model"
+
+# ---- Stage V: text agent (SDD §12.1, D-13). Vertex AI + ADC only; no API key is read anywhere. ----
+# The shell may export a wrong GOOGLE_CLOUD_PROJECT, so the project is explicit (WELLPULSE_PROJECT_ID overrides).
+PROJECT_ID: str = os.getenv("WELLPULSE_PROJECT_ID", "workover-operations-agentic-ai")
+TEXT_MODEL: str = "gemini-3.8-flash"  # never change (D-13)
+TEXT_LOCATION: str = os.getenv("WELLPULSE_TEXT_LOCATION", "global")  # gemini-3.8-flash 404s in us-central1
+# "vertex" (default) | "fake" (deterministic scripted LLM for CI / offline demo; tests set this)
+AGENT_LLM: str = os.getenv("WELLPULSE_AGENT_LLM", "vertex").lower()
+DEFAULT_LANGUAGE: str = os.getenv("WELLPULSE_DEFAULT_LANGUAGE", "hinglish")  # R-1 resolved: Hinglish default
+
+# SDD §13.1: ?as_of= is honoured only when this is on (tests); otherwise settings.AS_OF.
+ALLOW_AS_OF_OVERRIDE: bool = os.getenv("ALLOW_AS_OF_OVERRIDE", "").strip().lower() in ("1", "true", "yes")

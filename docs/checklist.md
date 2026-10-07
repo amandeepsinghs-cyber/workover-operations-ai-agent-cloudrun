@@ -247,16 +247,16 @@
 **Verbatim anchor:** §1 *"aggregate all the history and give it to the person who is going to the field"*
 
 #### Tasks
-- [ ] [F] S-F1 Layout, styling, and 9 section templates (no digits) for the pre-job dossier PDF in `backend/app/analytics/tools/dossier.py`
-- [ ] [O] TC-023 Dossier assembly: implement data assembly, fact tracing, and UNAVAILABLE fallbacks in `backend/app/analytics/tools/dossier.py`
-- [ ] [O] Export route & UI integration: update `GET /api/wells/{id}/export` in `backend/app/api/wells.py` (JSON adds `pdf_url`; `?format=pdf` returns the PDF), add `POST /api/wells/{id}/dossier` (English-only, Q-2; lithology from `formation_tops`), and wire into `frontend/src/components/reports/WellReportsTab.tsx`
-- [ ] [O] Unit tests: implement `backend/tests/unit/test_tc023_dossier.py`
+- [x] [F] S-F1 Layout, styling, and 9 section templates (no digits) for the pre-job dossier PDF in `backend/app/analytics/tools/dossier.py`
+- [x] [O] TC-023 Dossier assembly: implement data assembly, fact tracing, and UNAVAILABLE fallbacks in `backend/app/analytics/tools/dossier.py`
+- [x] [O] Export route & UI integration: update `GET /api/wells/{id}/export` in `backend/app/api/wells.py` (JSON adds `pdf_url`; `?format=pdf` returns the PDF), add `POST /api/wells/{id}/dossier` (English-only, Q-2; lithology from `formation_tops`), and wire into `frontend/src/components/reports/WellReportsTab.tsx`
+- [x] [O] Unit tests: implement `backend/tests/unit/test_tc023_dossier.py`
 
 #### Gate S
-- [ ] 2–4 pages, ≤ 10 s, all 9 sections, including lithology and casing/tubing tallies (verbatim WS4)
-- [ ] Every number traces to a table or tool return; missing sections render `UNAVAILABLE — <table>`
-- [ ] GK-129 cites the 1998 CBL and the 2019 WSO
-- [ ] The JSON export still works (baseline FEAT kept)
+- [x] 2–4 pages, ≤ 10 s, all 9 sections, including lithology and casing/tubing tallies (verbatim WS4)
+- [x] Every number traces to a table or tool return; missing sections render `UNAVAILABLE — <table>`
+- [x] GK-129 cites the 1998 CBL and the 2019 WSO
+- [x] The JSON export still works (baseline FEAT kept)
 - [ ] [O] Commit + push after Gate S passes: `git commit -m "v0.4(S): dossier — Gate S passed" && git push origin main`
 
 ---
@@ -348,21 +348,21 @@
 **Verbatim anchor:** §3 *"do you see the hierarchy of question and answering?"* (5-level flow, §4 L1–L5)
 
 #### Tasks
-- [ ] [O] In-process ADK Runner: implement `backend/app/agent/{runner.py, adk_tools.py, prompt.py, callbacks.py}` wiring ~30 tool wrappers with strict numeric trace and anti-fabrication guardrails
-- [ ] [O] Chat API refactoring: implement `backend/app/api/chat.py` (`POST /api/chat`), route per-well `/chat` and `/audio` to Runner, remove legacy `/api/wells/{id}/live` and `/audio` shims at the end of V (D-20), and delete prompt-stuffing and keyword fallback in `services/ai_agent.py`
-- [ ] [F] V-F1 BDD Gherkin test suite: generate `backend/tests/bdd/features/*.feature` and step implementations for L1–L5 hierarchical conversation flow
-- [ ] [F] V-F2 Agent evaluation dataset: build `backend/tests/eval/wellpulse-eval.json` (≥ 30 cases: every L1–L5 turn × 3 personas + refusals, all voice and text scenarios)
+- [x] [O] In-process ADK Runner: implement `backend/app/agent/{runner.py, adk_tools.py, prompt.py, callbacks.py}` wiring ~30 tool wrappers with strict numeric trace and anti-fabrication guardrails — *Stage V: ADK 2.11 Runner, 30 wrappers (`adk_tools.py` + `adk_tools_ext.py`, RBAC via `invoke()`), `check_numbers` after-model guardrail (masks ungrounded numerals as «see table», deviation from SDD §12.6 regenerate), FakeLlm for CI*
+- [x] [O] Chat API refactoring: implement `backend/app/api/chat.py` (`POST /api/chat`), route per-well `/chat` and `/audio` to Runner, remove legacy `/api/wells/{id}/live` and `/audio` shims at the end of V (D-20), and delete prompt-stuffing and keyword fallback in `services/ai_agent.py` — *`/chat` → Runner; `/audio` + per-well WS removed; `ai_agent.py` keeps only `generate_structured_recommendation` (TC-022)*
+- [x] [F] V-F1 BDD Gherkin test suite: generate `backend/tests/bdd/features/*.feature` and step implementations for L1–L5 hierarchical conversation flow — *20 pytest-bdd scenarios (F-18, X, F-04/09/11/12/13/16), all green*
+- [x] [F] V-F2 Agent evaluation dataset: build `backend/tests/eval/wellpulse-eval.json` (≥ 30 cases: every L1–L5 turn × 3 personas + refusals, all voice and text scenarios) — *46 cases (21 F-18 L1–L5 × 3 personas, Hinglish/Hindi, refusals, 10 holdout)*
 - [ ] [F] V-F3 Playwright E2E specs: implement `frontend/tests/e2e/*.spec.ts` for full UI click-through
-- [ ] [O] Eval iteration & test execution: run pytest suite, run `agents-cli eval run` (tool selection ≥ 90%), and execute Playwright tests
+- [ ] [O] Eval iteration & test execution: run pytest suite, run `agents-cli eval run` (tool selection ≥ 90%), and execute Playwright tests — *pytest 426 passed / 1 skipped (live); eval via `tests/eval/run_eval.py` (ADK Runner, not agents-cli) on gemini-3.8-flash: tool selection 46/46 = 100% (holdout 10/10), number grounding 46/46 (`tests/eval/results/vertex-final-20261007T234533.json`); Playwright NOT run (V-F3 not done)*
 
 #### Gate V
-- [ ] All BDD scenarios green, including one automated test per demo turn L1–L5 (verbatim §8 M6)
-- [ ] Eval tool-selection accuracy ≥ 90% on `tests/eval/wellpulse-eval.json` (≥ 30 cases); if it is lower, apply the SDD sub-agent split and re-run
-- [ ] No answer contains a number missing from that turn's tool returns (number-trace test)
-- [ ] The agent refuses at least once per new field (LKM-090 → no job justified) and explains why
-- [ ] The prompt-stuffing code and the keyword fallback are removed; text runs on Vertex ADC with `gemini-3.8-flash` (D-13)
+- [x] All BDD scenarios green, including one automated test per demo turn L1–L5 (verbatim §8 M6) — *20/20 BDD + `tests/integration/test_demo_flow.py` (fake LLM; live gemini-3.8-flash L1–L5 7/7 turns in 3/3 runs)*
+- [x] Eval tool-selection accuracy ≥ 90% on `tests/eval/wellpulse-eval.json` (≥ 30 cases); if it is lower, apply the SDD sub-agent split and re-run — *100% (46/46) on gemini-3.8-flash, 4 runs all 46/46; sub-agent split not needed*
+- [x] No answer contains a number missing from that turn's tool returns (number-trace test) — *`test_agent_callbacks.py` (fabricating model → masked, ok=False), demo-flow + eval grounding 46/46*
+- [x] The agent refuses at least once per new field (LKM-090 → no job justified) and explains why — *eval `f04_s03_refusal_lkm090` + BDD-F04-S03*
+- [x] The prompt-stuffing code and the keyword fallback are removed; text runs on Vertex ADC with `gemini-3.8-flash` (D-13) — *Vertex `global`, project from settings; `grep GEMINI_API_KEY backend/app` empty*
 - [ ] Playwright: L1→L5 click-through passes against `npm run build` served by FastAPI
-- [ ] Legacy `/api/wells/{id}/live` and `/audio` shims removed; `WS /ws/live` is the only Live route (D-20)
+- [x] Legacy `/api/wells/{id}/live` and `/audio` shims removed; `WS /ws/live` is the only Live route (D-20) — *`test_legacy_audio_and_well_live_routes_removed`*
 - [ ] [O] Commit + push after Gate V passes: `git commit -m "v0.4(V): agent wiring & eval — Gate V passed" && git push origin main`
 
 ---
@@ -371,8 +371,10 @@
 **Verbatim anchor:** derived: demo must run on the existing public URL
 
 #### Tasks
-- [ ] [O] W.1 Multi-stage Dockerfile: implement 3-stage Dockerfile (Node web build, uv deps sync, python:3.11-slim runtime), `selfcheck` + uvicorn per SDD §17.1, update `.dockerignore` to exclude tests, and untrack `frontend/dist` in the same commit (resolved)
+- [x] [O] W.1 Multi-stage Dockerfile: implement 3-stage Dockerfile (Node web build, uv deps sync, python:3.11-slim runtime), `selfcheck` + uvicorn per SDD §17.1, update `.dockerignore` to exclude tests, and untrack `frontend/dist` in the same commit (resolved)
+  - W-prep 2026-10-07: Dockerfile (web → build [uv sync, landing-if-missing, `docs_pdf.build`, `deploy/selfcheck.py`] → non-root runtime on `$PORT`), `.dockerignore`, `.gcloudignore`, `deploy/` (deploy.sh, env.cloudrun.yaml, smoke_test.py, selfcheck.py, README.md). Cloud Build `de2bc811…` SUCCESS in 9m52s on e2-highcpu-8 → `…/wellpulse-app:v04-prep` (379 MB compressed). **Still for the orchestrator at commit:** `git rm -r --cached frontend/dist` + add `frontend/dist/` to `.gitignore`.
 - [ ] [O] W.2 Local container validation: build `wellpulse:v04` image and verify `/api/healthz` and `/api/fields` locally with Vertex credentials
+  - W-prep substitute (no docker on host): stage-2 commands replayed in a scratch copy (8 workers, corpus 253 s, selfcheck OK), then the image CMD run on the scratch tree with `deploy/env.cloudrun.yaml` → `deploy/smoke_test.py` 6/6 PASS (health, kpis 412 wells, 3 fields, docs search 10 hits, WS `connecting→connected` gemini-3.8-live, SPA); RSS 1.65 GB. Real container run left to the orchestrator.
 - [ ] [O] W.3 Deploy gate — Authorised by user (2026-10-07) — dry-run / local-test first, then apply; never delete existing resources: proceed only if W.2 passed locally
 - [ ] [O] W.4 Cloud Run deployment: deploy to `wellpulse-app` in `us-central1` (project `workover-operations-agentic-ai`, memory 4Gi, cpu 2, min/max instances 1, session affinity, no CPU throttling, env `TEXT_MODEL`, `LIVE_MODEL`, `LIVE_LOCATION`, `AS_OF=2026-09-23`, `BQ_LOCATION`, remove `GEMINI_API_KEY`)
 - [ ] [O] Post-deployment smoke test & pre-warm: run `scripts/smoke.sh` against the public URL, run L1–L5 text and voice queries, test reconnect and fallback

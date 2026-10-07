@@ -119,6 +119,7 @@ wellpulse/
    - In-browser Speech-to-Text (STT) and dynamic audio waveform animations.
    - Audible Text-to-Speech (TTS) response playback.
    - Ingests selected well telemetry and workover history to answer diagnostic questions and formulate prescriptive workover recommendations.
-5. **100% Offline / Local Resilience**:
-   - Automatically utilizes Google Gemini 2.5 Flash when `GEMINI_API_KEY` is provided.
-   - Seamlessly falls back to the deterministic **Local Petroleum Expert Engine** when running completely offline.
+5. **Tool-grounded agent (v0.4)**:
+   - Text chat (`POST /api/chat`) runs an in-process ADK agent on `gemini-3.8-flash` via Vertex AI with ADC (no API key).
+   - Every number in an answer must come from that turn's tool results; a guardrail masks anything else.
+   - If the model is unreachable the reply is marked `degraded`; `WELLPULSE_AGENT_LLM=fake` runs a deterministic scripted model for CI/offline demos.

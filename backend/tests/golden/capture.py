@@ -25,13 +25,12 @@ GOLDEN_DIR = Path(__file__).resolve().parent
 
 
 def disable_gemini() -> None:
-    """Force the local fallback engine: make every Gemini call raise."""
-    from app.services import ai_agent
+    """Force the deterministic agent: the ADK runner uses FakeLlm (no model calls)."""
+    from app import settings
+    from app.agent import runner
 
-    def _no_gemini(*_args, **_kwargs):
-        raise RuntimeError("Gemini disabled in golden/test runs")
-
-    ai_agent.call_gemini_api = _no_gemini
+    settings.AGENT_LLM = "fake"
+    runner.reset_runner()
 
 
 def _paths(path_template: str, wells: list[str]) -> list[str]:
@@ -93,7 +92,7 @@ def main() -> None:
 
     with TestClient(app) as client:
         snapshots = capture_http(client, wells)
-        snapshots[R.WS_LIVE_NAME] = capture_ws(client, wells)
+        # D-20: the per-well live websocket was removed in v0.4; capture_ws is kept for history.
 
     for name, snap in snapshots.items():
         path = GOLDEN_DIR / f"{name}.schema.json"

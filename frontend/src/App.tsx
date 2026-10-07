@@ -15,6 +15,7 @@ import { usePersona } from './state/persona'; // Stage Y: tabs hidden per person
 import { HealthBucketsCard } from './components/decision/HealthBucketsCard';
 import { PriorityQueueTable } from './components/decision/PriorityQueueTable';
 import type { FieldName } from './api/asset';
+import type { ChatAction } from './api/chat';
 
 type ScreenTab = 'map' | 'field_history' | 'field_compare' | 'field_health';
 
@@ -45,6 +46,32 @@ export function App() {
     if (!canAggregate && screenTab !== 'map' && screenTab !== 'field_health') setScreenTab('map');
   }, [canAggregate, screenTab]);
   const [drawerWellId, setDrawerWellId] = useState<string | null>(null);
+
+  const handleAgentAction = (a: ChatAction) => {
+    if (a.kind === 'navigate') {
+      if (a.field) {
+        setFieldFilter(a.field as FieldFilter);
+        if (a.screen === 'field_health' || a.screen === 'priority') {
+          setHealthField(a.field as FieldName);
+        }
+      }
+      if (a.well_id) {
+        setSelectedWellId(a.well_id);
+        if (a.screen === 'well') {
+          setDrawerWellId(a.well_id);
+        }
+      }
+      if (a.screen === 'map') {
+        setScreenTab('map');
+      } else if (a.screen === 'field_history' && canAggregate) {
+        setScreenTab('field_history');
+      } else if (a.screen === 'field_compare' && canAggregate) {
+        setScreenTab('field_compare');
+      } else if ((a.screen === 'field_health' || a.screen === 'priority') && canHealth) {
+        setScreenTab('field_health');
+      }
+    }
+  };
 
   // Fetch initial fleet data and KPIs
   useEffect(() => {
@@ -313,13 +340,12 @@ export function App() {
 
           {/* Right Column: Voice-Enabled AI Copilot (28% width, ~380px) */}
           <section className="w-[28%] min-w-[340px] max-w-[420px] flex flex-col overflow-hidden">
-            {selectedWellDetail ? (
-              <VoiceAgentPanel well={selectedWellDetail} />
-            ) : (
-              <div className="flex-1 flex items-center justify-center font-mono text-xs text-textMuted p-6 text-center">
-                Select a wellhead to activate the contextual Voice AI Copilot.
-              </div>
-            )}
+            <VoiceAgentPanel
+              well={selectedWellDetail}
+              field={fieldFilter === 'ALL' ? null : fieldFilter}
+              screen={screenTab}
+              onAgentAction={handleAgentAction}
+            />
           </section>
         </div>
       )}

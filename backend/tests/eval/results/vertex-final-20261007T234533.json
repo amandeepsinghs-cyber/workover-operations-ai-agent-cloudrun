@@ -1,0 +1,1576 @@
+{
+  "dataset": "wellpulse-v04",
+  "mode": "vertex",
+  "model": "gemini-3.8-flash",
+  "location": "global",
+  "project": "workover-operations-agentic-ai",
+  "label": "final",
+  "run_at": "2026-10-07T23:45:33+00:00",
+  "summary": {
+    "tool_selection": {
+      "n": 46,
+      "pass": 46,
+      "rate": 1.0
+    },
+    "tool_selection_dev": {
+      "n": 36,
+      "pass": 36,
+      "rate": 1.0
+    },
+    "tool_selection_holdout": {
+      "n": 10,
+      "pass": 10,
+      "rate": 1.0
+    },
+    "tool_selection_f18_demo": {
+      "n": 21,
+      "pass": 21,
+      "rate": 1.0
+    },
+    "number_grounding": {
+      "n": 46,
+      "pass": 46,
+      "rate": 1.0
+    },
+    "refusal_behaviour": {
+      "n": 5,
+      "pass": 5,
+      "rate": 1.0
+    },
+    "degraded_or_error": 0,
+    "latency_p50_s": 10.55,
+    "latency_p95_s": 26.43,
+    "failed_cases": []
+  },
+  "cases": [
+    {
+      "eval_case_id": "f18_l1_tell_ed",
+      "persona": "ED",
+      "language": "english",
+      "tags": [
+        "demo",
+        "L1"
+      ],
+      "prompt": "Can you give me the past 5 year production data field-wise?",
+      "expected_tools": [
+        "field_production_history"
+      ],
+      "expected_any_of": [],
+      "expect_refusal": false,
+      "latency_s": 10.95,
+      "response": "Over the past 5 years (October 2021 to September 2026), total asset oil production declined across all three fields, led by Geleki falling from 14595.9 to 8664.5 BOPD (-40.6%) with water cut rising from 61.86% to 76.12%. Lakwa dropped from 10128.7 to 8301.9 BOPD (-18.0%) as water cut increased from 74.64% to 82.28%. Lakhmani decreased from 8488.5 to 5640.9 BOPD (-33.5%) alongside a water cut rise from 61.72% to 74.53%. Producing well counts contracted from 125.3 to 115.7 in Geleki, 136.7 to 116.3 in Lakwa, and 103.3 to 91.7 in Lakhmani.",
+      "tool_ok": true,
+      "called": [
+        "field_production_history"
+      ],
+      "missing": [],
+      "any_of_missing": [],
+      "forbidden_called": [],
+      "statuses": {
+        "field_production_history": "OK"
+      },
+      "numbers_ok": true,
+      "unmatched": [],
+      "refusal_ok": null,
+      "status": "ok",
+      "engine": "adk:gemini-3.8-flash@vertex/global"
+    },
+    {
+      "eval_case_id": "f18_l1_tell_am",
+      "persona": "ASSET_MANAGER",
+      "language": "english",
+      "tags": [
+        "demo",
+        "L1"
+      ],
+      "prompt": "Can you give me the past 5 year production data field-wise?",
+      "expected_tools": [
+        "field_production_history"
+      ],
+      "expected_any_of": [],
+      "expect_refusal": false,
+      "latency_s": 8.82,
+      "response": "Over the past 5 years (October 2021 to September 2026), Geleki's oil production dropped from 14595.9 BOPD to 8664.5 BOPD (-40.6%) as water cut rose from 61.86% to 76.12%. Lakwa declined from 10128.7 BOPD to 8301.9 BOPD (-18.0%) with water cut increasing from 74.64% to 82.28%. Lakhmani decreased from 8488.5 BOPD to 5640.9 BOPD (-33.5%) with water cut rising from 61.72% to 74.53%. Let me know if you would like to see a chart of these trends or drill down into a specific field.",
+      "tool_ok": true,
+      "called": [
+        "field_production_history"
+      ],
+      "missing": [],
+      "any_of_missing": [],
+      "forbidden_called": [],
+      "statuses": {
+        "field_production_history": "OK"
+      },
+      "numbers_ok": true,
+      "unmatched": [],
+      "refusal_ok": null,
+      "status": "ok",
+      "engine": "adk:gemini-3.8-flash@vertex/global"
+    },
+    {
+      "eval_case_id": "f18_l1_tell_fe",
+      "persona": "FIELD_ENGINEER",
+      "language": "english",
+      "tags": [
+        "demo",
+        "L1",
+        "rbac"
+      ],
+      "prompt": "Can you give me the past 5 year production data field-wise?",
+      "expected_tools": [
+        "field_production_history"
+      ],
+      "expected_any_of": [],
+      "expect_refusal": true,
+      "latency_s": 8.71,
+      "response": "Field-wide aggregate production history is reserved for Asset Managers and Executive Directors, so this view is not permitted under your profile. I can provide single-well production histories, decline diagnostics, or well dossiers for specific wells across Geleki, Lakwa, or Lakhmani. Please share a specific well ID if you would like to examine its performance.",
+      "tool_ok": true,
+      "called": [
+        "field_production_history"
+      ],
+      "missing": [],
+      "any_of_missing": [],
+      "forbidden_called": [],
+      "statuses": {
+        "field_production_history": "UNAVAILABLE"
+      },
+      "numbers_ok": true,
+      "unmatched": [],
+      "refusal_ok": true,
+      "status": "ok",
+      "engine": "adk:gemini-3.8-flash@vertex/global"
+    },
+    {
+      "eval_case_id": "f18_l1_plot_ed",
+      "persona": "ED",
+      "language": "english",
+      "tags": [
+        "demo",
+        "L1"
+      ],
+      "prompt": "Can you give me a plot?",
+      "expected_tools": [
+        "field_production_history"
+      ],
+      "expected_any_of": [],
+      "expect_refusal": false,
+      "latency_s": 23.61,
+      "response": "The 5-year monthly production trajectory is now rendered on your screen across Geleki, Lakwa, and Lakhmani. Geleki displays the steepest decline curve from 14595.9 to 8664.5 BOPD (-40.6%) alongside a rising water cut of 76.12%. We should prioritize diagnostic water-shutoff and artificial lift reviews on Geleki and Lakhmani to stabilize declining throughput.",
+      "tool_ok": true,
+      "called": [
+        "field_production_history"
+      ],
+      "missing": [],
+      "any_of_missing": [],
+      "forbidden_called": [],
+      "statuses": {
+        "field_production_history": "OK"
+      },
+      "numbers_ok": true,
+      "unmatched": [],
+      "refusal_ok": null,
+      "status": "ok",
+      "engine": "adk:gemini-3.8-flash@vertex/global"
+    },
+    {
+      "eval_case_id": "f18_l1_plot_am",
+      "persona": "ASSET_MANAGER",
+      "language": "english",
+      "tags": [
+        "demo",
+        "L1"
+      ],
+      "prompt": "Can you give me a plot?",
+      "expected_tools": [
+        "field_production_history"
+      ],
+      "expected_any_of": [],
+      "expect_refusal": false,
+      "latency_s": 15.71,
+      "response": "The 5-year production history plot across Geleki, Lakwa, and Lakhmani is now displayed on your screen. The trend tracks monthly oil rates, gas production, and water cuts across 60 periods from October 2021 to September 2026. Geleki shows the steepest decline at -40.6%, followed by Lakhmani at -33.5% and Lakwa at -18.0%.",
+      "tool_ok": true,
+      "called": [
+        "field_production_history"
+      ],
+      "missing": [],
+      "any_of_missing": [],
+      "forbidden_called": [],
+      "statuses": {
+        "field_production_history": "OK"
+      },
+      "numbers_ok": true,
+      "unmatched": [],
+      "refusal_ok": null,
+      "status": "ok",
+      "engine": "adk:gemini-3.8-flash@vertex/global"
+    },
+    {
+      "eval_case_id": "f18_l1_plot_fe",
+      "persona": "FIELD_ENGINEER",
+      "language": "english",
+      "tags": [
+        "demo",
+        "L1",
+        "rbac"
+      ],
+      "prompt": "Can you give me a plot?",
+      "expected_tools": [
+        "field_production_history"
+      ],
+      "expected_any_of": [],
+      "expect_refusal": true,
+      "latency_s": 21.41,
+      "response": "Field-wide aggregate production plots are not permitted for the Field Engineer persona, as this view is reserved for the Asset Manager and ED. \n\nI can generate a production history chart for any individual well across 24, 36, or 60 months. Please provide a specific well ID to plot its oil, water cut, and historical interventions.",
+      "tool_ok": true,
+      "called": [
+        "field_production_history"
+      ],
+      "missing": [],
+      "any_of_missing": [],
+      "forbidden_called": [],
+      "statuses": {
+        "field_production_history": "UNAVAILABLE"
+      },
+      "numbers_ok": true,
+      "unmatched": [],
+      "refusal_ok": true,
+      "status": "ok",
+      "engine": "adk:gemini-3.8-flash@vertex/global"
+    },
+    {
+      "eval_case_id": "f18_l2_ed",
+      "persona": "ED",
+      "language": "english",
+      "tags": [
+        "demo",
+        "L2"
+      ],
+      "prompt": "How many wells in Geleki are either sick or have lost production?",
+      "expected_tools": [
+        "classify_well_health",
+        "attribute_decline"
+      ],
+      "expected_any_of": [],
+      "expect_refusal": false,
+      "latency_s": 14.24,
+      "response": "In Geleki, 26 wells are classified as sick or having lost production (21 at risk and 5 underperforming), while an additional 28 wells are currently not producing out of 142 total wells (88 producing OK). Over the 180-day window, the field has lost 381,796 bbl with 79.3% controllable share, driven predominantly by HUMAN_PROCESS rig planning delays (58.9%) and equipment issues (16.3%). Immediate operational focus should center on mobilizing workover rigs to clear the waiting-on-rig backlog.",
+      "tool_ok": true,
+      "called": [
+        "classify_well_health",
+        "attribute_decline"
+      ],
+      "missing": [],
+      "any_of_missing": [],
+      "forbidden_called": [],
+      "statuses": {
+        "classify_well_health": "OK",
+        "attribute_decline": "OK"
+      },
+      "numbers_ok": true,
+      "unmatched": [],
+      "refusal_ok": null,
+      "status": "ok",
+      "engine": "adk:gemini-3.8-flash@vertex/global"
+    },
+    {
+      "eval_case_id": "f18_l2_am",
+      "persona": "ASSET_MANAGER",
+      "language": "english",
+      "tags": [
+        "demo",
+        "L2"
+      ],
+      "prompt": "How many wells in Geleki are either sick or have lost production?",
+      "expected_tools": [
+        "classify_well_health",
+        "attribute_decline"
+      ],
+      "expected_any_of": [],
+      "expect_refusal": false,
+      "latency_s": 64.5,
+      "response": "In Geleki, 26 wells are sick or have lost production (21 at-risk and 5 underperforming) out of 142 total wells, with 28 wells currently not producing. Over the last 180 days, total lost production is 381,795.6 bbl, of which 79.3% is classified as controllable. The primary decline contributor is Human-Process delays at 58.9% (predominantly Rig Planning wait time), followed by Subsurface decline at 16.7% and Equipment failures at 16.3%.",
+      "tool_ok": true,
+      "called": [
+        "classify_well_health",
+        "attribute_decline"
+      ],
+      "missing": [],
+      "any_of_missing": [],
+      "forbidden_called": [],
+      "statuses": {
+        "classify_well_health": "OK",
+        "attribute_decline": "OK"
+      },
+      "numbers_ok": true,
+      "unmatched": [],
+      "refusal_ok": null,
+      "status": "ok",
+      "engine": "adk:gemini-3.8-flash@vertex/global"
+    },
+    {
+      "eval_case_id": "f18_l2_fe",
+      "persona": "FIELD_ENGINEER",
+      "language": "english",
+      "tags": [
+        "demo",
+        "L2"
+      ],
+      "prompt": "How many wells in Geleki are either sick or have lost production?",
+      "expected_tools": [
+        "classify_well_health"
+      ],
+      "expected_any_of": [],
+      "expect_refusal": false,
+      "latency_s": 7.66,
+      "response": "In Geleki, 6 wells are sick or have lost production (4 at risk and 2 underperforming), while 13 wells are currently not producing out of 60 total wells. \n\nField-wide decline attribution is reserved for the Asset Manager or Executive Director persona. I can drill down into the single-well mechanics, diagnostic triggers, or history pack for individual wells, such as currently selected well GK-129.",
+      "tool_ok": true,
+      "called": [
+        "classify_well_health",
+        "attribute_decline"
+      ],
+      "missing": [],
+      "any_of_missing": [],
+      "forbidden_called": [],
+      "statuses": {
+        "classify_well_health": "OK",
+        "attribute_decline": "UNAVAILABLE"
+      },
+      "numbers_ok": true,
+      "unmatched": [],
+      "refusal_ok": null,
+      "status": "ok",
+      "engine": "adk:gemini-3.8-flash@vertex/global"
+    },
+    {
+      "eval_case_id": "f18_l3_ed",
+      "persona": "ED",
+      "language": "english",
+      "tags": [
+        "demo",
+        "L3"
+      ],
+      "prompt": "Can you give me a priority list of all the wells that need intervention?",
+      "expected_tools": [
+        "rank_candidates"
+      ],
+      "expected_any_of": [],
+      "expect_refusal": false,
+      "latency_s": 8.25,
+      "response": "Geleki currently has 22 rig candidates and 17 rigless candidates queued for intervention. \n\nThe top rigless priority is **GK-112** for scale acid bullhead, offering 17.6 BOPD uplift and 6,229 deferred barrels avoided (LOW cost band, 0 rig-days). For the rig queue, **GK-055** ranks first for a pump overhaul, providing 10.2 BOPD uplift and 3,577 deferred barrels avoided (MED cost band, 3 rig-days). Priorities are ranked by deferred barrels recovered weighted by probability of success per rig-day.",
+      "tool_ok": true,
+      "called": [
+        "rank_candidates"
+      ],
+      "missing": [],
+      "any_of_missing": [],
+      "forbidden_called": [],
+      "statuses": {
+        "rank_candidates": "OK"
+      },
+      "numbers_ok": true,
+      "unmatched": [],
+      "refusal_ok": null,
+      "status": "ok",
+      "engine": "adk:gemini-3.8-flash@vertex/global"
+    },
+    {
+      "eval_case_id": "f18_l3_am",
+      "persona": "ASSET_MANAGER",
+      "language": "english",
+      "tags": [
+        "demo",
+        "L3"
+      ],
+      "prompt": "Can you give me a priority list of all the wells that need intervention?",
+      "expected_tools": [
+        "rank_candidates"
+      ],
+      "expected_any_of": [],
+      "expect_refusal": false,
+      "latency_s": 6.32,
+      "response": "Geleki has 22 rig candidates and 17 rigless candidates queued, with 3 wells excluded under NO_JOB_JUSTIFIED and 2 requiring engineer review. \n\nThe top rig candidate is GK-055 for a pump overhaul, requiring 3 rig-days in the MED cost band for an estimated 10.2 BOPD uplift and 3,577 barrels avoided over 12 months. Leading the rigless queue is GK-112 for scale acid bullhead in the LOW cost band, offering an expected 17.6 BOPD uplift and 6,229 barrels avoided with 0 rig-days. The full ranked candidate queues and priority scores are displayed on your priority table.",
+      "tool_ok": true,
+      "called": [
+        "rank_candidates"
+      ],
+      "missing": [],
+      "any_of_missing": [],
+      "forbidden_called": [],
+      "statuses": {
+        "rank_candidates": "OK"
+      },
+      "numbers_ok": true,
+      "unmatched": [],
+      "refusal_ok": null,
+      "status": "ok",
+      "engine": "adk:gemini-3.8-flash@vertex/global"
+    },
+    {
+      "eval_case_id": "f18_l3_fe",
+      "persona": "FIELD_ENGINEER",
+      "language": "english",
+      "tags": [
+        "demo",
+        "L3"
+      ],
+      "prompt": "Can you give me a priority list of all the wells that need intervention?",
+      "expected_tools": [
+        "rank_candidates"
+      ],
+      "expected_any_of": [],
+      "expect_refusal": false,
+      "latency_s": 15.84,
+      "response": "Geleki currently has 22 rig candidates and 17 rigless candidates prioritized for intervention. The top rig candidate is GK-055 for a pump overhaul (3 rig-days, 10.2 BOPD uplift), while GK-112 leads the rigless queue for scale acid bullhead (17.6 BOPD uplift). Your active well, GK-129, ranks #4 on the rig queue for a cement squeeze and reperforation, requiring 8 rig-days for an expected uplift of 5.9 BOPD.",
+      "tool_ok": true,
+      "called": [
+        "rank_candidates"
+      ],
+      "missing": [],
+      "any_of_missing": [],
+      "forbidden_called": [],
+      "statuses": {
+        "rank_candidates": "OK"
+      },
+      "numbers_ok": true,
+      "unmatched": [],
+      "refusal_ok": null,
+      "status": "ok",
+      "engine": "adk:gemini-3.8-flash@vertex/global"
+    },
+    {
+      "eval_case_id": "f18_l4_ed",
+      "persona": "ED",
+      "language": "english",
+      "tags": [
+        "demo",
+        "L4"
+      ],
+      "prompt": "Tell me more about GK-129 and show me its production history",
+      "expected_tools": [
+        "well_profile",
+        "plot_production"
+      ],
+      "expected_any_of": [],
+      "expect_refusal": false,
+      "latency_s": 9.42,
+      "response": "**GK-129** is an active sucker rod pump (SRP) well completed in the Tipam formation (GK-NE cluster), currently classified as **UNDERPERFORMING** with a production rate of 13.4 BOPD and 83.9% water cut against an expected 19.3 BOPD (residual of -30.6%). \n\nOver the 36-month history, production has declined from ~41 BOPD across 915 producing days, with 4 recorded interventions including the latest tubing leak repair on 2026-01-12 (7.8 BOPD uplift). Nearby cluster offsets (GK-108, GK-065, GK-079, and GK-102) are all categorized as PRODUCING_OK at rates between 25.2 and 72.5 BOPD, indicating a well",
+      "tool_ok": true,
+      "called": [
+        "well_profile",
+        "plot_production"
+      ],
+      "missing": [],
+      "any_of_missing": [],
+      "forbidden_called": [],
+      "statuses": {
+        "well_profile": "OK",
+        "plot_production": "OK"
+      },
+      "numbers_ok": true,
+      "unmatched": [],
+      "refusal_ok": null,
+      "status": "ok",
+      "engine": "adk:gemini-3.8-flash@vertex/global"
+    },
+    {
+      "eval_case_id": "f18_l4_am",
+      "persona": "ASSET_MANAGER",
+      "language": "english",
+      "tags": [
+        "demo",
+        "L4"
+      ],
+      "prompt": "Tell me more about GK-129 and show me its production history",
+      "expected_tools": [
+        "well_profile",
+        "plot_production"
+      ],
+      "expected_any_of": [],
+      "expect_refusal": false,
+      "latency_s": 7.57,
+      "response": "GK-129 is an active sucker rod pump (SRP) well in Geleki's GK-NE cluster producing from the Tipam formation, currently classed as **UNDERPERFORMING** with a decline residual of -30.6% (13.4 BOPD actual vs 19.3 BOPD expected, 83.9% water cut). \n\nOver the 36-month historical window covering 915 producing days, the well has undergone 4 interventions, most recently a tubing leak repair on 2026-01-12 delivering 7.8 BOPD uplift over 4 rig-days. \n\nAll four nearest cluster offset wells are categorized as PRODUCING_OK—including same-zone Tipam producer GK-102 at 70 BOPD (+0.9% residual)—indicating an i",
+      "tool_ok": true,
+      "called": [
+        "well_profile",
+        "plot_production"
+      ],
+      "missing": [],
+      "any_of_missing": [],
+      "forbidden_called": [],
+      "statuses": {
+        "well_profile": "OK",
+        "plot_production": "OK"
+      },
+      "numbers_ok": true,
+      "unmatched": [],
+      "refusal_ok": null,
+      "status": "ok",
+      "engine": "adk:gemini-3.8-flash@vertex/global"
+    },
+    {
+      "eval_case_id": "f18_l4_fe",
+      "persona": "FIELD_ENGINEER",
+      "language": "english",
+      "tags": [
+        "demo",
+        "L4"
+      ],
+      "prompt": "Tell me more about GK-129 and show me its production history",
+      "expected_tools": [
+        "well_profile",
+        "plot_production"
+      ],
+      "expected_any_of": [],
+      "expect_refusal": false,
+      "latency_s": 7.11,
+      "response": "GK-129 is an active Sucker Rod Pump (SRP) well in the Geleki field (GK-NE cluster) completed in the Tipam formation with perforations from 3335.4 m to 3383.1 m. It is currently categorized as UNDERPERFORMING, averaging 13.4 BOPD at 83.9% water cut against an expected decline curve rate of 19.3 BOPD (a -30.6% residual). Over the past 36 months across 915 producing days, the well has undergone 4 interventions, most recently a tubing leak repair on 2026-01-12 that yielded an initial uplift of 7.8 BOPD.",
+      "tool_ok": true,
+      "called": [
+        "well_profile",
+        "plot_production"
+      ],
+      "missing": [],
+      "any_of_missing": [],
+      "forbidden_called": [],
+      "statuses": {
+        "well_profile": "OK",
+        "plot_production": "OK"
+      },
+      "numbers_ok": true,
+      "unmatched": [],
+      "refusal_ok": null,
+      "status": "ok",
+      "engine": "adk:gemini-3.8-flash@vertex/global"
+    },
+    {
+      "eval_case_id": "f18_l5_nba_ed",
+      "persona": "ED",
+      "language": "english",
+      "tags": [
+        "demo",
+        "L5"
+      ],
+      "prompt": "What are the next best recommended interventions?",
+      "expected_tools": [
+        "recommend_next_best_action"
+      ],
+      "expected_any_of": [],
+      "expect_refusal": false,
+      "latency_s": 6.98,
+      "response": "For GK-129, the primary recommendation is a **Cement squeeze + reperforation** (IC-11), delivering an estimated uplift of **+5.9 BOPD** (1,961 deferred bbl over 12 months) with a **p_success of 0.59** across 8.0 rig-days in the HIGH cost band. This addresses diagnosed water channelling where water cut escalated from 64.0% to 84.1% (WOR′ slope +0.35), though it requires transferring a 5.5-inch mechanical cement retainer and currently lacks an open rig slot within 90 days. The secondary alternative is a **Selective isolation / straddle packer** (IC-12, 6.0 rig-days, HIGH cost band), but it carri",
+      "tool_ok": true,
+      "called": [
+        "recommend_next_best_action"
+      ],
+      "missing": [],
+      "any_of_missing": [],
+      "forbidden_called": [],
+      "statuses": {
+        "recommend_next_best_action": "OK"
+      },
+      "numbers_ok": true,
+      "unmatched": [],
+      "refusal_ok": null,
+      "status": "ok",
+      "engine": "adk:gemini-3.8-flash@vertex/global"
+    },
+    {
+      "eval_case_id": "f18_l5_nba_am",
+      "persona": "ASSET_MANAGER",
+      "language": "english",
+      "tags": [
+        "demo",
+        "L5"
+      ],
+      "prompt": "What are the next best recommended interventions?",
+      "expected_tools": [
+        "recommend_next_best_action"
+      ],
+      "expected_any_of": [],
+      "expect_refusal": false,
+      "latency_s": 7.78,
+      "response": "For **GK-129**, the top recommended intervention is a **Cement squeeze + reperforation (IC-11)** to address diagnosed water channelling (WOR′ slope +0.35, water cut rising from 64.0% to 84.1%), offering an expected uplift of **+5.9 BOPD** (1,961 deferred bbl over 12 months) with a **p_success of 0.594** over **8.0 rig-days** at a **HIGH** cost band. \n\nHowever, execution is currently blocked by MRO status **TRANSFER_REQUIRED** (Mechanical Cement Retainer 5.5 in) and **NO_SLOT** on the workover rig calendar within 90 days. \n\nThe secondary alternative is **Selective isolation / straddle packer (I",
+      "tool_ok": true,
+      "called": [
+        "recommend_next_best_action"
+      ],
+      "missing": [],
+      "any_of_missing": [],
+      "forbidden_called": [],
+      "statuses": {
+        "recommend_next_best_action": "OK"
+      },
+      "numbers_ok": true,
+      "unmatched": [],
+      "refusal_ok": null,
+      "status": "ok",
+      "engine": "adk:gemini-3.8-flash@vertex/global"
+    },
+    {
+      "eval_case_id": "f18_l5_nba_fe",
+      "persona": "FIELD_ENGINEER",
+      "language": "english",
+      "tags": [
+        "demo",
+        "L5"
+      ],
+      "prompt": "What are the next best recommended interventions?",
+      "expected_tools": [
+        "recommend_next_best_action"
+      ],
+      "expected_any_of": [],
+      "expect_refusal": false,
+      "latency_s": 8.19,
+      "response": "For **GK-129**, the primary recommendation is a **Cement squeeze + reperforation** (IC-11), indicated by water channelling where the WOR′ slope reached +0.35 and water cut jumped from 64.0% to 84.1%. \n\nThis workover targets an estimated uplift of 5.9 BOPD (1,961 deferred barrels over 12 months) with a 0.594 success probability, requiring 8 rig-days at a HIGH cost band under SOP IC-11. \n\nA secondary alternative is **Selective isolation / straddle packer** (IC-12, p_success 0.343, 6 rig-days), though execution is currently blocked by MRO transfer requirements for a 5.5-inch Mechanical Cement Ret",
+      "tool_ok": true,
+      "called": [
+        "recommend_next_best_action"
+      ],
+      "missing": [],
+      "any_of_missing": [],
+      "forbidden_called": [],
+      "statuses": {
+        "recommend_next_best_action": "OK"
+      },
+      "numbers_ok": true,
+      "unmatched": [],
+      "refusal_ok": null,
+      "status": "ok",
+      "engine": "adk:gemini-3.8-flash@vertex/global"
+    },
+    {
+      "eval_case_id": "f18_l5_counter_ed",
+      "persona": "ED",
+      "language": "english",
+      "tags": [
+        "demo",
+        "L5"
+      ],
+      "prompt": "Why not just wax removal?",
+      "expected_tools": [
+        "compare_interventions"
+      ],
+      "expected_any_of": [],
+      "expect_refusal": false,
+      "latency_s": 14.52,
+      "response": "Wax removal is contradicted by diagnostic evidence: THP is down -0.3% over 45 days (wax requires a ≥ +12% rise with falling liquid), WHT declined from 54.7 to 52.8 °C, and mechanical diagnostics show no wax signature. The root problem is active water channelling, confirmed by a WOR′ slope of +0.35 (> +0.30) and water cut rising from 64.0% to 84.1%. While a hot-oil treatment is rigless (0.0 rig-days, LOW cost band), diagnostic fit is the deciding dimension and vetoes any job that does not address the underlying channelling mechanism.",
+      "tool_ok": true,
+      "called": [
+        "compare_interventions"
+      ],
+      "missing": [],
+      "any_of_missing": [],
+      "forbidden_called": [],
+      "statuses": {
+        "compare_interventions": "OK"
+      },
+      "numbers_ok": true,
+      "unmatched": [],
+      "refusal_ok": null,
+      "status": "ok",
+      "engine": "adk:gemini-3.8-flash@vertex/global"
+    },
+    {
+      "eval_case_id": "f18_l5_counter_am",
+      "persona": "ASSET_MANAGER",
+      "language": "english",
+      "tags": [
+        "demo",
+        "L5"
+      ],
+      "prompt": "Why not just wax removal?",
+      "expected_tools": [
+        "compare_interventions"
+      ],
+      "expected_any_of": [],
+      "expect_refusal": false,
+      "latency_s": 29.22,
+      "response": "Wax removal (hot oil / hot water wash) is contradicted because GK-129 shows no wax signature: tubing head pressure changed by only -0.3% over 45 days (wax deposition requires ≥ +12% with falling liquid) and wellhead temperature dropped just 1.9 °C. The well's decline is driven by water channelling, evidenced by a Chan WOR′ slope of +0.35 and water cut surging from 64.0% to 84.1%. Although wax removal is a faster rigless job, diagnostic fit is the deciding dimension and vetoes interventions that fail to treat the underlying mechanism.",
+      "tool_ok": true,
+      "called": [
+        "compare_interventions"
+      ],
+      "missing": [],
+      "any_of_missing": [],
+      "forbidden_called": [],
+      "statuses": {
+        "compare_interventions": "OK"
+      },
+      "numbers_ok": true,
+      "unmatched": [],
+      "refusal_ok": null,
+      "status": "ok",
+      "engine": "adk:gemini-3.8-flash@vertex/global"
+    },
+    {
+      "eval_case_id": "f18_l5_counter_fe",
+      "persona": "FIELD_ENGINEER",
+      "language": "english",
+      "tags": [
+        "demo",
+        "L5"
+      ],
+      "prompt": "Why not just wax removal?",
+      "expected_tools": [
+        "compare_interventions"
+      ],
+      "expected_any_of": [],
+      "expect_refusal": false,
+      "latency_s": 12.79,
+      "response": "Wax removal (hot oil wash) is vetoed because GK-129 exhibits no wax deposition signature: tubing head pressure changed by only -0.3% over 45 days (wax requires an increase of ≥ +12% alongside declining liquid) and wellhead temperature dropped slightly from 54.7 °C to 52.8 °C. \n\nInstead, the actual root cause is diagnosed water channelling, with water cut escalating from 64.0% to 84.1% and a positive WOR′ slope of +0.35. \n\nAlthough hot oiling is faster and rigless (0.0 rig-days at a LOW cost band), executing it will not shut off the water channel, making the cement squeeze the technically sound",
+      "tool_ok": true,
+      "called": [
+        "compare_interventions"
+      ],
+      "missing": [],
+      "any_of_missing": [],
+      "forbidden_called": [],
+      "statuses": {
+        "compare_interventions": "OK"
+      },
+      "numbers_ok": true,
+      "unmatched": [],
+      "refusal_ok": null,
+      "status": "ok",
+      "engine": "adk:gemini-3.8-flash@vertex/global"
+    },
+    {
+      "eval_case_id": "f18_s03_hinglish_l2",
+      "persona": "ED",
+      "language": "hinglish",
+      "tags": [
+        "voice",
+        "hinglish",
+        "L2"
+      ],
+      "prompt": "Geleki mein kitne wells sick hain ya production lose kar rahe hain?",
+      "expected_tools": [
+        "classify_well_health"
+      ],
+      "expected_any_of": [],
+      "expect_refusal": false,
+      "latency_s": 8.62,
+      "response": "Geleki mein kul 26 wells sick ya lost production category mein hain (21 AT_RISK aur 5 UNDERPERFORMING), jabki 28 wells NOT_PRODUCING hain. \n\nPichhle 180 days mein total 381795.6 bbl ka production loss hua hai, jisme 79.3% loss controllable hai. Decline ka sabse bada factor HUMAN_PROCESS (58.9%) hai, jo mukhya roop se Rig Planning delay (WAIT_ON_RIG) ki wajah se hua. Rig intervention expedite karke is deferred production ko recover karna primary priority honi chahiye.",
+      "tool_ok": true,
+      "called": [
+        "classify_well_health",
+        "attribute_decline"
+      ],
+      "missing": [],
+      "any_of_missing": [],
+      "forbidden_called": [],
+      "statuses": {
+        "classify_well_health": "OK",
+        "attribute_decline": "OK"
+      },
+      "numbers_ok": true,
+      "unmatched": [],
+      "refusal_ok": null,
+      "status": "ok",
+      "engine": "adk:gemini-3.8-flash@vertex/global"
+    },
+    {
+      "eval_case_id": "f13_s04_hinglish_counterfactual",
+      "persona": "ASSET_MANAGER",
+      "language": "hinglish",
+      "tags": [
+        "voice",
+        "hinglish",
+        "L5"
+      ],
+      "prompt": "GK-129 pe wax removal kyun nahi? Squeeze hi kyun?",
+      "expected_tools": [
+        "compare_interventions"
+      ],
+      "expected_any_of": [],
+      "expect_refusal": false,
+      "latency_s": 17.46,
+      "response": "Deciding dimension **diagnostic fit** hai: GK-129 mein wax restriction ka koi signature nahi hai kyunki THP change sirf **-0.3%** hai (wax ke liye ≥ +12% rising pressure required hota hai) aur mechanical signature `NONE` hai. Dusri taraf, Chan diagnostic mein WOR′ slope **+0.35** (> +0.30, r²=0.79) water cut **64.0% se 84.1%** ke sath clear **channelling** dikha raha hai, jise cement bond log (DOC-CBL-GK129-1998) ka micro-annulus support karta hai. Isliye root cause water channelling hone ke karan **Cement squeeze + reperforation** preferred hai, chahe wax hot oil execution mein rigless aur fa",
+      "tool_ok": true,
+      "called": [
+        "compare_interventions"
+      ],
+      "missing": [],
+      "any_of_missing": [],
+      "forbidden_called": [],
+      "statuses": {
+        "compare_interventions": "OK"
+      },
+      "numbers_ok": true,
+      "unmatched": [],
+      "refusal_ok": null,
+      "status": "ok",
+      "engine": "adk:gemini-3.8-flash@vertex/global"
+    },
+    {
+      "eval_case_id": "f02_s04_hinglish_health",
+      "persona": "ASSET_MANAGER",
+      "language": "hinglish",
+      "tags": [
+        "voice",
+        "hinglish",
+        "demo"
+      ],
+      "prompt": "Lakhmani mein kitne wells theek chal rahe hain aur kitne band hain?",
+      "expected_tools": [
+        "classify_well_health"
+      ],
+      "expected_any_of": [],
+      "expect_refusal": false,
+      "latency_s": 11.86,
+      "response": "Lakhmani field mein total 110 wells mein se 67 wells **PRODUCING_OK** chal rahe hain aur 8 wells **NOT_PRODUCING** (band) hain. \n\nIske alawa 35 wells sick ya lost production category mein hain, jinme 34 AT_RISK aur 1 UNDERPERFORMING well shamil hain. Pichhle 180 days mein total 151,912 bbl ka production loss record hua hai, jisme main share EXTERNAL factors (44.3%) ka hai aur controllable share 30.9% hai (led by HUMAN_PROCESS delays at 19.1%).",
+      "tool_ok": true,
+      "called": [
+        "classify_well_health",
+        "attribute_decline"
+      ],
+      "missing": [],
+      "any_of_missing": [],
+      "forbidden_called": [],
+      "statuses": {
+        "classify_well_health": "OK",
+        "attribute_decline": "OK"
+      },
+      "numbers_ok": true,
+      "unmatched": [],
+      "refusal_ok": null,
+      "status": "ok",
+      "engine": "adk:gemini-3.8-flash@vertex/global"
+    },
+    {
+      "eval_case_id": "f06_s02_hinglish_dossier",
+      "persona": "FIELD_ENGINEER",
+      "language": "hinglish",
+      "tags": [
+        "voice",
+        "hinglish",
+        "demo"
+      ],
+      "prompt": "Main kal LKW-047 ja raha hoon, iski poori history de do",
+      "expected_tools": [
+        "build_well_dossier"
+      ],
+      "expected_any_of": [],
+      "expect_refusal": false,
+      "latency_s": 10.55,
+      "response": "LKW-047 ka field-dispatch dossier (`DOSSIER-LKW-047-20260923-FE`, 4 pages) ready hai, jise aap `/api/files/dossiers/LKW-047_2026-09-23_FE.pdf` se download kar sakte hain. \n\nWell par ab tak 9 interventions ho chuki hain, jisme last intervention 2026-07-07 ko `PUMP_OVERHAUL` (SUCCESS) tha. Iska largest loss class `HUMAN_PROCESS` hai (4275.8 bbl ka 78.5 %), aur recommended next best action `SCALE_ACID_BULLHEAD` (IC-05) hai jiske liye procedure SOP `SOP-IC-05` mein cover kiya gaya hai.",
+      "tool_ok": true,
+      "called": [
+        "build_well_dossier"
+      ],
+      "missing": [],
+      "any_of_missing": [],
+      "forbidden_called": [],
+      "statuses": {
+        "build_well_dossier": "OK"
+      },
+      "numbers_ok": true,
+      "unmatched": [],
+      "refusal_ok": null,
+      "status": "ok",
+      "engine": "adk:gemini-3.8-flash@vertex/global"
+    },
+    {
+      "eval_case_id": "f07_s06_hinglish_worst_well",
+      "persona": "ASSET_MANAGER",
+      "language": "hinglish",
+      "tags": [
+        "voice",
+        "hinglish",
+        "holdout"
+      ],
+      "prompt": "Lakwa mein sabse kharab well kaun sa hai?",
+      "expected_tools": [
+        "query_wells"
+      ],
+      "expected_any_of": [],
+      "expect_refusal": false,
+      "latency_s": 21.15,
+      "response": "Lakwa mein decline residual ke hisaab se sabse kharab well **LKW-055** hai, jiska residual **-65.2%** hai aur yeh **97.5%** water cut ke saath sirf **10.7 BOPD** produce kar raha hai (Trigger C: PUMP_WEAR signature, AT_RISK). \n\nIntervention opportunity ke hisaab se rig queue par top candidate **LKW-149** hai (expected uplift **115.5 BOPD**, 42,158 bbl 12-month deferred recovery, MATRIX_ACID). Pure Lakwa field mein total 160 wells mein se **27 AT_RISK** aur **43 NOT_PRODUCING** hain.",
+      "tool_ok": true,
+      "called": [
+        "query_wells",
+        "rank_candidates",
+        "query_wells",
+        "classify_well_health"
+      ],
+      "missing": [],
+      "any_of_missing": [],
+      "forbidden_called": [],
+      "statuses": {
+        "query_wells": "OK",
+        "rank_candidates": "OK",
+        "classify_well_health": "OK"
+      },
+      "numbers_ok": true,
+      "unmatched": [],
+      "refusal_ok": null,
+      "status": "ok",
+      "engine": "adk:gemini-3.8-flash@vertex/global"
+    },
+    {
+      "eval_case_id": "f07_s06_hindi_worst_well",
+      "persona": "ASSET_MANAGER",
+      "language": "hindi",
+      "tags": [
+        "voice",
+        "hindi",
+        "holdout"
+      ],
+      "prompt": "लकवा में सबसे खराब कुआँ कौन सा है?",
+      "expected_tools": [
+        "query_wells"
+      ],
+      "expected_any_of": [],
+      "expect_refusal": false,
+      "latency_s": 21.19,
+      "response": "डिक्लाइन रेसिडुअल (Decline Residual) के आधार पर लकवा में सबसे खराब प्रदर्शन करने वाला कुआँ **LKW-055** है, जिसका रेसिडुअल **-65.2%** है और यह **97.5%** वाटर कट के साथ मात्र **10.7 BOPD** तेल उत्पादन कर रहा है (अपेक्षित: **37.4 BOPD**, गैप: **-26.7 BOPD**)। \n\nयह कुआँ वर्तमान में **AT_RISK** बकेट में है, जिसका प्राथमिक कारण PUMP_WEAR सिग्नेचर है। \n\nयदि उत्पादन पुनर्प्राप्ति (Intervention Rig Queue) की प्राथमिकता देखें, तो **LKW-149** रैंक 1 पर है, जिसमें Matrix Acidising के जरिए **115.5 BOPD** के अपलिफ्ट की संभावना है।",
+      "tool_ok": true,
+      "called": [
+        "query_wells",
+        "rank_candidates",
+        "query_wells",
+        "query_wells",
+        "well_profile"
+      ],
+      "missing": [],
+      "any_of_missing": [],
+      "forbidden_called": [],
+      "statuses": {
+        "query_wells": "OK",
+        "rank_candidates": "OK",
+        "well_profile": "OK"
+      },
+      "numbers_ok": true,
+      "unmatched": [],
+      "refusal_ok": null,
+      "status": "ok",
+      "engine": "adk:gemini-3.8-flash@vertex/global"
+    },
+    {
+      "eval_case_id": "f01_s02_attribution",
+      "persona": "ASSET_MANAGER",
+      "language": "english",
+      "tags": [
+        "voice",
+        "demo"
+      ],
+      "prompt": "Why did LKW-047's production decline over the last 6 months?",
+      "expected_tools": [
+        "attribute_decline"
+      ],
+      "expected_any_of": [],
+      "expect_refusal": false,
+      "latency_s": 7.48,
+      "response": "LKW-047 lost 4,275.8 bbl over the last 180 days against a baseline of 63.3 BOPD, with 99.7% of the loss being controllable. \n\nThe primary driver was operational delays under HUMAN_PROCESS accounting for 3,355 bbl (78.5%), led by Rig Planning delays (WAIT_ON_RIG: 2,595.4 bbl, 60.7%) and Materials Management delays (WAIT_ON_MATERIAL: 759.6 bbl, 17.8%). Downhole EQUIPMENT issues contributed 908.3 bbl (21.2%), dominated by pump wear (774.1 bbl, 18.1%), while SUBSURFACE water encroachment accounted for just 12.5 bbl (0.3%).",
+      "tool_ok": true,
+      "called": [
+        "attribute_decline"
+      ],
+      "missing": [],
+      "any_of_missing": [],
+      "forbidden_called": [],
+      "statuses": {
+        "attribute_decline": "OK"
+      },
+      "numbers_ok": true,
+      "unmatched": [],
+      "refusal_ok": null,
+      "status": "ok",
+      "engine": "adk:gemini-3.8-flash@vertex/global"
+    },
+    {
+      "eval_case_id": "f03_s03_classifier_trust",
+      "persona": "ED",
+      "language": "english",
+      "tags": [
+        "voice",
+        "demo",
+        "holdout"
+      ],
+      "prompt": "How good is this model? Can I trust it?",
+      "expected_tools": [
+        "classify_intervention"
+      ],
+      "expected_any_of": [],
+      "expect_refusal": false,
+      "latency_s": 6.3,
+      "response": "The intervention classifier (model version ic-hgb-v1) achieves a holdout macro-F1 of 0.7437 with a top-3 accuracy of 93.93%. Please note that it was trained and evaluated entirely on synthetic WellPulse data across Geleki, Lakwa, and Lakhmani, and has not been validated on actual field records. It serves as an effective operational screening tool, though candidates should always be confirmed against engineering diagnostics and SOP criteria before field dispatch.",
+      "tool_ok": true,
+      "called": [
+        "classify_intervention"
+      ],
+      "missing": [],
+      "any_of_missing": [],
+      "forbidden_called": [],
+      "statuses": {
+        "classify_intervention": "OK"
+      },
+      "numbers_ok": true,
+      "unmatched": [],
+      "refusal_ok": null,
+      "status": "ok",
+      "engine": "adk:gemini-3.8-flash@vertex/global"
+    },
+    {
+      "eval_case_id": "f04_s03_refusal_lkm090",
+      "persona": "ASSET_MANAGER",
+      "language": "english",
+      "tags": [
+        "voice",
+        "demo",
+        "refusal"
+      ],
+      "prompt": "What should we do on LKM-090?",
+      "expected_tools": [
+        "recommend_next_best_action"
+      ],
+      "expected_any_of": [],
+      "expect_refusal": true,
+      "latency_s": 7.44,
+      "response": "No intervention is justified for LKM-090 (job code NO_JOB_JUSTIFIED, IC-15). \n\nThe decline is driven by shared reservoir depletion rather than a well-specific problem, as LKM-090's residual decline of -12.9% closely tracks the median of -12.3% across three same-zone offset wells (LKM-107, LKM-001, and LKM-091). In addition, static bottomhole pressure has fallen from 269.0 to 257.1 kg/cm² (-4.4%), and mechanical diagnostics detect no downhole failure signatures.",
+      "tool_ok": true,
+      "called": [
+        "recommend_next_best_action"
+      ],
+      "missing": [],
+      "any_of_missing": [],
+      "forbidden_called": [],
+      "statuses": {
+        "recommend_next_best_action": "OK"
+      },
+      "numbers_ok": true,
+      "unmatched": [],
+      "refusal_ok": true,
+      "status": "ok",
+      "engine": "adk:gemini-3.8-flash@vertex/global"
+    },
+    {
+      "eval_case_id": "f07_s01_underperforming",
+      "persona": "ED",
+      "language": "english",
+      "tags": [
+        "voice",
+        "demo"
+      ],
+      "prompt": "Which field is underperforming?",
+      "expected_tools": [
+        "compare_fields"
+      ],
+      "expected_any_of": [],
+      "expect_refusal": false,
+      "latency_s": 11.66,
+      "response": "Lakwa is the worst-performing field with a -17.6% gap to target, producing 8,193.5 BOPD against a target of 9,938.4 BOPD and an uptime of 71.7%. By comparison, Lakhmani is at an -8.5% gap and Geleki is at a -1.5% gap. The primary loss driver in Lakwa is functional delays under HUMAN_PROCESS, accounting for 154,953.5 barrels deferred (59.5% of lost oil) with 21 wells waiting on rig.",
+      "tool_ok": true,
+      "called": [
+        "compare_fields"
+      ],
+      "missing": [],
+      "any_of_missing": [],
+      "forbidden_called": [],
+      "statuses": {
+        "compare_fields": "OK"
+      },
+      "numbers_ok": true,
+      "unmatched": [],
+      "refusal_ok": null,
+      "status": "ok",
+      "engine": "adk:gemini-3.8-flash@vertex/global"
+    },
+    {
+      "eval_case_id": "f07_s06_english_worst_well",
+      "persona": "ASSET_MANAGER",
+      "language": "english",
+      "tags": [
+        "voice",
+        "holdout"
+      ],
+      "prompt": "Which is the worst well in Lakwa?",
+      "expected_tools": [
+        "query_wells"
+      ],
+      "expected_any_of": [],
+      "expect_refusal": false,
+      "latency_s": 16.85,
+      "response": "By decline severity against expected baseline, **LKW-055** is the worst underperforming well in Lakwa, operating at a **-65.2% decline residual** with an oil rate of **10.7 BOPD** against an expected **37.4 BOPD** and a **97.5% water cut**. \n\nFrom an intervention and deferred production perspective, **LKW-149** ranks as the top priority candidate on the rig queue, with **42,158 bbl** of 12-month deferred production avoided and an estimated uplift of **115.5 BOPD** via matrix acidising. On the rigless side, **LKW-049** leads with **18,432 bbl** deferred oil recoverable (**50.5 BOPD uplift**) ta",
+      "tool_ok": true,
+      "called": [
+        "query_wells",
+        "rank_candidates",
+        "query_wells",
+        "query_wells"
+      ],
+      "missing": [],
+      "any_of_missing": [],
+      "forbidden_called": [],
+      "statuses": {
+        "query_wells": "OK",
+        "rank_candidates": "OK"
+      },
+      "numbers_ok": true,
+      "unmatched": [],
+      "refusal_ok": null,
+      "status": "ok",
+      "engine": "adk:gemini-3.8-flash@vertex/global"
+    },
+    {
+      "eval_case_id": "f09_s01_not_performing_why",
+      "persona": "ASSET_MANAGER",
+      "language": "english",
+      "tags": [
+        "voice",
+        "demo"
+      ],
+      "prompt": "Which field is not performing, and why?",
+      "expected_tools": [
+        "compare_fields"
+      ],
+      "expected_any_of": [],
+      "expect_refusal": false,
+      "latency_s": 5.73,
+      "response": "**Lakwa** is the worst performing field, trailing its target by -17.6% QTD (8,193.5 BOPD actual versus 9,938.4 BOPD target) with uptime down at 71.7%. \n\nThe primary loss driver is **HUMAN_PROCESS** delays—process bottlenecks such as logistics and scheduling—accounting for 154,953.5 barrels (59.5% of deferred oil). This delay is heavily driven by 21 wells waiting on rigs and 3 waiting on materials.",
+      "tool_ok": true,
+      "called": [
+        "compare_fields"
+      ],
+      "missing": [],
+      "any_of_missing": [],
+      "forbidden_called": [],
+      "statuses": {
+        "compare_fields": "OK"
+      },
+      "numbers_ok": true,
+      "unmatched": [],
+      "refusal_ok": null,
+      "status": "ok",
+      "engine": "adk:gemini-3.8-flash@vertex/global"
+    },
+    {
+      "eval_case_id": "f09_s04_worst_wells_in_field",
+      "persona": "ASSET_MANAGER",
+      "language": "english",
+      "tags": [
+        "holdout"
+      ],
+      "prompt": "Show me the worst wells in it",
+      "expected_tools": [
+        "query_wells"
+      ],
+      "expected_any_of": [],
+      "expect_refusal": false,
+      "latency_s": 18.92,
+      "response": "In Lakwa, the wells with the highest deferred production gap are LKW-105 (170.9 gap BOPD, 77.2% water cut), LKW-079 (105.1 gap BOPD, 75.0% water cut), LKW-085 (89.0 gap BOPD, 77.1% water cut), and LKW-039 (88.2 gap BOPD, 71.2% water cut). \n\nAmong actionable candidates, LKW-105 also ranks second in the rig queue for matrix acidising with 75.0 BOPD expected uplift, while LKW-149 leads the rig queue targeting 115.5 BOPD uplift (42,158 bbl avoided over 12 months). In the rigless queue, LKW-049 is the top priority for hot oil wash targeting 50.5 BOPD uplift.",
+      "tool_ok": true,
+      "called": [
+        "query_wells",
+        "rank_candidates"
+      ],
+      "missing": [],
+      "any_of_missing": [],
+      "forbidden_called": [],
+      "statuses": {
+        "query_wells": "OK",
+        "rank_candidates": "OK"
+      },
+      "numbers_ok": true,
+      "unmatched": [],
+      "refusal_ok": null,
+      "status": "ok",
+      "engine": "adk:gemini-3.8-flash@vertex/global"
+    },
+    {
+      "eval_case_id": "f11_s01_5year_history",
+      "persona": "ED",
+      "language": "english",
+      "tags": [
+        "voice",
+        "demo",
+        "L1"
+      ],
+      "prompt": "Can you give me the production history for the past 5 years, field-wise?",
+      "expected_tools": [
+        "field_production_history"
+      ],
+      "expected_any_of": [],
+      "expect_refusal": false,
+      "latency_s": 10.61,
+      "response": "Over the 60-month period from October 2021 to September 2026, Geleki saw the steepest decline, falling from 14,595.9 to 8,664.5 BOPD (-40.6%) as water cut rose from 61.86% to 76.12%. \n\nLakwa declined from 10,128.7 to 8,301.9 BOPD (-18.0%) with water cut increasing from 74.64% to 82.28%. \n\nLakhmani decreased from 8,488.5 to 5,640.9 BOPD (-33.5%) with water cut climbing from 61.72% to 74.53%. \n\nActive producing wells dropped across all assets: Geleki from 125.3 to 115.7, Lakwa from 136.7 to 116.3, and Lakhmani from 103.3 to 91.7 wells.",
+      "tool_ok": true,
+      "called": [
+        "field_production_history"
+      ],
+      "missing": [],
+      "any_of_missing": [],
+      "forbidden_called": [],
+      "statuses": {
+        "field_production_history": "OK"
+      },
+      "numbers_ok": true,
+      "unmatched": [],
+      "refusal_ok": null,
+      "status": "ok",
+      "engine": "adk:gemini-3.8-flash@vertex/global"
+    },
+    {
+      "eval_case_id": "f12_s01_3year_deepdive",
+      "persona": "ED",
+      "language": "english",
+      "tags": [
+        "voice",
+        "demo",
+        "L4"
+      ],
+      "prompt": "Tell me more about GK-129 and show me its 3-year production history",
+      "expected_tools": [
+        "well_profile",
+        "plot_production"
+      ],
+      "expected_any_of": [],
+      "expect_refusal": false,
+      "latency_s": 6.97,
+      "response": "GK-129 is an active sucker rod pump (SRP) well in Geleki (GK-NE cluster) completed in the Tipam formation, currently categorized as **UNDERPERFORMING** at 13.4 BOPD and 83.9% water cut against an expected 19.3 BOPD (residual of -30.6%). Over the 36-month window from 2023-09-24 to 2026-09-23, the well operated for 915 producing days and underwent four interventions, most recently a successful tubing leak replacement in January 2026. The 3-year production trend and intervention markers are displayed on the drawer plot.",
+      "tool_ok": true,
+      "called": [
+        "well_profile",
+        "plot_production"
+      ],
+      "missing": [],
+      "any_of_missing": [],
+      "forbidden_called": [],
+      "statuses": {
+        "well_profile": "OK",
+        "plot_production": "OK"
+      },
+      "numbers_ok": true,
+      "unmatched": [],
+      "refusal_ok": null,
+      "status": "ok",
+      "engine": "adk:gemini-3.8-flash@vertex/global"
+    },
+    {
+      "eval_case_id": "f13_s01_gk129_wax_removal",
+      "persona": "ASSET_MANAGER",
+      "language": "english",
+      "tags": [
+        "voice",
+        "demo",
+        "L5"
+      ],
+      "prompt": "Why are you recommending this instead of WAX_REMOVAL?",
+      "expected_tools": [
+        "compare_interventions"
+      ],
+      "expected_any_of": [],
+      "expect_refusal": false,
+      "latency_s": 17.75,
+      "response": "**Cement squeeze + reperforation** is preferred over wax removal because the deciding dimension is **diagnostic fit**. Diagnostic evidence rules out wax deposition—tubing head pressure changed by only -0.3% over 45 days (wax requires ≥ +12% with falling liquid) and mechanical signature is NONE. Instead, diagnostics confirm active water channelling with a WOR′ derivative slope of +0.35 and water cut escalating from 64.0% to 84.1%, corroborated by questionable isolation on historical cement bond logs. While hot oiling is rigless and scored higher mechanically (2,639.5 vs 101.9 bbl per rig-day), ",
+      "tool_ok": true,
+      "called": [
+        "compare_interventions"
+      ],
+      "missing": [],
+      "any_of_missing": [],
+      "forbidden_called": [],
+      "statuses": {
+        "compare_interventions": "OK"
+      },
+      "numbers_ok": true,
+      "unmatched": [],
+      "refusal_ok": null,
+      "status": "ok",
+      "engine": "adk:gemini-3.8-flash@vertex/global"
+    },
+    {
+      "eval_case_id": "f13_s01_gk129_reperforation",
+      "persona": "ASSET_MANAGER",
+      "language": "english",
+      "tags": [
+        "voice",
+        "demo",
+        "L5",
+        "holdout"
+      ],
+      "prompt": "Why are you recommending this instead of REPERFORATION?",
+      "expected_tools": [
+        "compare_interventions"
+      ],
+      "expected_any_of": [],
+      "expect_refusal": false,
+      "latency_s": 10.59,
+      "response": "The deciding dimension is **diagnostic fit**: GK-129's primary decline mechanism is active water channelling (WOR′ slope +0.35, water cut 64.0% to 84.1%), which directly requires a water shut-off squeeze. While re-perforation would be faster (4 rig-days vs 8, MED vs HIGH cost band) and addresses near-wellbore productivity index loss (-50.6%), re-perforating alone will not isolate the water channel and risks aggravating water production. Consequently, **Cement squeeze + reperforation** is preferred because it addresses the root cause of water entry before opening new intervals.",
+      "tool_ok": true,
+      "called": [
+        "compare_interventions"
+      ],
+      "missing": [],
+      "any_of_missing": [],
+      "forbidden_called": [],
+      "statuses": {
+        "compare_interventions": "OK"
+      },
+      "numbers_ok": true,
+      "unmatched": [],
+      "refusal_ok": null,
+      "status": "ok",
+      "engine": "adk:gemini-3.8-flash@vertex/global"
+    },
+    {
+      "eval_case_id": "f13_s01_lkm061_reperforation",
+      "persona": "ASSET_MANAGER",
+      "language": "english",
+      "tags": [
+        "voice",
+        "demo",
+        "L5",
+        "holdout"
+      ],
+      "prompt": "Why are you recommending this instead of REPERFORATION?",
+      "expected_tools": [
+        "compare_interventions"
+      ],
+      "expected_any_of": [],
+      "expect_refusal": false,
+      "latency_s": 13.38,
+      "response": "The deciding dimension is **diagnostic fit**: well tests confirm a mechanical gas-lift valve failure (injection rate +14% alongside injection pressure dropping -2.7 kg/cm²), which **GLV_REPLACE** directly remedies. \n\nIn contrast, **RE_PERFORATION** lacks reservoir justification because recent pressure surveys show no productivity impairment—Productivity Index actually increased +23.0% (from 2.376 to 2.922 bpd/kg/cm²) with SBHP essentially steady at 222.8 kg/cm² (-2.3%). Furthermore, valve replacement is rigless (**0.0 rig-days**, **LOW** cost band, scoring 8,740.7 bbl/rig-day) compared to re-p",
+      "tool_ok": true,
+      "called": [
+        "compare_interventions"
+      ],
+      "missing": [],
+      "any_of_missing": [],
+      "forbidden_called": [],
+      "statuses": {
+        "compare_interventions": "OK"
+      },
+      "numbers_ok": true,
+      "unmatched": [],
+      "refusal_ok": null,
+      "status": "ok",
+      "engine": "adk:gemini-3.8-flash@vertex/global"
+    },
+    {
+      "eval_case_id": "f14_s01_sop_how_job_done",
+      "persona": "FIELD_ENGINEER",
+      "language": "english",
+      "tags": [
+        "voice",
+        "demo",
+        "holdout"
+      ],
+      "prompt": "How is this job done?",
+      "expected_tools": [],
+      "expected_any_of": [
+        [
+          "search_documents",
+          "list_sops"
+        ]
+      ],
+      "expect_refusal": false,
+      "latency_s": 26.43,
+      "response": "Under SOP-IC-11, the cement squeeze is executed across four phases: mechanical isolation, injectivity testing, hesitation squeezing, and post-squeeze verification. \n\nAfter killing the well with brine and pulling completion tubing, a drillable cement retainer is set and pressure-tested above the wet perforations. Slurry is pumped and squeezed into the channel using hesitation cycles until the approved squeeze pressure holds steadily, followed by reverse circulating out any excess slurry. Once the cement cures, it is drilled out to original depth, positive pressure tested to confirm hydraulic is",
+      "tool_ok": true,
+      "called": [
+        "list_sops"
+      ],
+      "missing": [],
+      "any_of_missing": [],
+      "forbidden_called": [],
+      "statuses": {
+        "list_sops": "OK"
+      },
+      "numbers_ok": true,
+      "unmatched": [],
+      "refusal_ok": null,
+      "status": "ok",
+      "engine": "adk:gemini-3.8-flash@vertex/global"
+    },
+    {
+      "eval_case_id": "f15_s02_architecture_storage",
+      "persona": "ED",
+      "language": "english",
+      "tags": [
+        "voice",
+        "demo",
+        "holdout"
+      ],
+      "prompt": "Where does this data live, and why BigQuery?",
+      "expected_tools": [],
+      "expected_any_of": [],
+      "expect_refusal": false,
+      "latency_s": 9.77,
+      "response": "The operational records, sensor histories, and well test data are hosted in Google Cloud’s BigQuery analytics warehouse, utilizing synthetic and representative data for the ONGC Assam Asset. \n\nBigQuery was selected for its serverless, columnar architecture that executes complex multi-year time-series aggregations, decline calculations, and geospatial queries across the entire well stock in sub-second runtimes. This architecture provides seamless scalability for real-time diagnostic scanning and candidate ranking without database management overhead.",
+      "tool_ok": true,
+      "called": [
+        "search_documents"
+      ],
+      "missing": [],
+      "any_of_missing": [],
+      "forbidden_called": [],
+      "statuses": {
+        "search_documents": "LOW_CONFIDENCE"
+      },
+      "numbers_ok": true,
+      "unmatched": [],
+      "refusal_ok": null,
+      "status": "ok",
+      "engine": "adk:gemini-3.8-flash@vertex/global"
+    },
+    {
+      "eval_case_id": "f16_s01_tell_lkw047_ed",
+      "persona": "ED",
+      "language": "english",
+      "tags": [
+        "demo"
+      ],
+      "prompt": "Tell me about LKW-047",
+      "expected_tools": [
+        "well_profile"
+      ],
+      "expected_any_of": [],
+      "expect_refusal": false,
+      "latency_s": 10.23,
+      "response": "**LKW-047** is an active sucker rod pump (SRP) well in the Lakwa field (LKW-GGS-I cluster, Tipam zone) currently classified as **PRODUCING_OK**. \n\nIt is producing 60.5 BOPD of oil, 35.7 MSCFD of gas, and a 69.2% water cut, with an insert pump set at 2,496.6 m in 5.5-inch casing. The well has 9 lifetime interventions, most recently a successful pump overhaul (`PUMP_OVERHAUL`) completed on 2026-07-07.",
+      "tool_ok": true,
+      "called": [
+        "well_profile"
+      ],
+      "missing": [],
+      "any_of_missing": [],
+      "forbidden_called": [],
+      "statuses": {
+        "well_profile": "OK"
+      },
+      "numbers_ok": true,
+      "unmatched": [],
+      "refusal_ok": null,
+      "status": "ok",
+      "engine": "adk:gemini-3.8-flash@vertex/global"
+    },
+    {
+      "eval_case_id": "f16_s01_tell_lkw047_fe",
+      "persona": "FIELD_ENGINEER",
+      "language": "english",
+      "tags": [
+        "demo"
+      ],
+      "prompt": "Tell me about LKW-047",
+      "expected_tools": [
+        "well_profile"
+      ],
+      "expected_any_of": [],
+      "expect_refusal": false,
+      "latency_s": 7.06,
+      "response": "LKW-047 is an active producer in Lakwa (cluster LKW-GGS-I) completed in the Tipam formation on SRP lift, with an insert pump set at 2496.6 m. It is currently producing 60.5 BOPD with a 69.2% water cut and 35.7 MSCFD gas, holding a PRODUCING_OK status. The well underwent a successful pump overhaul on 2026-07-07. If you are heading out to the well pad, let me know and I can compile the field history dossier for you.",
+      "tool_ok": true,
+      "called": [
+        "well_profile"
+      ],
+      "missing": [],
+      "any_of_missing": [],
+      "forbidden_called": [],
+      "statuses": {
+        "well_profile": "OK"
+      },
+      "numbers_ok": true,
+      "unmatched": [],
+      "refusal_ok": null,
+      "status": "ok",
+      "engine": "adk:gemini-3.8-flash@vertex/global"
+    },
+    {
+      "eval_case_id": "f16_s03_fe_refusal_compare_all_fields",
+      "persona": "FIELD_ENGINEER",
+      "language": "english",
+      "tags": [
+        "voice",
+        "rbac",
+        "refusal"
+      ],
+      "prompt": "Compare all fields",
+      "expected_tools": [
+        "compare_fields"
+      ],
+      "expected_any_of": [],
+      "expect_refusal": true,
+      "latency_s": 5.44,
+      "response": "Field-level aggregate comparisons are not permitted for the Field Engineer role, as this view is reserved for the Asset Manager and Executive Director. Please select or specify an individual well (such as a GK-, LKW-, or LKM- well), and I can provide its detailed well profile, diagnostic signatures, SOP steps, or field dossier.",
+      "tool_ok": true,
+      "called": [
+        "compare_fields"
+      ],
+      "missing": [],
+      "any_of_missing": [],
+      "forbidden_called": [],
+      "statuses": {
+        "compare_fields": "UNAVAILABLE"
+      },
+      "numbers_ok": true,
+      "unmatched": [],
+      "refusal_ok": true,
+      "status": "ok",
+      "engine": "adk:gemini-3.8-flash@vertex/global"
+    },
+    {
+      "eval_case_id": "f16_s02_fe_refusal_which_field",
+      "persona": "FIELD_ENGINEER",
+      "language": "english",
+      "tags": [
+        "rbac",
+        "refusal"
+      ],
+      "prompt": "Which field is not performing?",
+      "expected_tools": [
+        "compare_fields"
+      ],
+      "expected_any_of": [],
+      "expect_refusal": true,
+      "latency_s": 5.89,
+      "response": "Field-level comparison views are restricted for the Field Engineer persona and reserved for the Asset Manager and Executive Director. \n\nI can assist you at the well-pad level with single-well diagnostics, production histories, offset checks, or specific intervention candidates. Please let me know which well ID you would like to examine.",
+      "tool_ok": true,
+      "called": [
+        "compare_fields"
+      ],
+      "missing": [],
+      "any_of_missing": [],
+      "forbidden_called": [],
+      "statuses": {
+        "compare_fields": "UNAVAILABLE"
+      },
+      "numbers_ok": true,
+      "unmatched": [],
+      "refusal_ok": true,
+      "status": "ok",
+      "engine": "adk:gemini-3.8-flash@vertex/global"
+    },
+    {
+      "eval_case_id": "x_s02_synthetic_disclosure",
+      "persona": "ED",
+      "language": "english",
+      "tags": [
+        "disclosure",
+        "holdout"
+      ],
+      "prompt": "Is this real Lakwa data?",
+      "expected_tools": [],
+      "expected_any_of": [],
+      "expect_refusal": false,
+      "latency_s": 7.76,
+      "response": "No, all Lakwa data and well coordinates are synthetic and representative. The dataset is generated for operational demonstration across the 2021-10-01 to 2026-09-30 period (as of 2026-09-23) and is not validated on actual field records. The ML models are trained and evaluated on this synthetic WellPulse data.",
+      "tool_ok": true,
+      "called": [
+        "classify_intervention"
+      ],
+      "missing": [],
+      "any_of_missing": [],
+      "forbidden_called": [],
+      "statuses": {
+        "classify_intervention": "OK"
+      },
+      "numbers_ok": true,
+      "unmatched": [],
+      "refusal_ok": null,
+      "status": "ok",
+      "engine": "adk:gemini-3.8-flash@vertex/global"
+    }
+  ]
+}

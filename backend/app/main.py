@@ -40,6 +40,8 @@ async def add_utf8_charset_header(request, call_next):
 
 
 # Register API routes FIRST so they take precedence over static files
+from app.api.dossier import router as dossier_router  # noqa: E402  Stage S: dossier + export (must precede wells)
+app.include_router(dossier_router, prefix="/api")
 app.include_router(wells_router, prefix="/api")
 app.include_router(docs_router, prefix="/api")  # Stage O: /api/docs/*, /api/wells/{id}/documents
 app.include_router(live_router)  # Stage U: WS /ws/live (SDD §11.4)
@@ -50,6 +52,8 @@ from app.agent import rbac as _rbac  # noqa: E402  Stage Y: PermissionDenied →
 from app.api.me import router as me_router  # noqa: E402  Stage Y: GET /api/me/capabilities
 _rbac.install(app)
 app.include_router(me_router, prefix="/api")
+from app.api.chat import router as chat_router  # noqa: E402  Stage V: POST /api/chat (ADK Runner)
+app.include_router(chat_router, prefix="/api")
 
 
 @app.on_event("startup")

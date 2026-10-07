@@ -1,0 +1,1545 @@
+{
+  "dataset": "wellpulse-v04",
+  "mode": "fake",
+  "model": "fake",
+  "location": "global",
+  "project": "workover-operations-agentic-ai",
+  "label": "harness",
+  "run_at": "2026-10-07T23:32:15+00:00",
+  "summary": {
+    "tool_selection": {
+      "n": 46,
+      "pass": 38,
+      "rate": 0.8261
+    },
+    "tool_selection_dev": {
+      "n": 36,
+      "pass": 34,
+      "rate": 0.9444
+    },
+    "tool_selection_holdout": {
+      "n": 10,
+      "pass": 4,
+      "rate": 0.4
+    },
+    "tool_selection_f18_demo": {
+      "n": 21,
+      "pass": 21,
+      "rate": 1.0
+    },
+    "number_grounding": {
+      "n": 46,
+      "pass": 46,
+      "rate": 1.0
+    },
+    "refusal_behaviour": {
+      "n": 5,
+      "pass": 4,
+      "rate": 0.8
+    },
+    "degraded_or_error": 0,
+    "latency_p50_s": 5.5,
+    "latency_p95_s": 27.91,
+    "failed_cases": [
+      "f06_s02_hinglish_dossier",
+      "f07_s06_hinglish_worst_well",
+      "f07_s06_hindi_worst_well",
+      "f03_s03_classifier_trust",
+      "f07_s06_english_worst_well",
+      "f09_s04_worst_wells_in_field",
+      "f14_s01_sop_how_job_done",
+      "f16_s03_fe_refusal_compare_all_fields"
+    ]
+  },
+  "cases": [
+    {
+      "eval_case_id": "f18_l1_tell_ed",
+      "persona": "ED",
+      "language": "english",
+      "tags": [
+        "demo",
+        "L1"
+      ],
+      "prompt": "Can you give me the past 5 year production data field-wise?",
+      "expected_tools": [
+        "field_production_history"
+      ],
+      "expected_any_of": [],
+      "expect_refusal": false,
+      "latency_s": 3.55,
+      "response": "From the tools: field_production_history: 3 field(s), 60 M periods 2021-10-01..2026-09-23: Geleki 14596→8664 BOPD (-40.6%), WC +14.3 pp; Lakwa 10129→8302 BOPD (-18.0%), WC +7.6 pp; Lakhmani 8488→5641 BOPD (-33.5%), WC +12.8 pp.",
+      "tool_ok": true,
+      "called": [
+        "field_production_history"
+      ],
+      "missing": [],
+      "any_of_missing": [],
+      "forbidden_called": [],
+      "statuses": {
+        "field_production_history": "OK"
+      },
+      "numbers_ok": true,
+      "unmatched": [],
+      "refusal_ok": null,
+      "status": "ok",
+      "engine": "adk:fake-llm"
+    },
+    {
+      "eval_case_id": "f18_l1_tell_am",
+      "persona": "ASSET_MANAGER",
+      "language": "english",
+      "tags": [
+        "demo",
+        "L1"
+      ],
+      "prompt": "Can you give me the past 5 year production data field-wise?",
+      "expected_tools": [
+        "field_production_history"
+      ],
+      "expected_any_of": [],
+      "expect_refusal": false,
+      "latency_s": 2.85,
+      "response": "From the tools: field_production_history: 3 field(s), 60 M periods 2021-10-01..2026-09-23: Geleki 14596→8664 BOPD (-40.6%), WC +14.3 pp; Lakwa 10129→8302 BOPD (-18.0%), WC +7.6 pp; Lakhmani 8488→5641 BOPD (-33.5%), WC +12.8 pp.",
+      "tool_ok": true,
+      "called": [
+        "field_production_history"
+      ],
+      "missing": [],
+      "any_of_missing": [],
+      "forbidden_called": [],
+      "statuses": {
+        "field_production_history": "OK"
+      },
+      "numbers_ok": true,
+      "unmatched": [],
+      "refusal_ok": null,
+      "status": "ok",
+      "engine": "adk:fake-llm"
+    },
+    {
+      "eval_case_id": "f18_l1_tell_fe",
+      "persona": "FIELD_ENGINEER",
+      "language": "english",
+      "tags": [
+        "demo",
+        "L1",
+        "rbac"
+      ],
+      "prompt": "Can you give me the past 5 year production data field-wise?",
+      "expected_tools": [
+        "field_production_history"
+      ],
+      "expected_any_of": [],
+      "expect_refusal": true,
+      "latency_s": 2.93,
+      "response": "From the tools: field_production_history: UNAVAILABLE - not permitted for persona FIELD_ENGINEER: field.aggregate.",
+      "tool_ok": true,
+      "called": [
+        "field_production_history"
+      ],
+      "missing": [],
+      "any_of_missing": [],
+      "forbidden_called": [],
+      "statuses": {
+        "field_production_history": "UNAVAILABLE"
+      },
+      "numbers_ok": true,
+      "unmatched": [],
+      "refusal_ok": true,
+      "status": "ok",
+      "engine": "adk:fake-llm"
+    },
+    {
+      "eval_case_id": "f18_l1_plot_ed",
+      "persona": "ED",
+      "language": "english",
+      "tags": [
+        "demo",
+        "L1"
+      ],
+      "prompt": "Can you give me a plot?",
+      "expected_tools": [
+        "field_production_history"
+      ],
+      "expected_any_of": [],
+      "expect_refusal": false,
+      "latency_s": 9.23,
+      "response": "From the tools: field_production_history: 3 field(s), 60 M periods 2021-10-01..2026-09-23: Geleki 14596→8664 BOPD (-40.6%), WC +14.3 pp; Lakwa 10129→8302 BOPD (-18.0%), WC +7.6 pp; Lakhmani 8488→5641 BOPD (-33.5%), WC +12.8 pp.",
+      "tool_ok": true,
+      "called": [
+        "field_production_history"
+      ],
+      "missing": [],
+      "any_of_missing": [],
+      "forbidden_called": [],
+      "statuses": {
+        "field_production_history": "OK"
+      },
+      "numbers_ok": true,
+      "unmatched": [],
+      "refusal_ok": null,
+      "status": "ok",
+      "engine": "adk:fake-llm"
+    },
+    {
+      "eval_case_id": "f18_l1_plot_am",
+      "persona": "ASSET_MANAGER",
+      "language": "english",
+      "tags": [
+        "demo",
+        "L1"
+      ],
+      "prompt": "Can you give me a plot?",
+      "expected_tools": [
+        "field_production_history"
+      ],
+      "expected_any_of": [],
+      "expect_refusal": false,
+      "latency_s": 6.6,
+      "response": "From the tools: field_production_history: 3 field(s), 60 M periods 2021-10-01..2026-09-23: Geleki 14596→8664 BOPD (-40.6%), WC +14.3 pp; Lakwa 10129→8302 BOPD (-18.0%), WC +7.6 pp; Lakhmani 8488→5641 BOPD (-33.5%), WC +12.8 pp.",
+      "tool_ok": true,
+      "called": [
+        "field_production_history"
+      ],
+      "missing": [],
+      "any_of_missing": [],
+      "forbidden_called": [],
+      "statuses": {
+        "field_production_history": "OK"
+      },
+      "numbers_ok": true,
+      "unmatched": [],
+      "refusal_ok": null,
+      "status": "ok",
+      "engine": "adk:fake-llm"
+    },
+    {
+      "eval_case_id": "f18_l1_plot_fe",
+      "persona": "FIELD_ENGINEER",
+      "language": "english",
+      "tags": [
+        "demo",
+        "L1",
+        "rbac"
+      ],
+      "prompt": "Can you give me a plot?",
+      "expected_tools": [
+        "field_production_history"
+      ],
+      "expected_any_of": [],
+      "expect_refusal": true,
+      "latency_s": 6.68,
+      "response": "From the tools: field_production_history: UNAVAILABLE - not permitted for persona FIELD_ENGINEER: field.aggregate.",
+      "tool_ok": true,
+      "called": [
+        "field_production_history"
+      ],
+      "missing": [],
+      "any_of_missing": [],
+      "forbidden_called": [],
+      "statuses": {
+        "field_production_history": "UNAVAILABLE"
+      },
+      "numbers_ok": true,
+      "unmatched": [],
+      "refusal_ok": true,
+      "status": "ok",
+      "engine": "adk:fake-llm"
+    },
+    {
+      "eval_case_id": "f18_l2_ed",
+      "persona": "ED",
+      "language": "english",
+      "tags": [
+        "demo",
+        "L2"
+      ],
+      "prompt": "How many wells in Geleki are either sick or have lost production?",
+      "expected_tools": [
+        "classify_well_health",
+        "attribute_decline"
+      ],
+      "expected_any_of": [],
+      "expect_refusal": false,
+      "latency_s": 6.32,
+      "response": "From the tools: classify_well_health: Geleki: 142 wells — 88 producing OK, 21 at risk, 5 underperforming, 28 not producing. (sick or lost count 26; total wells 142). attribute_decline: Geleki: 381,796 bbl lost over 180 d vs baseline 10277.9 BOPD; largest class HUMAN_PROCESS (58.9%); controllable 79.3%, unexplained 3.9%.",
+      "tool_ok": true,
+      "called": [
+        "classify_well_health",
+        "attribute_decline"
+      ],
+      "missing": [],
+      "any_of_missing": [],
+      "forbidden_called": [],
+      "statuses": {
+        "classify_well_health": "OK",
+        "attribute_decline": "OK"
+      },
+      "numbers_ok": true,
+      "unmatched": [],
+      "refusal_ok": null,
+      "status": "ok",
+      "engine": "adk:fake-llm"
+    },
+    {
+      "eval_case_id": "f18_l2_am",
+      "persona": "ASSET_MANAGER",
+      "language": "english",
+      "tags": [
+        "demo",
+        "L2"
+      ],
+      "prompt": "How many wells in Geleki are either sick or have lost production?",
+      "expected_tools": [
+        "classify_well_health",
+        "attribute_decline"
+      ],
+      "expected_any_of": [],
+      "expect_refusal": false,
+      "latency_s": 0.41,
+      "response": "From the tools: classify_well_health: Geleki: 142 wells — 88 producing OK, 21 at risk, 5 underperforming, 28 not producing. (sick or lost count 26; total wells 142). attribute_decline: Geleki: 381,796 bbl lost over 180 d vs baseline 10277.9 BOPD; largest class HUMAN_PROCESS (58.9%); controllable 79.3%, unexplained 3.9%.",
+      "tool_ok": true,
+      "called": [
+        "classify_well_health",
+        "attribute_decline"
+      ],
+      "missing": [],
+      "any_of_missing": [],
+      "forbidden_called": [],
+      "statuses": {
+        "classify_well_health": "OK",
+        "attribute_decline": "OK"
+      },
+      "numbers_ok": true,
+      "unmatched": [],
+      "refusal_ok": null,
+      "status": "ok",
+      "engine": "adk:fake-llm"
+    },
+    {
+      "eval_case_id": "f18_l2_fe",
+      "persona": "FIELD_ENGINEER",
+      "language": "english",
+      "tags": [
+        "demo",
+        "L2"
+      ],
+      "prompt": "How many wells in Geleki are either sick or have lost production?",
+      "expected_tools": [
+        "classify_well_health"
+      ],
+      "expected_any_of": [],
+      "expect_refusal": false,
+      "latency_s": 0.42,
+      "response": "From the tools: classify_well_health: Geleki/GK-NE: 60 wells — 41 producing OK, 4 at risk, 2 underperforming, 13 not producing. (sick or lost count 6; total wells 60). attribute_decline: UNAVAILABLE - not permitted for persona FIELD_ENGINEER: field.attribution.",
+      "tool_ok": true,
+      "called": [
+        "classify_well_health",
+        "attribute_decline"
+      ],
+      "missing": [],
+      "any_of_missing": [],
+      "forbidden_called": [],
+      "statuses": {
+        "classify_well_health": "OK",
+        "attribute_decline": "UNAVAILABLE"
+      },
+      "numbers_ok": true,
+      "unmatched": [],
+      "refusal_ok": null,
+      "status": "ok",
+      "engine": "adk:fake-llm"
+    },
+    {
+      "eval_case_id": "f18_l3_ed",
+      "persona": "ED",
+      "language": "english",
+      "tags": [
+        "demo",
+        "L3"
+      ],
+      "prompt": "Can you give me a priority list of all the wells that need intervention?",
+      "expected_tools": [
+        "rank_candidates"
+      ],
+      "expected_any_of": [],
+      "expect_refusal": false,
+      "latency_s": 0.43,
+      "response": "From the tools: rank_candidates: Geleki: 22 RIG, 17 RIGLESS candidates, 3 refusal(s), 2 need engineer review. (rig queue total 22; rigless queue total 17).",
+      "tool_ok": true,
+      "called": [
+        "rank_candidates"
+      ],
+      "missing": [],
+      "any_of_missing": [],
+      "forbidden_called": [],
+      "statuses": {
+        "rank_candidates": "OK"
+      },
+      "numbers_ok": true,
+      "unmatched": [],
+      "refusal_ok": null,
+      "status": "ok",
+      "engine": "adk:fake-llm"
+    },
+    {
+      "eval_case_id": "f18_l3_am",
+      "persona": "ASSET_MANAGER",
+      "language": "english",
+      "tags": [
+        "demo",
+        "L3"
+      ],
+      "prompt": "Can you give me a priority list of all the wells that need intervention?",
+      "expected_tools": [
+        "rank_candidates"
+      ],
+      "expected_any_of": [],
+      "expect_refusal": false,
+      "latency_s": 0.43,
+      "response": "From the tools: rank_candidates: Geleki: 22 RIG, 17 RIGLESS candidates, 3 refusal(s), 2 need engineer review. (rig queue total 22; rigless queue total 17).",
+      "tool_ok": true,
+      "called": [
+        "rank_candidates"
+      ],
+      "missing": [],
+      "any_of_missing": [],
+      "forbidden_called": [],
+      "statuses": {
+        "rank_candidates": "OK"
+      },
+      "numbers_ok": true,
+      "unmatched": [],
+      "refusal_ok": null,
+      "status": "ok",
+      "engine": "adk:fake-llm"
+    },
+    {
+      "eval_case_id": "f18_l3_fe",
+      "persona": "FIELD_ENGINEER",
+      "language": "english",
+      "tags": [
+        "demo",
+        "L3"
+      ],
+      "prompt": "Can you give me a priority list of all the wells that need intervention?",
+      "expected_tools": [
+        "rank_candidates"
+      ],
+      "expected_any_of": [],
+      "expect_refusal": false,
+      "latency_s": 0.42,
+      "response": "From the tools: rank_candidates: Geleki: 22 RIG, 17 RIGLESS candidates, 3 refusal(s), 2 need engineer review. (rig queue total 22; rigless queue total 17).",
+      "tool_ok": true,
+      "called": [
+        "rank_candidates"
+      ],
+      "missing": [],
+      "any_of_missing": [],
+      "forbidden_called": [],
+      "statuses": {
+        "rank_candidates": "OK"
+      },
+      "numbers_ok": true,
+      "unmatched": [],
+      "refusal_ok": null,
+      "status": "ok",
+      "engine": "adk:fake-llm"
+    },
+    {
+      "eval_case_id": "f18_l4_ed",
+      "persona": "ED",
+      "language": "english",
+      "tags": [
+        "demo",
+        "L4"
+      ],
+      "prompt": "Tell me more about GK-129 and show me its production history",
+      "expected_tools": [
+        "well_profile",
+        "plot_production"
+      ],
+      "expected_any_of": [],
+      "expect_refusal": false,
+      "latency_s": 0.42,
+      "response": "From the tools: well_profile: GK-129 (Geleki/GK-NE): Tipam zone, SRP, bucket UNDERPERFORMING; 3 casing strings, 4 formation tops, 9 interventions; 4 same-cluster neighbours. plot_production: GK-129: 36 months (2023-09-24..2026-09-23), 2 series, 915 producing days; 4 interventions in window, 5 historical.",
+      "tool_ok": true,
+      "called": [
+        "well_profile",
+        "plot_production"
+      ],
+      "missing": [],
+      "any_of_missing": [],
+      "forbidden_called": [],
+      "statuses": {
+        "well_profile": "OK",
+        "plot_production": "OK"
+      },
+      "numbers_ok": true,
+      "unmatched": [],
+      "refusal_ok": null,
+      "status": "ok",
+      "engine": "adk:fake-llm"
+    },
+    {
+      "eval_case_id": "f18_l4_am",
+      "persona": "ASSET_MANAGER",
+      "language": "english",
+      "tags": [
+        "demo",
+        "L4"
+      ],
+      "prompt": "Tell me more about GK-129 and show me its production history",
+      "expected_tools": [
+        "well_profile",
+        "plot_production"
+      ],
+      "expected_any_of": [],
+      "expect_refusal": false,
+      "latency_s": 12.02,
+      "response": "From the tools: well_profile: GK-129 (Geleki/GK-NE): Tipam zone, SRP, bucket UNDERPERFORMING; 3 casing strings, 4 formation tops, 9 interventions; 4 same-cluster neighbours. plot_production: GK-129: 36 months (2023-09-24..2026-09-23), 2 series, 915 producing days; 4 interventions in window, 5 historical.",
+      "tool_ok": true,
+      "called": [
+        "well_profile",
+        "plot_production"
+      ],
+      "missing": [],
+      "any_of_missing": [],
+      "forbidden_called": [],
+      "statuses": {
+        "well_profile": "OK",
+        "plot_production": "OK"
+      },
+      "numbers_ok": true,
+      "unmatched": [],
+      "refusal_ok": null,
+      "status": "ok",
+      "engine": "adk:fake-llm"
+    },
+    {
+      "eval_case_id": "f18_l4_fe",
+      "persona": "FIELD_ENGINEER",
+      "language": "english",
+      "tags": [
+        "demo",
+        "L4"
+      ],
+      "prompt": "Tell me more about GK-129 and show me its production history",
+      "expected_tools": [
+        "well_profile",
+        "plot_production"
+      ],
+      "expected_any_of": [],
+      "expect_refusal": false,
+      "latency_s": 12.02,
+      "response": "From the tools: well_profile: GK-129 (Geleki/GK-NE): Tipam zone, SRP, bucket UNDERPERFORMING; 3 casing strings, 4 formation tops, 9 interventions; 4 same-cluster neighbours. plot_production: GK-129: 36 months (2023-09-24..2026-09-23), 2 series, 915 producing days; 4 interventions in window, 5 historical.",
+      "tool_ok": true,
+      "called": [
+        "well_profile",
+        "plot_production"
+      ],
+      "missing": [],
+      "any_of_missing": [],
+      "forbidden_called": [],
+      "statuses": {
+        "well_profile": "OK",
+        "plot_production": "OK"
+      },
+      "numbers_ok": true,
+      "unmatched": [],
+      "refusal_ok": null,
+      "status": "ok",
+      "engine": "adk:fake-llm"
+    },
+    {
+      "eval_case_id": "f18_l5_nba_ed",
+      "persona": "ED",
+      "language": "english",
+      "tags": [
+        "demo",
+        "L5"
+      ],
+      "prompt": "What are the next best recommended interventions?",
+      "expected_tools": [
+        "recommend_next_best_action"
+      ],
+      "expected_any_of": [],
+      "expect_refusal": false,
+      "latency_s": 12.02,
+      "response": "From the tools: recommend_next_best_action: GK-129 as of 2026-09-23: action 1 CEMENT_SQUEEZE (IC-11, fit ✔, score 101.9, 8.0 rig-days, cost band HIGH); 2 action(s), 2 rejected; flags SYNTHETIC_TRAINING_DATA, LOW_CONFIDENCE, OUTSIDE_TRAINING_SCOPE_GELEKI_CORE, ML_LOW_CONFIDENCE, FEWER_THAN_TOP_K. (rank 1 CEMENT_SQUEEZE (cost band HIGH, rig-days 8.0)).",
+      "tool_ok": true,
+      "called": [
+        "recommend_next_best_action"
+      ],
+      "missing": [],
+      "any_of_missing": [],
+      "forbidden_called": [],
+      "statuses": {
+        "recommend_next_best_action": "OK"
+      },
+      "numbers_ok": true,
+      "unmatched": [],
+      "refusal_ok": null,
+      "status": "ok",
+      "engine": "adk:fake-llm"
+    },
+    {
+      "eval_case_id": "f18_l5_nba_am",
+      "persona": "ASSET_MANAGER",
+      "language": "english",
+      "tags": [
+        "demo",
+        "L5"
+      ],
+      "prompt": "What are the next best recommended interventions?",
+      "expected_tools": [
+        "recommend_next_best_action"
+      ],
+      "expected_any_of": [],
+      "expect_refusal": false,
+      "latency_s": 17.36,
+      "response": "From the tools: recommend_next_best_action: GK-129 as of 2026-09-23: action 1 CEMENT_SQUEEZE (IC-11, fit ✔, score 101.9, 8.0 rig-days, cost band HIGH); 2 action(s), 2 rejected; flags SYNTHETIC_TRAINING_DATA, LOW_CONFIDENCE, OUTSIDE_TRAINING_SCOPE_GELEKI_CORE, ML_LOW_CONFIDENCE, FEWER_THAN_TOP_K. (rank 1 CEMENT_SQUEEZE (cost band HIGH, rig-days 8.0)).",
+      "tool_ok": true,
+      "called": [
+        "recommend_next_best_action"
+      ],
+      "missing": [],
+      "any_of_missing": [],
+      "forbidden_called": [],
+      "statuses": {
+        "recommend_next_best_action": "OK"
+      },
+      "numbers_ok": true,
+      "unmatched": [],
+      "refusal_ok": null,
+      "status": "ok",
+      "engine": "adk:fake-llm"
+    },
+    {
+      "eval_case_id": "f18_l5_nba_fe",
+      "persona": "FIELD_ENGINEER",
+      "language": "english",
+      "tags": [
+        "demo",
+        "L5"
+      ],
+      "prompt": "What are the next best recommended interventions?",
+      "expected_tools": [
+        "recommend_next_best_action"
+      ],
+      "expected_any_of": [],
+      "expect_refusal": false,
+      "latency_s": 27.42,
+      "response": "From the tools: recommend_next_best_action: GK-129 as of 2026-09-23: action 1 CEMENT_SQUEEZE (IC-11, fit ✔, score 101.9, 8.0 rig-days, cost band HIGH); 2 action(s), 2 rejected; flags SYNTHETIC_TRAINING_DATA, LOW_CONFIDENCE, OUTSIDE_TRAINING_SCOPE_GELEKI_CORE, ML_LOW_CONFIDENCE, FEWER_THAN_TOP_K. (rank 1 CEMENT_SQUEEZE (cost band n/a, rig-days 8.0)).",
+      "tool_ok": true,
+      "called": [
+        "recommend_next_best_action"
+      ],
+      "missing": [],
+      "any_of_missing": [],
+      "forbidden_called": [],
+      "statuses": {
+        "recommend_next_best_action": "OK"
+      },
+      "numbers_ok": true,
+      "unmatched": [],
+      "refusal_ok": null,
+      "status": "ok",
+      "engine": "adk:fake-llm"
+    },
+    {
+      "eval_case_id": "f18_l5_counter_ed",
+      "persona": "ED",
+      "language": "english",
+      "tags": [
+        "demo",
+        "L5"
+      ],
+      "prompt": "Why not just wax removal?",
+      "expected_tools": [
+        "compare_interventions"
+      ],
+      "expected_any_of": [],
+      "expect_refusal": false,
+      "latency_s": 33.12,
+      "response": "From the tools: compare_interventions: GK-129: CEMENT_SQUEEZE vs WAX_HOTOIL -> RECOMMENDED_PREFERRED (deciding: diagnostic_fit, margin -96.1%). (verdict: RECOMMENDED_PREFERRED).",
+      "tool_ok": true,
+      "called": [
+        "compare_interventions"
+      ],
+      "missing": [],
+      "any_of_missing": [],
+      "forbidden_called": [],
+      "statuses": {
+        "compare_interventions": "OK"
+      },
+      "numbers_ok": true,
+      "unmatched": [],
+      "refusal_ok": null,
+      "status": "ok",
+      "engine": "adk:fake-llm"
+    },
+    {
+      "eval_case_id": "f18_l5_counter_am",
+      "persona": "ASSET_MANAGER",
+      "language": "english",
+      "tags": [
+        "demo",
+        "L5"
+      ],
+      "prompt": "Why not just wax removal?",
+      "expected_tools": [
+        "compare_interventions"
+      ],
+      "expected_any_of": [],
+      "expect_refusal": false,
+      "latency_s": 27.91,
+      "response": "From the tools: compare_interventions: GK-129: CEMENT_SQUEEZE vs WAX_HOTOIL -> RECOMMENDED_PREFERRED (deciding: diagnostic_fit, margin -96.1%). (verdict: RECOMMENDED_PREFERRED).",
+      "tool_ok": true,
+      "called": [
+        "compare_interventions"
+      ],
+      "missing": [],
+      "any_of_missing": [],
+      "forbidden_called": [],
+      "statuses": {
+        "compare_interventions": "OK"
+      },
+      "numbers_ok": true,
+      "unmatched": [],
+      "refusal_ok": null,
+      "status": "ok",
+      "engine": "adk:fake-llm"
+    },
+    {
+      "eval_case_id": "f18_l5_counter_fe",
+      "persona": "FIELD_ENGINEER",
+      "language": "english",
+      "tags": [
+        "demo",
+        "L5"
+      ],
+      "prompt": "Why not just wax removal?",
+      "expected_tools": [
+        "compare_interventions"
+      ],
+      "expected_any_of": [],
+      "expect_refusal": false,
+      "latency_s": 28.01,
+      "response": "From the tools: compare_interventions: GK-129: CEMENT_SQUEEZE vs WAX_HOTOIL -> RECOMMENDED_PREFERRED (deciding: diagnostic_fit, margin -96.1%). (verdict: RECOMMENDED_PREFERRED).",
+      "tool_ok": true,
+      "called": [
+        "compare_interventions"
+      ],
+      "missing": [],
+      "any_of_missing": [],
+      "forbidden_called": [],
+      "statuses": {
+        "compare_interventions": "OK"
+      },
+      "numbers_ok": true,
+      "unmatched": [],
+      "refusal_ok": null,
+      "status": "ok",
+      "engine": "adk:fake-llm"
+    },
+    {
+      "eval_case_id": "f18_s03_hinglish_l2",
+      "persona": "ED",
+      "language": "hinglish",
+      "tags": [
+        "voice",
+        "hinglish",
+        "L2"
+      ],
+      "prompt": "Geleki mein kitne wells sick hain ya production lose kar rahe hain?",
+      "expected_tools": [
+        "classify_well_health"
+      ],
+      "expected_any_of": [],
+      "expect_refusal": false,
+      "latency_s": 0.57,
+      "response": "Tool results ke hisaab se: classify_well_health: Geleki: 142 wells — 88 producing OK, 21 at risk, 5 underperforming, 28 not producing. (sick or lost count 26; total wells 142). attribute_decline: Geleki: 381,796 bbl lost over 180 d vs baseline 10277.9 BOPD; largest class HUMAN_PROCESS (58.9%); controllable 79.3%, unexplained 3.9%.",
+      "tool_ok": true,
+      "called": [
+        "classify_well_health",
+        "attribute_decline"
+      ],
+      "missing": [],
+      "any_of_missing": [],
+      "forbidden_called": [],
+      "statuses": {
+        "classify_well_health": "OK",
+        "attribute_decline": "OK"
+      },
+      "numbers_ok": true,
+      "unmatched": [],
+      "refusal_ok": null,
+      "status": "ok",
+      "engine": "adk:fake-llm"
+    },
+    {
+      "eval_case_id": "f13_s04_hinglish_counterfactual",
+      "persona": "ASSET_MANAGER",
+      "language": "hinglish",
+      "tags": [
+        "voice",
+        "hinglish",
+        "L5"
+      ],
+      "prompt": "GK-129 pe wax removal kyun nahi? Squeeze hi kyun?",
+      "expected_tools": [
+        "compare_interventions"
+      ],
+      "expected_any_of": [],
+      "expect_refusal": false,
+      "latency_s": 17.64,
+      "response": "Tool results ke hisaab se: compare_interventions: GK-129: CEMENT_SQUEEZE vs WAX_HOTOIL -> RECOMMENDED_PREFERRED (deciding: diagnostic_fit, margin -96.1%). (verdict: RECOMMENDED_PREFERRED).",
+      "tool_ok": true,
+      "called": [
+        "compare_interventions"
+      ],
+      "missing": [],
+      "any_of_missing": [],
+      "forbidden_called": [],
+      "statuses": {
+        "compare_interventions": "OK"
+      },
+      "numbers_ok": true,
+      "unmatched": [],
+      "refusal_ok": null,
+      "status": "ok",
+      "engine": "adk:fake-llm"
+    },
+    {
+      "eval_case_id": "f02_s04_hinglish_health",
+      "persona": "ASSET_MANAGER",
+      "language": "hinglish",
+      "tags": [
+        "voice",
+        "hinglish",
+        "demo"
+      ],
+      "prompt": "Lakhmani mein kitne wells theek chal rahe hain aur kitne band hain?",
+      "expected_tools": [
+        "classify_well_health"
+      ],
+      "expected_any_of": [],
+      "expect_refusal": false,
+      "latency_s": 8.51,
+      "response": "Tool results ke hisaab se: classify_well_health: Lakhmani: 110 wells — 67 producing OK, 34 at risk, 1 underperforming, 8 not producing. (sick or lost count 35; total wells 110).",
+      "tool_ok": true,
+      "called": [
+        "classify_well_health"
+      ],
+      "missing": [],
+      "any_of_missing": [],
+      "forbidden_called": [],
+      "statuses": {
+        "classify_well_health": "OK"
+      },
+      "numbers_ok": true,
+      "unmatched": [],
+      "refusal_ok": null,
+      "status": "ok",
+      "engine": "adk:fake-llm"
+    },
+    {
+      "eval_case_id": "f06_s02_hinglish_dossier",
+      "persona": "FIELD_ENGINEER",
+      "language": "hinglish",
+      "tags": [
+        "voice",
+        "hinglish",
+        "demo"
+      ],
+      "prompt": "Main kal LKW-047 ja raha hoon, iski poori history de do",
+      "expected_tools": [
+        "build_well_dossier"
+      ],
+      "expected_any_of": [],
+      "expect_refusal": false,
+      "latency_s": 3.0,
+      "response": "WellPulse runs on synthetic, representative data for Geleki, Lakwa and Lakhmani. Ask about field production, sick wells, the priority list, a well, or the next best action.",
+      "tool_ok": false,
+      "called": [],
+      "missing": [
+        "build_well_dossier"
+      ],
+      "any_of_missing": [],
+      "forbidden_called": [],
+      "statuses": {},
+      "numbers_ok": true,
+      "unmatched": [],
+      "refusal_ok": null,
+      "status": "ok",
+      "engine": "adk:fake-llm"
+    },
+    {
+      "eval_case_id": "f07_s06_hinglish_worst_well",
+      "persona": "ASSET_MANAGER",
+      "language": "hinglish",
+      "tags": [
+        "voice",
+        "hinglish",
+        "holdout"
+      ],
+      "prompt": "Lakwa mein sabse kharab well kaun sa hai?",
+      "expected_tools": [
+        "query_wells"
+      ],
+      "expected_any_of": [],
+      "expect_refusal": false,
+      "latency_s": 2.99,
+      "response": "WellPulse runs on synthetic, representative data for Geleki, Lakwa and Lakhmani. Ask about field production, sick wells, the priority list, a well, or the next best action.",
+      "tool_ok": false,
+      "called": [],
+      "missing": [
+        "query_wells"
+      ],
+      "any_of_missing": [],
+      "forbidden_called": [],
+      "statuses": {},
+      "numbers_ok": true,
+      "unmatched": [],
+      "refusal_ok": null,
+      "status": "ok",
+      "engine": "adk:fake-llm"
+    },
+    {
+      "eval_case_id": "f07_s06_hindi_worst_well",
+      "persona": "ASSET_MANAGER",
+      "language": "hindi",
+      "tags": [
+        "voice",
+        "hindi",
+        "holdout"
+      ],
+      "prompt": "लकवा में सबसे खराब कुआँ कौन सा है?",
+      "expected_tools": [
+        "query_wells"
+      ],
+      "expected_any_of": [],
+      "expect_refusal": false,
+      "latency_s": 5.5,
+      "response": "WellPulse runs on synthetic, representative data for Geleki, Lakwa and Lakhmani. Ask about field production, sick wells, the priority list, a well, or the next best action.",
+      "tool_ok": false,
+      "called": [],
+      "missing": [
+        "query_wells"
+      ],
+      "any_of_missing": [],
+      "forbidden_called": [],
+      "statuses": {},
+      "numbers_ok": true,
+      "unmatched": [],
+      "refusal_ok": null,
+      "status": "ok",
+      "engine": "adk:fake-llm"
+    },
+    {
+      "eval_case_id": "f01_s02_attribution",
+      "persona": "ASSET_MANAGER",
+      "language": "english",
+      "tags": [
+        "voice",
+        "demo"
+      ],
+      "prompt": "Why did LKW-047's production decline over the last 6 months?",
+      "expected_tools": [
+        "attribute_decline"
+      ],
+      "expected_any_of": [],
+      "expect_refusal": false,
+      "latency_s": 5.76,
+      "response": "From the tools: attribute_decline: LKW-047: 4,276 bbl lost over 180 d vs baseline 63.3 BOPD; largest class HUMAN_PROCESS (78.5%); controllable 99.7%, unexplained 0.0%.",
+      "tool_ok": true,
+      "called": [
+        "attribute_decline"
+      ],
+      "missing": [],
+      "any_of_missing": [],
+      "forbidden_called": [],
+      "statuses": {
+        "attribute_decline": "OK"
+      },
+      "numbers_ok": true,
+      "unmatched": [],
+      "refusal_ok": null,
+      "status": "ok",
+      "engine": "adk:fake-llm"
+    },
+    {
+      "eval_case_id": "f03_s03_classifier_trust",
+      "persona": "ED",
+      "language": "english",
+      "tags": [
+        "voice",
+        "demo",
+        "holdout"
+      ],
+      "prompt": "How good is this model? Can I trust it?",
+      "expected_tools": [
+        "classify_intervention"
+      ],
+      "expected_any_of": [],
+      "expect_refusal": false,
+      "latency_s": 0.04,
+      "response": "WellPulse runs on synthetic, representative data for Geleki, Lakwa and Lakhmani. Ask about field production, sick wells, the priority list, a well, or the next best action.",
+      "tool_ok": false,
+      "called": [],
+      "missing": [
+        "classify_intervention"
+      ],
+      "any_of_missing": [],
+      "forbidden_called": [],
+      "statuses": {},
+      "numbers_ok": true,
+      "unmatched": [],
+      "refusal_ok": null,
+      "status": "ok",
+      "engine": "adk:fake-llm"
+    },
+    {
+      "eval_case_id": "f04_s03_refusal_lkm090",
+      "persona": "ASSET_MANAGER",
+      "language": "english",
+      "tags": [
+        "voice",
+        "demo",
+        "refusal"
+      ],
+      "prompt": "What should we do on LKM-090?",
+      "expected_tools": [
+        "recommend_next_best_action"
+      ],
+      "expected_any_of": [],
+      "expect_refusal": true,
+      "latency_s": 9.13,
+      "response": "From the tools: recommend_next_best_action: LKM-090 as of 2026-09-23: action 1 NO_JOB_JUSTIFIED (IC-15, fit ✔, score 0.0, 0.0 rig-days, cost band LOW); 1 action(s), 2 rejected; flags SYNTHETIC_TRAINING_DATA, G2_RESERVOIR_DECLINE, FEWER_THAN_TOP_K. (rank 1 NO_JOB_JUSTIFIED (cost band LOW, rig-days 0.0)).",
+      "tool_ok": true,
+      "called": [
+        "recommend_next_best_action"
+      ],
+      "missing": [],
+      "any_of_missing": [],
+      "forbidden_called": [],
+      "statuses": {
+        "recommend_next_best_action": "OK"
+      },
+      "numbers_ok": true,
+      "unmatched": [],
+      "refusal_ok": true,
+      "status": "ok",
+      "engine": "adk:fake-llm"
+    },
+    {
+      "eval_case_id": "f07_s01_underperforming",
+      "persona": "ED",
+      "language": "english",
+      "tags": [
+        "voice",
+        "demo"
+      ],
+      "prompt": "Which field is underperforming?",
+      "expected_tools": [
+        "compare_fields"
+      ],
+      "expected_any_of": [],
+      "expect_refusal": false,
+      "latency_s": 9.24,
+      "response": "From the tools: compare_fields: QTD 2026-07-01..2026-09-23 gap to target: Lakwa -17.6%, Lakhmani -8.5%, Geleki -1.5%. Worst: Lakwa; top driver HUMAN_PROCESS (59.5% of lost oil, controllable).",
+      "tool_ok": true,
+      "called": [
+        "compare_fields"
+      ],
+      "missing": [],
+      "any_of_missing": [],
+      "forbidden_called": [],
+      "statuses": {
+        "compare_fields": "OK"
+      },
+      "numbers_ok": true,
+      "unmatched": [],
+      "refusal_ok": null,
+      "status": "ok",
+      "engine": "adk:fake-llm"
+    },
+    {
+      "eval_case_id": "f07_s06_english_worst_well",
+      "persona": "ASSET_MANAGER",
+      "language": "english",
+      "tags": [
+        "voice",
+        "holdout"
+      ],
+      "prompt": "Which is the worst well in Lakwa?",
+      "expected_tools": [
+        "query_wells"
+      ],
+      "expected_any_of": [],
+      "expect_refusal": false,
+      "latency_s": 8.78,
+      "response": "WellPulse runs on synthetic, representative data for Geleki, Lakwa and Lakhmani. Ask about field production, sick wells, the priority list, a well, or the next best action.",
+      "tool_ok": false,
+      "called": [],
+      "missing": [
+        "query_wells"
+      ],
+      "any_of_missing": [],
+      "forbidden_called": [],
+      "statuses": {},
+      "numbers_ok": true,
+      "unmatched": [],
+      "refusal_ok": null,
+      "status": "ok",
+      "engine": "adk:fake-llm"
+    },
+    {
+      "eval_case_id": "f09_s01_not_performing_why",
+      "persona": "ASSET_MANAGER",
+      "language": "english",
+      "tags": [
+        "voice",
+        "demo"
+      ],
+      "prompt": "Which field is not performing, and why?",
+      "expected_tools": [
+        "compare_fields"
+      ],
+      "expected_any_of": [],
+      "expect_refusal": false,
+      "latency_s": 0.33,
+      "response": "From the tools: compare_fields: QTD 2026-07-01..2026-09-23 gap to target: Lakwa -17.6%, Lakhmani -8.5%, Geleki -1.5%. Worst: Lakwa; top driver HUMAN_PROCESS (59.5% of lost oil, controllable).",
+      "tool_ok": true,
+      "called": [
+        "compare_fields"
+      ],
+      "missing": [],
+      "any_of_missing": [],
+      "forbidden_called": [],
+      "statuses": {
+        "compare_fields": "OK"
+      },
+      "numbers_ok": true,
+      "unmatched": [],
+      "refusal_ok": null,
+      "status": "ok",
+      "engine": "adk:fake-llm"
+    },
+    {
+      "eval_case_id": "f09_s04_worst_wells_in_field",
+      "persona": "ASSET_MANAGER",
+      "language": "english",
+      "tags": [
+        "holdout"
+      ],
+      "prompt": "Show me the worst wells in it",
+      "expected_tools": [
+        "query_wells"
+      ],
+      "expected_any_of": [],
+      "expect_refusal": false,
+      "latency_s": 0.45,
+      "response": "WellPulse runs on synthetic, representative data for Geleki, Lakwa and Lakhmani. Ask about field production, sick wells, the priority list, a well, or the next best action.",
+      "tool_ok": false,
+      "called": [],
+      "missing": [
+        "query_wells"
+      ],
+      "any_of_missing": [],
+      "forbidden_called": [],
+      "statuses": {},
+      "numbers_ok": true,
+      "unmatched": [],
+      "refusal_ok": null,
+      "status": "ok",
+      "engine": "adk:fake-llm"
+    },
+    {
+      "eval_case_id": "f11_s01_5year_history",
+      "persona": "ED",
+      "language": "english",
+      "tags": [
+        "voice",
+        "demo",
+        "L1"
+      ],
+      "prompt": "Can you give me the production history for the past 5 years, field-wise?",
+      "expected_tools": [
+        "field_production_history"
+      ],
+      "expected_any_of": [],
+      "expect_refusal": false,
+      "latency_s": 0.21,
+      "response": "From the tools: field_production_history: 3 field(s), 60 M periods 2021-10-01..2026-09-23: Geleki 14596→8664 BOPD (-40.6%), WC +14.3 pp; Lakwa 10129→8302 BOPD (-18.0%), WC +7.6 pp; Lakhmani 8488→5641 BOPD (-33.5%), WC +12.8 pp.",
+      "tool_ok": true,
+      "called": [
+        "field_production_history"
+      ],
+      "missing": [],
+      "any_of_missing": [],
+      "forbidden_called": [],
+      "statuses": {
+        "field_production_history": "OK"
+      },
+      "numbers_ok": true,
+      "unmatched": [],
+      "refusal_ok": null,
+      "status": "ok",
+      "engine": "adk:fake-llm"
+    },
+    {
+      "eval_case_id": "f12_s01_3year_deepdive",
+      "persona": "ED",
+      "language": "english",
+      "tags": [
+        "voice",
+        "demo",
+        "L4"
+      ],
+      "prompt": "Tell me more about GK-129 and show me its 3-year production history",
+      "expected_tools": [
+        "well_profile",
+        "plot_production"
+      ],
+      "expected_any_of": [],
+      "expect_refusal": false,
+      "latency_s": 0.3,
+      "response": "From the tools: well_profile: GK-129 (Geleki/GK-NE): Tipam zone, SRP, bucket UNDERPERFORMING; 3 casing strings, 4 formation tops, 9 interventions; 4 same-cluster neighbours. plot_production: GK-129: 36 months (2023-09-24..2026-09-23), 2 series, 915 producing days; 4 interventions in window, 5 historical.",
+      "tool_ok": true,
+      "called": [
+        "well_profile",
+        "plot_production"
+      ],
+      "missing": [],
+      "any_of_missing": [],
+      "forbidden_called": [],
+      "statuses": {
+        "well_profile": "OK",
+        "plot_production": "OK"
+      },
+      "numbers_ok": true,
+      "unmatched": [],
+      "refusal_ok": null,
+      "status": "ok",
+      "engine": "adk:fake-llm"
+    },
+    {
+      "eval_case_id": "f13_s01_gk129_wax_removal",
+      "persona": "ASSET_MANAGER",
+      "language": "english",
+      "tags": [
+        "voice",
+        "demo",
+        "L5"
+      ],
+      "prompt": "Why are you recommending this instead of WAX_REMOVAL?",
+      "expected_tools": [
+        "compare_interventions"
+      ],
+      "expected_any_of": [],
+      "expect_refusal": false,
+      "latency_s": 17.45,
+      "response": "From the tools: compare_interventions: GK-129: CEMENT_SQUEEZE vs WAX_HOTOIL -> RECOMMENDED_PREFERRED (deciding: diagnostic_fit, margin -96.1%). (verdict: RECOMMENDED_PREFERRED).",
+      "tool_ok": true,
+      "called": [
+        "compare_interventions"
+      ],
+      "missing": [],
+      "any_of_missing": [],
+      "forbidden_called": [],
+      "statuses": {
+        "compare_interventions": "OK"
+      },
+      "numbers_ok": true,
+      "unmatched": [],
+      "refusal_ok": null,
+      "status": "ok",
+      "engine": "adk:fake-llm"
+    },
+    {
+      "eval_case_id": "f13_s01_gk129_reperforation",
+      "persona": "ASSET_MANAGER",
+      "language": "english",
+      "tags": [
+        "voice",
+        "demo",
+        "L5",
+        "holdout"
+      ],
+      "prompt": "Why are you recommending this instead of REPERFORATION?",
+      "expected_tools": [
+        "compare_interventions"
+      ],
+      "expected_any_of": [],
+      "expect_refusal": false,
+      "latency_s": 17.46,
+      "response": "From the tools: compare_interventions: GK-129: CEMENT_SQUEEZE vs RE_PERFORATION -> RECOMMENDED_PREFERRED (deciding: diagnostic_fit, margin -44.7%). (verdict: RECOMMENDED_PREFERRED).",
+      "tool_ok": true,
+      "called": [
+        "compare_interventions"
+      ],
+      "missing": [],
+      "any_of_missing": [],
+      "forbidden_called": [],
+      "statuses": {
+        "compare_interventions": "OK"
+      },
+      "numbers_ok": true,
+      "unmatched": [],
+      "refusal_ok": null,
+      "status": "ok",
+      "engine": "adk:fake-llm"
+    },
+    {
+      "eval_case_id": "f13_s01_lkm061_reperforation",
+      "persona": "ASSET_MANAGER",
+      "language": "english",
+      "tags": [
+        "voice",
+        "demo",
+        "L5",
+        "holdout"
+      ],
+      "prompt": "Why are you recommending this instead of REPERFORATION?",
+      "expected_tools": [
+        "compare_interventions"
+      ],
+      "expected_any_of": [],
+      "expect_refusal": false,
+      "latency_s": 17.67,
+      "response": "From the tools: compare_interventions: LKM-061: GLV_REPLACE vs RE_PERFORATION -> RECOMMENDED_PREFERRED (deciding: diagnostic_fit, margin +90.5%). (verdict: RECOMMENDED_PREFERRED).",
+      "tool_ok": true,
+      "called": [
+        "compare_interventions"
+      ],
+      "missing": [],
+      "any_of_missing": [],
+      "forbidden_called": [],
+      "statuses": {
+        "compare_interventions": "OK"
+      },
+      "numbers_ok": true,
+      "unmatched": [],
+      "refusal_ok": null,
+      "status": "ok",
+      "engine": "adk:fake-llm"
+    },
+    {
+      "eval_case_id": "f14_s01_sop_how_job_done",
+      "persona": "FIELD_ENGINEER",
+      "language": "english",
+      "tags": [
+        "voice",
+        "demo",
+        "holdout"
+      ],
+      "prompt": "How is this job done?",
+      "expected_tools": [],
+      "expected_any_of": [
+        [
+          "search_documents",
+          "list_sops"
+        ]
+      ],
+      "expect_refusal": false,
+      "latency_s": 17.32,
+      "response": "WellPulse runs on synthetic, representative data for Geleki, Lakwa and Lakhmani. Ask about field production, sick wells, the priority list, a well, or the next best action.",
+      "tool_ok": false,
+      "called": [],
+      "missing": [],
+      "any_of_missing": [
+        [
+          "list_sops",
+          "search_documents"
+        ]
+      ],
+      "forbidden_called": [],
+      "statuses": {},
+      "numbers_ok": true,
+      "unmatched": [],
+      "refusal_ok": null,
+      "status": "ok",
+      "engine": "adk:fake-llm"
+    },
+    {
+      "eval_case_id": "f15_s02_architecture_storage",
+      "persona": "ED",
+      "language": "english",
+      "tags": [
+        "voice",
+        "demo",
+        "holdout"
+      ],
+      "prompt": "Where does this data live, and why BigQuery?",
+      "expected_tools": [],
+      "expected_any_of": [],
+      "expect_refusal": false,
+      "latency_s": 0.32,
+      "response": "WellPulse runs on synthetic, representative data for Geleki, Lakwa and Lakhmani. Ask about field production, sick wells, the priority list, a well, or the next best action.",
+      "tool_ok": true,
+      "called": [],
+      "missing": [],
+      "any_of_missing": [],
+      "forbidden_called": [],
+      "statuses": {},
+      "numbers_ok": true,
+      "unmatched": [],
+      "refusal_ok": null,
+      "status": "ok",
+      "engine": "adk:fake-llm"
+    },
+    {
+      "eval_case_id": "f16_s01_tell_lkw047_ed",
+      "persona": "ED",
+      "language": "english",
+      "tags": [
+        "demo"
+      ],
+      "prompt": "Tell me about LKW-047",
+      "expected_tools": [
+        "well_profile"
+      ],
+      "expected_any_of": [],
+      "expect_refusal": false,
+      "latency_s": 0.4,
+      "response": "From the tools: well_profile: LKW-047 (Lakwa/LKW-GGS-I): Tipam zone, SRP, bucket PRODUCING_OK; 3 casing strings, 4 formation tops, 9 interventions; 4 same-cluster neighbours.",
+      "tool_ok": true,
+      "called": [
+        "well_profile"
+      ],
+      "missing": [],
+      "any_of_missing": [],
+      "forbidden_called": [],
+      "statuses": {
+        "well_profile": "OK"
+      },
+      "numbers_ok": true,
+      "unmatched": [],
+      "refusal_ok": null,
+      "status": "ok",
+      "engine": "adk:fake-llm"
+    },
+    {
+      "eval_case_id": "f16_s01_tell_lkw047_fe",
+      "persona": "FIELD_ENGINEER",
+      "language": "english",
+      "tags": [
+        "demo"
+      ],
+      "prompt": "Tell me about LKW-047",
+      "expected_tools": [
+        "well_profile"
+      ],
+      "expected_any_of": [],
+      "expect_refusal": false,
+      "latency_s": 0.29,
+      "response": "From the tools: well_profile: LKW-047 (Lakwa/LKW-GGS-I): Tipam zone, SRP, bucket PRODUCING_OK; 3 casing strings, 4 formation tops, 9 interventions; 4 same-cluster neighbours.",
+      "tool_ok": true,
+      "called": [
+        "well_profile"
+      ],
+      "missing": [],
+      "any_of_missing": [],
+      "forbidden_called": [],
+      "statuses": {
+        "well_profile": "OK"
+      },
+      "numbers_ok": true,
+      "unmatched": [],
+      "refusal_ok": null,
+      "status": "ok",
+      "engine": "adk:fake-llm"
+    },
+    {
+      "eval_case_id": "f16_s03_fe_refusal_compare_all_fields",
+      "persona": "FIELD_ENGINEER",
+      "language": "english",
+      "tags": [
+        "voice",
+        "rbac",
+        "refusal"
+      ],
+      "prompt": "Compare all fields",
+      "expected_tools": [
+        "compare_fields"
+      ],
+      "expected_any_of": [],
+      "expect_refusal": true,
+      "latency_s": 0.16,
+      "response": "WellPulse runs on synthetic, representative data for Geleki, Lakwa and Lakhmani. Ask about field production, sick wells, the priority list, a well, or the next best action.",
+      "tool_ok": false,
+      "called": [],
+      "missing": [
+        "compare_fields"
+      ],
+      "any_of_missing": [],
+      "forbidden_called": [],
+      "statuses": {},
+      "numbers_ok": true,
+      "unmatched": [],
+      "refusal_ok": false,
+      "status": "ok",
+      "engine": "adk:fake-llm"
+    },
+    {
+      "eval_case_id": "f16_s02_fe_refusal_which_field",
+      "persona": "FIELD_ENGINEER",
+      "language": "english",
+      "tags": [
+        "rbac",
+        "refusal"
+      ],
+      "prompt": "Which field is not performing?",
+      "expected_tools": [
+        "compare_fields"
+      ],
+      "expected_any_of": [],
+      "expect_refusal": true,
+      "latency_s": 0.06,
+      "response": "From the tools: compare_fields: UNAVAILABLE - not permitted for persona FIELD_ENGINEER: field.aggregate.",
+      "tool_ok": true,
+      "called": [
+        "compare_fields"
+      ],
+      "missing": [],
+      "any_of_missing": [],
+      "forbidden_called": [],
+      "statuses": {
+        "compare_fields": "UNAVAILABLE"
+      },
+      "numbers_ok": true,
+      "unmatched": [],
+      "refusal_ok": true,
+      "status": "ok",
+      "engine": "adk:fake-llm"
+    },
+    {
+      "eval_case_id": "x_s02_synthetic_disclosure",
+      "persona": "ED",
+      "language": "english",
+      "tags": [
+        "disclosure",
+        "holdout"
+      ],
+      "prompt": "Is this real Lakwa data?",
+      "expected_tools": [],
+      "expected_any_of": [],
+      "expect_refusal": false,
+      "latency_s": 0.02,
+      "response": "WellPulse runs on synthetic, representative data for Geleki, Lakwa and Lakhmani. Ask about field production, sick wells, the priority list, a well, or the next best action.",
+      "tool_ok": true,
+      "called": [],
+      "missing": [],
+      "any_of_missing": [],
+      "forbidden_called": [],
+      "statuses": {},
+      "numbers_ok": true,
+      "unmatched": [],
+      "refusal_ok": null,
+      "status": "ok",
+      "engine": "adk:fake-llm"
+    }
+  ]
+}

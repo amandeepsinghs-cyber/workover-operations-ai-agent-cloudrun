@@ -5,19 +5,14 @@ v0.4 (Stage N): every route reads the ``WellRepository`` (parquet landing by def
 ``GLK-`` IDs are retired (404 with a pointer to ``GK-``); no currency leaves the API (D-1).
 """
 
-import base64
-
-from fastapi import APIRouter, HTTPException, Query, WebSocket, WebSocketDisconnect
+from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel
 
+from app.agent import rbac
 from app.analytics.generator.fields import FIELD_CONFIGS
 from app.data_access.adapters import as_of_timestamp
 from app.data_access.repository import RetiredWellId, get_repository
-from app.services.ai_agent import (
-    chat_with_well_agent,
-    chat_with_well_agent_audio,
-    generate_structured_recommendation,
-)
+from app.services.ai_agent import generate_structured_recommendation
 
 router = APIRouter()
 
@@ -32,13 +27,8 @@ SUMMARY_KEYS = (
 
 class ChatRequest(BaseModel):
     message: str
-    language: str | None = "english"
-
-
-class AudioMessageRequest(BaseModel):
-    audio_base64: str
-    mime_type: str | None = "audio/webm"
-    language: str | None = "english"
+    language: str | None = None  # None → settings.DEFAULT_LANGUAGE (Hinglish, R-1)
+    session_id: str | None = None
 
 
 # ---------------------------------------------------------------------------
@@ -170,89 +160,38 @@ def get_well_workovers(well_id: str):
 
 
 @router.post("/wells/{well_id}/chat")
-def chat_with_well(well_id: str, request: ChatRequest):
+async def chat_with_well(well_id: str, request: ChatRequest, persona: str = Depends(rbac.get_persona)):
+    """SDD §13.2: delegates to the ADK Runner with ``well_id`` as UI context. Keeps the v0.3 keys
+    (``response``, ``recommendation``, ``engine``, ``well_id``, ``language``, ``note``) and adds
+    ``artifacts``, ``actions``, ``tool_calls``, ``status``, ``number_check``, ``session_id``."""
+    from app.agent.runner import run_turn_async
+
     target = _well_or_404(well_id)
-    return chat_with_well_agent(target, request.message, language=request.language or "english")
+    reply = await run_turn_async(session_id=request.session_id or f"well-{target['id']}", user_id="web",
+                                 persona=persona, field=target.get("field"), well_id=target["id"],
+                                 language=request.language, text=request.message, screen="well")
+    rec = reply.get("recommendation")
+    if rec is None:  # v0.3 contract: recommendation is always an object (TC-022 rank 1, or status UNAVAILABLE)
+        rec = rbac.redact(persona, "well.nba", generate_structured_recommendation(target))
+    tools = ", ".join(c["name"] for c in reply.get("tool_calls", [])) or "none"
+    return {**reply, "recommendation": rec, "well_id": target["id"],
+            "note": f"{reply.get('status', 'ok')}: tools called this turn: {tools}"}
 
 
-@router.post("/wells/{well_id}/audio")
-def chat_with_well_audio(well_id: str, request: AudioMessageRequest):
-    target = _well_or_404(well_id)
-    try:
-        audio_bytes = base64.b64decode(request.audio_base64)
-    except Exception as e:
-        raise HTTPException(status_code=400, detail=f"Invalid base64 audio: {e}")
-
-    return chat_with_well_agent_audio(
-        target,
-        audio_bytes,
-        mime_type=request.mime_type or "audio/webm",
-        language=request.language or "english",
-    )
-
-
-@router.websocket("/wells/{well_id}/live")
-async def well_live_websocket(websocket: WebSocket, well_id: str):
-    await websocket.accept()
-    try:
-        target = get_repository().get_well(well_id)
-        error = None if target else f"Well {well_id} not found"
-    except RetiredWellId:
-        target, error = None, RETIRED_DETAIL
-
-    if not target:
-        await websocket.send_json({"type": "error", "error": error})
-        await websocket.close()
-        return
-
-    await websocket.send_json({
-        "type": "ready",
-        "well_id": target["id"],
-        "well_name": target["name"],
-        "status": "connected",
-        "mode": "gemini-live-bi-directional",
-    })
-
-    try:
-        while True:
-            data = await websocket.receive_json()
-            msg_type = data.get("type", "message")
-
-            if msg_type == "message":
-                user_text = data.get("text", "")
-                lang = data.get("language", "hinglish")
-
-                await websocket.send_json({"type": "thinking"})
-                result = chat_with_well_agent(target, user_text, language=lang)
-                await websocket.send_json({
-                    "type": "response",
-                    "text": result["response"],
-                    "recommendation": result.get("recommendation"),
-                    "engine": result.get("engine"),
-                    "language": lang,
-                })
-
-            elif msg_type == "ping":
-                await websocket.send_json({"type": "pong"})
-
-    except WebSocketDisconnect:
-        pass
-    except Exception as e:
-        try:
-            await websocket.send_json({"type": "error", "error": str(e)})
-        except Exception:
-            pass
+# D-20 (Stage V): POST /api/wells/{id}/audio and WS /api/wells/{id}/live were deprecated shims and are removed.
+# Voice is WS /ws/live (Gemini Live); browsers without AudioWorklet use text chat (POST /api/chat).
 
 
 @router.post("/wells/{well_id}/recommendations")
-def get_recommendation(well_id: str):
+def get_recommendation(well_id: str, persona: str = Depends(rbac.require("well.nba"))):
     target = _well_or_404(well_id)
-    return {
+    body = {
         "well_id": target["id"],
         "well_name": target["name"],
         "status": target["status"],
         "recommendation": generate_structured_recommendation(target),
     }
+    return rbac.redact(persona, "well.nba", body)
 
 
 @router.get("/field/infrastructure")

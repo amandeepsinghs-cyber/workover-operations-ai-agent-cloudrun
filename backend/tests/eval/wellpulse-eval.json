@@ -1,0 +1,1596 @@
+{
+  "name": "wellpulse-v04",
+  "version": 1,
+  "eval_cases": [
+    {
+      "eval_case_id": "f18_l1_tell_ed",
+      "bdd": [
+        "BDD-F18-S01",
+        "BDD-F11-S01"
+      ],
+      "level": "L1",
+      "persona": "ED",
+      "language": "english",
+      "context": {
+        "field": "ALL",
+        "well_id": null,
+        "screen": "map"
+      },
+      "history": [],
+      "prompt": {
+        "role": "user",
+        "parts": [
+          {
+            "text": "Can you give me the past 5 year production data field-wise?"
+          }
+        ]
+      },
+      "expected_tools": [
+        "field_production_history"
+      ],
+      "expected_any_of": [],
+      "forbidden_tools": [],
+      "expect_refusal": false,
+      "tags": [
+        "demo",
+        "L1"
+      ]
+    },
+    {
+      "eval_case_id": "f18_l1_tell_am",
+      "bdd": [
+        "BDD-F18-S01",
+        "BDD-F11-S01"
+      ],
+      "level": "L1",
+      "persona": "ASSET_MANAGER",
+      "language": "english",
+      "context": {
+        "field": "ALL",
+        "well_id": null,
+        "screen": "map"
+      },
+      "history": [],
+      "prompt": {
+        "role": "user",
+        "parts": [
+          {
+            "text": "Can you give me the past 5 year production data field-wise?"
+          }
+        ]
+      },
+      "expected_tools": [
+        "field_production_history"
+      ],
+      "expected_any_of": [],
+      "forbidden_tools": [],
+      "expect_refusal": false,
+      "tags": [
+        "demo",
+        "L1"
+      ]
+    },
+    {
+      "eval_case_id": "f18_l1_tell_fe",
+      "bdd": [
+        "BDD-F18-S01",
+        "BDD-F11-S01",
+        "BDD-F16-S02"
+      ],
+      "level": "L1",
+      "persona": "FIELD_ENGINEER",
+      "language": "english",
+      "context": {
+        "field": "ALL",
+        "well_id": null,
+        "screen": "map"
+      },
+      "history": [],
+      "prompt": {
+        "role": "user",
+        "parts": [
+          {
+            "text": "Can you give me the past 5 year production data field-wise?"
+          }
+        ]
+      },
+      "expected_tools": [
+        "field_production_history"
+      ],
+      "expected_any_of": [],
+      "forbidden_tools": [],
+      "expect_refusal": true,
+      "tags": [
+        "demo",
+        "L1",
+        "rbac"
+      ]
+    },
+    {
+      "eval_case_id": "f18_l1_plot_ed",
+      "bdd": [
+        "BDD-F18-S01",
+        "BDD-F11-S02"
+      ],
+      "level": "L1",
+      "persona": "ED",
+      "language": "english",
+      "context": {
+        "field": "ALL",
+        "well_id": null,
+        "screen": "field_history_chart"
+      },
+      "history": [
+        "Can you give me the past 5 year production data field-wise?"
+      ],
+      "prompt": {
+        "role": "user",
+        "parts": [
+          {
+            "text": "Can you give me a plot?"
+          }
+        ]
+      },
+      "expected_tools": [
+        "field_production_history"
+      ],
+      "expected_any_of": [],
+      "forbidden_tools": [],
+      "expect_refusal": false,
+      "tags": [
+        "demo",
+        "L1"
+      ]
+    },
+    {
+      "eval_case_id": "f18_l1_plot_am",
+      "bdd": [
+        "BDD-F18-S01",
+        "BDD-F11-S02"
+      ],
+      "level": "L1",
+      "persona": "ASSET_MANAGER",
+      "language": "english",
+      "context": {
+        "field": "ALL",
+        "well_id": null,
+        "screen": "field_history_chart"
+      },
+      "history": [
+        "Can you give me the past 5 year production data field-wise?"
+      ],
+      "prompt": {
+        "role": "user",
+        "parts": [
+          {
+            "text": "Can you give me a plot?"
+          }
+        ]
+      },
+      "expected_tools": [
+        "field_production_history"
+      ],
+      "expected_any_of": [],
+      "forbidden_tools": [],
+      "expect_refusal": false,
+      "tags": [
+        "demo",
+        "L1"
+      ]
+    },
+    {
+      "eval_case_id": "f18_l1_plot_fe",
+      "bdd": [
+        "BDD-F18-S01",
+        "BDD-F11-S02",
+        "BDD-F16-S02"
+      ],
+      "level": "L1",
+      "persona": "FIELD_ENGINEER",
+      "language": "english",
+      "context": {
+        "field": "ALL",
+        "well_id": null,
+        "screen": "field_history_chart"
+      },
+      "history": [
+        "Can you give me the past 5 year production data field-wise?"
+      ],
+      "prompt": {
+        "role": "user",
+        "parts": [
+          {
+            "text": "Can you give me a plot?"
+          }
+        ]
+      },
+      "expected_tools": [
+        "field_production_history"
+      ],
+      "expected_any_of": [],
+      "forbidden_tools": [],
+      "expect_refusal": true,
+      "tags": [
+        "demo",
+        "L1",
+        "rbac"
+      ]
+    },
+    {
+      "eval_case_id": "f18_l2_ed",
+      "bdd": [
+        "BDD-F18-S01",
+        "BDD-F02-S01",
+        "BDD-F01-S01"
+      ],
+      "level": "L2",
+      "persona": "ED",
+      "language": "english",
+      "context": {
+        "field": "Geleki",
+        "well_id": null,
+        "screen": "map"
+      },
+      "history": [],
+      "prompt": {
+        "role": "user",
+        "parts": [
+          {
+            "text": "How many wells in Geleki are either sick or have lost production?"
+          }
+        ]
+      },
+      "expected_tools": [
+        "classify_well_health",
+        "attribute_decline"
+      ],
+      "expected_any_of": [],
+      "forbidden_tools": [],
+      "expect_refusal": false,
+      "tags": [
+        "demo",
+        "L2"
+      ]
+    },
+    {
+      "eval_case_id": "f18_l2_am",
+      "bdd": [
+        "BDD-F18-S01",
+        "BDD-F02-S01",
+        "BDD-F01-S01"
+      ],
+      "level": "L2",
+      "persona": "ASSET_MANAGER",
+      "language": "english",
+      "context": {
+        "field": "Geleki",
+        "well_id": null,
+        "screen": "map"
+      },
+      "history": [],
+      "prompt": {
+        "role": "user",
+        "parts": [
+          {
+            "text": "How many wells in Geleki are either sick or have lost production?"
+          }
+        ]
+      },
+      "expected_tools": [
+        "classify_well_health",
+        "attribute_decline"
+      ],
+      "expected_any_of": [],
+      "forbidden_tools": [],
+      "expect_refusal": false,
+      "tags": [
+        "demo",
+        "L2"
+      ]
+    },
+    {
+      "eval_case_id": "f18_l2_fe",
+      "bdd": [
+        "BDD-F18-S01",
+        "BDD-F02-S01"
+      ],
+      "level": "L2",
+      "persona": "FIELD_ENGINEER",
+      "language": "english",
+      "context": {
+        "field": "Geleki",
+        "well_id": "GK-129",
+        "screen": "map"
+      },
+      "history": [],
+      "prompt": {
+        "role": "user",
+        "parts": [
+          {
+            "text": "How many wells in Geleki are either sick or have lost production?"
+          }
+        ]
+      },
+      "expected_tools": [
+        "classify_well_health"
+      ],
+      "expected_any_of": [],
+      "forbidden_tools": [],
+      "expect_refusal": false,
+      "tags": [
+        "demo",
+        "L2"
+      ]
+    },
+    {
+      "eval_case_id": "f18_l3_ed",
+      "bdd": [
+        "BDD-F18-S01",
+        "BDD-F04-S01"
+      ],
+      "level": "L3",
+      "persona": "ED",
+      "language": "english",
+      "context": {
+        "field": "Geleki",
+        "well_id": null,
+        "screen": "priority_table"
+      },
+      "history": [],
+      "prompt": {
+        "role": "user",
+        "parts": [
+          {
+            "text": "Can you give me a priority list of all the wells that need intervention?"
+          }
+        ]
+      },
+      "expected_tools": [
+        "rank_candidates"
+      ],
+      "expected_any_of": [],
+      "forbidden_tools": [],
+      "expect_refusal": false,
+      "tags": [
+        "demo",
+        "L3"
+      ]
+    },
+    {
+      "eval_case_id": "f18_l3_am",
+      "bdd": [
+        "BDD-F18-S01",
+        "BDD-F04-S01"
+      ],
+      "level": "L3",
+      "persona": "ASSET_MANAGER",
+      "language": "english",
+      "context": {
+        "field": "Geleki",
+        "well_id": null,
+        "screen": "priority_table"
+      },
+      "history": [],
+      "prompt": {
+        "role": "user",
+        "parts": [
+          {
+            "text": "Can you give me a priority list of all the wells that need intervention?"
+          }
+        ]
+      },
+      "expected_tools": [
+        "rank_candidates"
+      ],
+      "expected_any_of": [],
+      "forbidden_tools": [],
+      "expect_refusal": false,
+      "tags": [
+        "demo",
+        "L3"
+      ]
+    },
+    {
+      "eval_case_id": "f18_l3_fe",
+      "bdd": [
+        "BDD-F18-S01",
+        "BDD-F04-S01"
+      ],
+      "level": "L3",
+      "persona": "FIELD_ENGINEER",
+      "language": "english",
+      "context": {
+        "field": "Geleki",
+        "well_id": "GK-129",
+        "screen": "priority_table"
+      },
+      "history": [],
+      "prompt": {
+        "role": "user",
+        "parts": [
+          {
+            "text": "Can you give me a priority list of all the wells that need intervention?"
+          }
+        ]
+      },
+      "expected_tools": [
+        "rank_candidates"
+      ],
+      "expected_any_of": [],
+      "forbidden_tools": [],
+      "expect_refusal": false,
+      "tags": [
+        "demo",
+        "L3"
+      ]
+    },
+    {
+      "eval_case_id": "f18_l4_ed",
+      "bdd": [
+        "BDD-F18-S01",
+        "BDD-F12-S01"
+      ],
+      "level": "L4",
+      "persona": "ED",
+      "language": "english",
+      "context": {
+        "field": "Geleki",
+        "well_id": "GK-129",
+        "screen": "well_drawer"
+      },
+      "history": [],
+      "prompt": {
+        "role": "user",
+        "parts": [
+          {
+            "text": "Tell me more about GK-129 and show me its production history"
+          }
+        ]
+      },
+      "expected_tools": [
+        "well_profile",
+        "plot_production"
+      ],
+      "expected_any_of": [],
+      "forbidden_tools": [],
+      "expect_refusal": false,
+      "tags": [
+        "demo",
+        "L4"
+      ]
+    },
+    {
+      "eval_case_id": "f18_l4_am",
+      "bdd": [
+        "BDD-F18-S01",
+        "BDD-F12-S01"
+      ],
+      "level": "L4",
+      "persona": "ASSET_MANAGER",
+      "language": "english",
+      "context": {
+        "field": "Geleki",
+        "well_id": "GK-129",
+        "screen": "well_drawer"
+      },
+      "history": [],
+      "prompt": {
+        "role": "user",
+        "parts": [
+          {
+            "text": "Tell me more about GK-129 and show me its production history"
+          }
+        ]
+      },
+      "expected_tools": [
+        "well_profile",
+        "plot_production"
+      ],
+      "expected_any_of": [],
+      "forbidden_tools": [],
+      "expect_refusal": false,
+      "tags": [
+        "demo",
+        "L4"
+      ]
+    },
+    {
+      "eval_case_id": "f18_l4_fe",
+      "bdd": [
+        "BDD-F18-S01",
+        "BDD-F12-S01"
+      ],
+      "level": "L4",
+      "persona": "FIELD_ENGINEER",
+      "language": "english",
+      "context": {
+        "field": "Geleki",
+        "well_id": "GK-129",
+        "screen": "well_drawer"
+      },
+      "history": [],
+      "prompt": {
+        "role": "user",
+        "parts": [
+          {
+            "text": "Tell me more about GK-129 and show me its production history"
+          }
+        ]
+      },
+      "expected_tools": [
+        "well_profile",
+        "plot_production"
+      ],
+      "expected_any_of": [],
+      "forbidden_tools": [],
+      "expect_refusal": false,
+      "tags": [
+        "demo",
+        "L4"
+      ]
+    },
+    {
+      "eval_case_id": "f18_l5_nba_ed",
+      "bdd": [
+        "BDD-F18-S01",
+        "BDD-F04-S01"
+      ],
+      "level": "L5",
+      "persona": "ED",
+      "language": "english",
+      "context": {
+        "field": "Geleki",
+        "well_id": "GK-129",
+        "screen": "recommendation"
+      },
+      "history": [],
+      "prompt": {
+        "role": "user",
+        "parts": [
+          {
+            "text": "What are the next best recommended interventions?"
+          }
+        ]
+      },
+      "expected_tools": [
+        "recommend_next_best_action"
+      ],
+      "expected_any_of": [],
+      "forbidden_tools": [],
+      "expect_refusal": false,
+      "tags": [
+        "demo",
+        "L5"
+      ]
+    },
+    {
+      "eval_case_id": "f18_l5_nba_am",
+      "bdd": [
+        "BDD-F18-S01",
+        "BDD-F04-S01"
+      ],
+      "level": "L5",
+      "persona": "ASSET_MANAGER",
+      "language": "english",
+      "context": {
+        "field": "Geleki",
+        "well_id": "GK-129",
+        "screen": "recommendation"
+      },
+      "history": [],
+      "prompt": {
+        "role": "user",
+        "parts": [
+          {
+            "text": "What are the next best recommended interventions?"
+          }
+        ]
+      },
+      "expected_tools": [
+        "recommend_next_best_action"
+      ],
+      "expected_any_of": [],
+      "forbidden_tools": [],
+      "expect_refusal": false,
+      "tags": [
+        "demo",
+        "L5"
+      ]
+    },
+    {
+      "eval_case_id": "f18_l5_nba_fe",
+      "bdd": [
+        "BDD-F18-S01",
+        "BDD-F04-S01"
+      ],
+      "level": "L5",
+      "persona": "FIELD_ENGINEER",
+      "language": "english",
+      "context": {
+        "field": "Geleki",
+        "well_id": "GK-129",
+        "screen": "recommendation"
+      },
+      "history": [],
+      "prompt": {
+        "role": "user",
+        "parts": [
+          {
+            "text": "What are the next best recommended interventions?"
+          }
+        ]
+      },
+      "expected_tools": [
+        "recommend_next_best_action"
+      ],
+      "expected_any_of": [],
+      "forbidden_tools": [],
+      "expect_refusal": false,
+      "tags": [
+        "demo",
+        "L5"
+      ]
+    },
+    {
+      "eval_case_id": "f18_l5_counter_ed",
+      "bdd": [
+        "BDD-F18-S01",
+        "BDD-F13-S01"
+      ],
+      "level": "L5",
+      "persona": "ED",
+      "language": "english",
+      "context": {
+        "field": "Geleki",
+        "well_id": "GK-129",
+        "screen": "recommendation"
+      },
+      "history": [
+        "What are the next best recommended interventions?"
+      ],
+      "prompt": {
+        "role": "user",
+        "parts": [
+          {
+            "text": "Why not just wax removal?"
+          }
+        ]
+      },
+      "expected_tools": [
+        "compare_interventions"
+      ],
+      "expected_any_of": [],
+      "forbidden_tools": [],
+      "expect_refusal": false,
+      "tags": [
+        "demo",
+        "L5"
+      ]
+    },
+    {
+      "eval_case_id": "f18_l5_counter_am",
+      "bdd": [
+        "BDD-F18-S01",
+        "BDD-F13-S01"
+      ],
+      "level": "L5",
+      "persona": "ASSET_MANAGER",
+      "language": "english",
+      "context": {
+        "field": "Geleki",
+        "well_id": "GK-129",
+        "screen": "recommendation"
+      },
+      "history": [
+        "What are the next best recommended interventions?"
+      ],
+      "prompt": {
+        "role": "user",
+        "parts": [
+          {
+            "text": "Why not just wax removal?"
+          }
+        ]
+      },
+      "expected_tools": [
+        "compare_interventions"
+      ],
+      "expected_any_of": [],
+      "forbidden_tools": [],
+      "expect_refusal": false,
+      "tags": [
+        "demo",
+        "L5"
+      ]
+    },
+    {
+      "eval_case_id": "f18_l5_counter_fe",
+      "bdd": [
+        "BDD-F18-S01",
+        "BDD-F13-S01"
+      ],
+      "level": "L5",
+      "persona": "FIELD_ENGINEER",
+      "language": "english",
+      "context": {
+        "field": "Geleki",
+        "well_id": "GK-129",
+        "screen": "recommendation"
+      },
+      "history": [
+        "What are the next best recommended interventions?"
+      ],
+      "prompt": {
+        "role": "user",
+        "parts": [
+          {
+            "text": "Why not just wax removal?"
+          }
+        ]
+      },
+      "expected_tools": [
+        "compare_interventions"
+      ],
+      "expected_any_of": [],
+      "forbidden_tools": [],
+      "expect_refusal": false,
+      "tags": [
+        "demo",
+        "L5"
+      ]
+    },
+    {
+      "eval_case_id": "f18_s03_hinglish_l2",
+      "bdd": [
+        "BDD-F18-S03"
+      ],
+      "level": "L2",
+      "persona": "ED",
+      "language": "hinglish",
+      "context": {
+        "field": "Geleki",
+        "well_id": null,
+        "screen": "map"
+      },
+      "history": [],
+      "prompt": {
+        "role": "user",
+        "parts": [
+          {
+            "text": "Geleki mein kitne wells sick hain ya production lose kar rahe hain?"
+          }
+        ]
+      },
+      "expected_tools": [
+        "classify_well_health"
+      ],
+      "expected_any_of": [],
+      "forbidden_tools": [],
+      "expect_refusal": false,
+      "tags": [
+        "voice",
+        "hinglish",
+        "L2"
+      ]
+    },
+    {
+      "eval_case_id": "f13_s04_hinglish_counterfactual",
+      "bdd": [
+        "BDD-F13-S04"
+      ],
+      "level": "L5",
+      "persona": "ASSET_MANAGER",
+      "language": "hinglish",
+      "context": {
+        "field": "Geleki",
+        "well_id": "GK-129",
+        "screen": "recommendation"
+      },
+      "history": [
+        "What are the next best recommended interventions?"
+      ],
+      "prompt": {
+        "role": "user",
+        "parts": [
+          {
+            "text": "GK-129 pe wax removal kyun nahi? Squeeze hi kyun?"
+          }
+        ]
+      },
+      "expected_tools": [
+        "compare_interventions"
+      ],
+      "expected_any_of": [],
+      "forbidden_tools": [],
+      "expect_refusal": false,
+      "tags": [
+        "voice",
+        "hinglish",
+        "L5"
+      ]
+    },
+    {
+      "eval_case_id": "f02_s04_hinglish_health",
+      "bdd": [
+        "BDD-F02-S04"
+      ],
+      "level": "L2",
+      "persona": "ASSET_MANAGER",
+      "language": "hinglish",
+      "context": {
+        "field": "Lakhmani",
+        "well_id": null,
+        "screen": "map"
+      },
+      "history": [],
+      "prompt": {
+        "role": "user",
+        "parts": [
+          {
+            "text": "Lakhmani mein kitne wells theek chal rahe hain aur kitne band hain?"
+          }
+        ]
+      },
+      "expected_tools": [
+        "classify_well_health"
+      ],
+      "expected_any_of": [],
+      "forbidden_tools": [],
+      "expect_refusal": false,
+      "tags": [
+        "voice",
+        "hinglish",
+        "demo"
+      ]
+    },
+    {
+      "eval_case_id": "f06_s02_hinglish_dossier",
+      "bdd": [
+        "BDD-F06-S02"
+      ],
+      "level": "L4",
+      "persona": "FIELD_ENGINEER",
+      "language": "hinglish",
+      "context": {
+        "field": "Lakwa",
+        "well_id": "LKW-047",
+        "screen": "well_drawer"
+      },
+      "history": [],
+      "prompt": {
+        "role": "user",
+        "parts": [
+          {
+            "text": "Main kal LKW-047 ja raha hoon, iski poori history de do"
+          }
+        ]
+      },
+      "expected_tools": [
+        "build_well_dossier"
+      ],
+      "expected_any_of": [],
+      "forbidden_tools": [],
+      "expect_refusal": false,
+      "tags": [
+        "voice",
+        "hinglish",
+        "demo"
+      ]
+    },
+    {
+      "eval_case_id": "f07_s06_hinglish_worst_well",
+      "bdd": [
+        "BDD-F07-S06"
+      ],
+      "level": "L3",
+      "persona": "ASSET_MANAGER",
+      "language": "hinglish",
+      "context": {
+        "field": "Lakwa",
+        "well_id": null,
+        "screen": "map"
+      },
+      "history": [],
+      "prompt": {
+        "role": "user",
+        "parts": [
+          {
+            "text": "Lakwa mein sabse kharab well kaun sa hai?"
+          }
+        ]
+      },
+      "expected_tools": [
+        "query_wells"
+      ],
+      "expected_any_of": [],
+      "forbidden_tools": [],
+      "expect_refusal": false,
+      "tags": [
+        "voice",
+        "hinglish",
+        "holdout"
+      ]
+    },
+    {
+      "eval_case_id": "f07_s06_hindi_worst_well",
+      "bdd": [
+        "BDD-F07-S06"
+      ],
+      "level": "L3",
+      "persona": "ASSET_MANAGER",
+      "language": "hindi",
+      "context": {
+        "field": "Lakwa",
+        "well_id": null,
+        "screen": "map"
+      },
+      "history": [],
+      "prompt": {
+        "role": "user",
+        "parts": [
+          {
+            "text": "लकवा में सबसे खराब कुआँ कौन सा है?"
+          }
+        ]
+      },
+      "expected_tools": [
+        "query_wells"
+      ],
+      "expected_any_of": [],
+      "forbidden_tools": [],
+      "expect_refusal": false,
+      "tags": [
+        "voice",
+        "hindi",
+        "holdout"
+      ]
+    },
+    {
+      "eval_case_id": "f01_s02_attribution",
+      "bdd": [
+        "BDD-F01-S02"
+      ],
+      "level": "L2",
+      "persona": "ASSET_MANAGER",
+      "language": "english",
+      "context": {
+        "field": "Lakwa",
+        "well_id": "LKW-047",
+        "screen": "well_drawer"
+      },
+      "history": [],
+      "prompt": {
+        "role": "user",
+        "parts": [
+          {
+            "text": "Why did LKW-047's production decline over the last 6 months?"
+          }
+        ]
+      },
+      "expected_tools": [
+        "attribute_decline"
+      ],
+      "expected_any_of": [],
+      "forbidden_tools": [],
+      "expect_refusal": false,
+      "tags": [
+        "voice",
+        "demo"
+      ]
+    },
+    {
+      "eval_case_id": "f03_s03_classifier_trust",
+      "bdd": [
+        "BDD-F03-S03"
+      ],
+      "level": "L5",
+      "persona": "ED",
+      "language": "english",
+      "context": {
+        "field": "ALL",
+        "well_id": null,
+        "screen": "map"
+      },
+      "history": [],
+      "prompt": {
+        "role": "user",
+        "parts": [
+          {
+            "text": "How good is this model? Can I trust it?"
+          }
+        ]
+      },
+      "expected_tools": [
+        "classify_intervention"
+      ],
+      "expected_any_of": [],
+      "forbidden_tools": [],
+      "expect_refusal": false,
+      "tags": [
+        "voice",
+        "demo",
+        "holdout"
+      ]
+    },
+    {
+      "eval_case_id": "f04_s03_refusal_lkm090",
+      "bdd": [
+        "BDD-F04-S03"
+      ],
+      "level": "L5",
+      "persona": "ASSET_MANAGER",
+      "language": "english",
+      "context": {
+        "field": "Lakhmani",
+        "well_id": "LKM-090",
+        "screen": "well_drawer"
+      },
+      "history": [],
+      "prompt": {
+        "role": "user",
+        "parts": [
+          {
+            "text": "What should we do on LKM-090?"
+          }
+        ]
+      },
+      "expected_tools": [
+        "recommend_next_best_action"
+      ],
+      "expected_any_of": [],
+      "forbidden_tools": [],
+      "expect_refusal": true,
+      "tags": [
+        "voice",
+        "demo",
+        "refusal"
+      ]
+    },
+    {
+      "eval_case_id": "f07_s01_underperforming",
+      "bdd": [
+        "BDD-F07-S01"
+      ],
+      "level": "L1",
+      "persona": "ED",
+      "language": "english",
+      "context": {
+        "field": "ALL",
+        "well_id": null,
+        "screen": "map"
+      },
+      "history": [],
+      "prompt": {
+        "role": "user",
+        "parts": [
+          {
+            "text": "Which field is underperforming?"
+          }
+        ]
+      },
+      "expected_tools": [
+        "compare_fields"
+      ],
+      "expected_any_of": [],
+      "forbidden_tools": [],
+      "expect_refusal": false,
+      "tags": [
+        "voice",
+        "demo"
+      ]
+    },
+    {
+      "eval_case_id": "f07_s06_english_worst_well",
+      "bdd": [
+        "BDD-F07-S06"
+      ],
+      "level": "L3",
+      "persona": "ASSET_MANAGER",
+      "language": "english",
+      "context": {
+        "field": "Lakwa",
+        "well_id": null,
+        "screen": "map"
+      },
+      "history": [],
+      "prompt": {
+        "role": "user",
+        "parts": [
+          {
+            "text": "Which is the worst well in Lakwa?"
+          }
+        ]
+      },
+      "expected_tools": [
+        "query_wells"
+      ],
+      "expected_any_of": [],
+      "forbidden_tools": [],
+      "expect_refusal": false,
+      "tags": [
+        "voice",
+        "holdout"
+      ]
+    },
+    {
+      "eval_case_id": "f09_s01_not_performing_why",
+      "bdd": [
+        "BDD-F09-S01"
+      ],
+      "level": "L1",
+      "persona": "ASSET_MANAGER",
+      "language": "english",
+      "context": {
+        "field": "ALL",
+        "well_id": null,
+        "screen": "map"
+      },
+      "history": [],
+      "prompt": {
+        "role": "user",
+        "parts": [
+          {
+            "text": "Which field is not performing, and why?"
+          }
+        ]
+      },
+      "expected_tools": [
+        "compare_fields"
+      ],
+      "expected_any_of": [],
+      "forbidden_tools": [],
+      "expect_refusal": false,
+      "tags": [
+        "voice",
+        "demo"
+      ]
+    },
+    {
+      "eval_case_id": "f09_s04_worst_wells_in_field",
+      "bdd": [
+        "BDD-F09-S04"
+      ],
+      "level": "L3",
+      "persona": "ASSET_MANAGER",
+      "language": "english",
+      "context": {
+        "field": "Lakwa",
+        "well_id": null,
+        "screen": "map"
+      },
+      "history": [
+        "Which field is not performing, and why?"
+      ],
+      "prompt": {
+        "role": "user",
+        "parts": [
+          {
+            "text": "Show me the worst wells in it"
+          }
+        ]
+      },
+      "expected_tools": [
+        "query_wells"
+      ],
+      "expected_any_of": [],
+      "forbidden_tools": [],
+      "expect_refusal": false,
+      "tags": [
+        "holdout"
+      ]
+    },
+    {
+      "eval_case_id": "f11_s01_5year_history",
+      "bdd": [
+        "BDD-F11-S01"
+      ],
+      "level": "L1",
+      "persona": "ED",
+      "language": "english",
+      "context": {
+        "field": "ALL",
+        "well_id": null,
+        "screen": "map"
+      },
+      "history": [],
+      "prompt": {
+        "role": "user",
+        "parts": [
+          {
+            "text": "Can you give me the production history for the past 5 years, field-wise?"
+          }
+        ]
+      },
+      "expected_tools": [
+        "field_production_history"
+      ],
+      "expected_any_of": [],
+      "forbidden_tools": [],
+      "expect_refusal": false,
+      "tags": [
+        "voice",
+        "demo",
+        "L1"
+      ]
+    },
+    {
+      "eval_case_id": "f12_s01_3year_deepdive",
+      "bdd": [
+        "BDD-F12-S01"
+      ],
+      "level": "L4",
+      "persona": "ED",
+      "language": "english",
+      "context": {
+        "field": "Geleki",
+        "well_id": "GK-129",
+        "screen": "well_drawer"
+      },
+      "history": [],
+      "prompt": {
+        "role": "user",
+        "parts": [
+          {
+            "text": "Tell me more about GK-129 and show me its 3-year production history"
+          }
+        ]
+      },
+      "expected_tools": [
+        "well_profile",
+        "plot_production"
+      ],
+      "expected_any_of": [],
+      "forbidden_tools": [],
+      "expect_refusal": false,
+      "tags": [
+        "voice",
+        "demo",
+        "L4"
+      ]
+    },
+    {
+      "eval_case_id": "f13_s01_gk129_wax_removal",
+      "bdd": [
+        "BDD-F13-S01"
+      ],
+      "level": "L5",
+      "persona": "ASSET_MANAGER",
+      "language": "english",
+      "context": {
+        "field": "Geleki",
+        "well_id": "GK-129",
+        "screen": "recommendation"
+      },
+      "history": [
+        "What are the next best recommended interventions?"
+      ],
+      "prompt": {
+        "role": "user",
+        "parts": [
+          {
+            "text": "Why are you recommending this instead of WAX_REMOVAL?"
+          }
+        ]
+      },
+      "expected_tools": [
+        "compare_interventions"
+      ],
+      "expected_any_of": [],
+      "forbidden_tools": [],
+      "expect_refusal": false,
+      "tags": [
+        "voice",
+        "demo",
+        "L5"
+      ]
+    },
+    {
+      "eval_case_id": "f13_s01_gk129_reperforation",
+      "bdd": [
+        "BDD-F13-S01"
+      ],
+      "level": "L5",
+      "persona": "ASSET_MANAGER",
+      "language": "english",
+      "context": {
+        "field": "Geleki",
+        "well_id": "GK-129",
+        "screen": "recommendation"
+      },
+      "history": [
+        "What are the next best recommended interventions?"
+      ],
+      "prompt": {
+        "role": "user",
+        "parts": [
+          {
+            "text": "Why are you recommending this instead of REPERFORATION?"
+          }
+        ]
+      },
+      "expected_tools": [
+        "compare_interventions"
+      ],
+      "expected_any_of": [],
+      "forbidden_tools": [],
+      "expect_refusal": false,
+      "tags": [
+        "voice",
+        "demo",
+        "L5",
+        "holdout"
+      ]
+    },
+    {
+      "eval_case_id": "f13_s01_lkm061_reperforation",
+      "bdd": [
+        "BDD-F13-S01"
+      ],
+      "level": "L5",
+      "persona": "ASSET_MANAGER",
+      "language": "english",
+      "context": {
+        "field": "Lakhmani",
+        "well_id": "LKM-061",
+        "screen": "recommendation"
+      },
+      "history": [
+        "What are the next best recommended interventions?"
+      ],
+      "prompt": {
+        "role": "user",
+        "parts": [
+          {
+            "text": "Why are you recommending this instead of REPERFORATION?"
+          }
+        ]
+      },
+      "expected_tools": [
+        "compare_interventions"
+      ],
+      "expected_any_of": [],
+      "forbidden_tools": [],
+      "expect_refusal": false,
+      "tags": [
+        "voice",
+        "demo",
+        "L5",
+        "holdout"
+      ]
+    },
+    {
+      "eval_case_id": "f14_s01_sop_how_job_done",
+      "bdd": [
+        "BDD-F14-S01"
+      ],
+      "level": "L5",
+      "persona": "FIELD_ENGINEER",
+      "language": "english",
+      "context": {
+        "field": "Geleki",
+        "well_id": "GK-129",
+        "screen": "recommendation"
+      },
+      "history": [
+        "What are the next best recommended interventions?"
+      ],
+      "prompt": {
+        "role": "user",
+        "parts": [
+          {
+            "text": "How is this job done?"
+          }
+        ]
+      },
+      "expected_tools": [],
+      "expected_any_of": [
+        [
+          "search_documents",
+          "list_sops"
+        ]
+      ],
+      "forbidden_tools": [],
+      "expect_refusal": false,
+      "tags": [
+        "voice",
+        "demo",
+        "holdout"
+      ]
+    },
+    {
+      "eval_case_id": "f15_s02_architecture_storage",
+      "bdd": [
+        "BDD-F15-S02"
+      ],
+      "level": "L1",
+      "persona": "ED",
+      "language": "english",
+      "context": {
+        "field": "ALL",
+        "well_id": null,
+        "screen": "map"
+      },
+      "history": [],
+      "prompt": {
+        "role": "user",
+        "parts": [
+          {
+            "text": "Where does this data live, and why BigQuery?"
+          }
+        ]
+      },
+      "expected_tools": [],
+      "expected_any_of": [],
+      "forbidden_tools": [],
+      "expect_refusal": false,
+      "tags": [
+        "voice",
+        "demo",
+        "holdout"
+      ]
+    },
+    {
+      "eval_case_id": "f16_s01_tell_lkw047_ed",
+      "bdd": [
+        "BDD-F16-S01"
+      ],
+      "level": "L4",
+      "persona": "ED",
+      "language": "english",
+      "context": {
+        "field": "Lakwa",
+        "well_id": "LKW-047",
+        "screen": "well_drawer"
+      },
+      "history": [],
+      "prompt": {
+        "role": "user",
+        "parts": [
+          {
+            "text": "Tell me about LKW-047"
+          }
+        ]
+      },
+      "expected_tools": [
+        "well_profile"
+      ],
+      "expected_any_of": [],
+      "forbidden_tools": [],
+      "expect_refusal": false,
+      "tags": [
+        "demo"
+      ]
+    },
+    {
+      "eval_case_id": "f16_s01_tell_lkw047_fe",
+      "bdd": [
+        "BDD-F16-S01"
+      ],
+      "level": "L4",
+      "persona": "FIELD_ENGINEER",
+      "language": "english",
+      "context": {
+        "field": "Lakwa",
+        "well_id": "LKW-047",
+        "screen": "well_drawer"
+      },
+      "history": [],
+      "prompt": {
+        "role": "user",
+        "parts": [
+          {
+            "text": "Tell me about LKW-047"
+          }
+        ]
+      },
+      "expected_tools": [
+        "well_profile"
+      ],
+      "expected_any_of": [],
+      "forbidden_tools": [],
+      "expect_refusal": false,
+      "tags": [
+        "demo"
+      ]
+    },
+    {
+      "eval_case_id": "f16_s03_fe_refusal_compare_all_fields",
+      "bdd": [
+        "BDD-F16-S03"
+      ],
+      "level": "L1",
+      "persona": "FIELD_ENGINEER",
+      "language": "english",
+      "context": {
+        "field": "ALL",
+        "well_id": null,
+        "screen": "map"
+      },
+      "history": [],
+      "prompt": {
+        "role": "user",
+        "parts": [
+          {
+            "text": "Compare all fields"
+          }
+        ]
+      },
+      "expected_tools": [
+        "compare_fields"
+      ],
+      "expected_any_of": [],
+      "forbidden_tools": [],
+      "expect_refusal": true,
+      "tags": [
+        "voice",
+        "rbac",
+        "refusal"
+      ]
+    },
+    {
+      "eval_case_id": "f16_s02_fe_refusal_which_field",
+      "bdd": [
+        "BDD-F09-S01",
+        "BDD-F16-S02"
+      ],
+      "level": "L1",
+      "persona": "FIELD_ENGINEER",
+      "language": "english",
+      "context": {
+        "field": "ALL",
+        "well_id": null,
+        "screen": "map"
+      },
+      "history": [],
+      "prompt": {
+        "role": "user",
+        "parts": [
+          {
+            "text": "Which field is not performing?"
+          }
+        ]
+      },
+      "expected_tools": [
+        "compare_fields"
+      ],
+      "expected_any_of": [],
+      "forbidden_tools": [],
+      "expect_refusal": true,
+      "tags": [
+        "rbac",
+        "refusal"
+      ]
+    },
+    {
+      "eval_case_id": "x_s02_synthetic_disclosure",
+      "bdd": [
+        "BDD-X-S02"
+      ],
+      "level": "L1",
+      "persona": "ED",
+      "language": "english",
+      "context": {
+        "field": "Lakwa",
+        "well_id": null,
+        "screen": "map"
+      },
+      "history": [],
+      "prompt": {
+        "role": "user",
+        "parts": [
+          {
+            "text": "Is this real Lakwa data?"
+          }
+        ]
+      },
+      "expected_tools": [],
+      "expected_any_of": [],
+      "forbidden_tools": [],
+      "expect_refusal": false,
+      "tags": [
+        "disclosure",
+        "holdout"
+      ]
+    }
+  ]
+}

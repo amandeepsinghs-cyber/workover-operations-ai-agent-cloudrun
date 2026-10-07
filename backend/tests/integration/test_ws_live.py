@@ -375,10 +375,12 @@ def test_interrupt_is_acknowledged(live_app):
 
 def test_registry_declarations_and_seams():
     names = {d["name"] for d in voice_tools.declarations_data()}
-    assert {"fleet_kpis", "well_summary", "well_workovers", "well_recommendation", "compare_fields"} <= names
+    assert {"fleet_kpis", "well_summary", "compare_fields", "next_best_action"} <= names
+    # Stage V trimmed the legacy well_workovers / well_recommendation tools.
+    assert not {"well_workovers", "well_recommendation"} & names
     ws = next(d for d in voice_tools.declarations_data() if d["name"] == "well_summary")
     assert ws["parameters"]["required"] == ["well_id"]
-    assert len(names) <= 14  # SDD §11.3 voice subset (12); Stage R at 13 until Stage V trims legacy tools
+    assert len(names) <= 12  # SDD §11.3 voice subset (<= 12)
     assert voice_tools.execute_voice_tool("nope", {})["status"] == "ERROR"
     assert voice_tools.execute_voice_tool("well_summary", {"well_id": "ZZ-999"})["status"] == "NOT_FOUND"
     kpis = voice_tools.execute_voice_tool("fleet_kpis", {})
