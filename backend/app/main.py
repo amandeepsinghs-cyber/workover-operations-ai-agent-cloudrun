@@ -7,6 +7,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from app.api.wells import router as wells_router
+from app.api.live import router as live_router  # Stage U: WS /ws/live
 from app.services.data_generator import get_all_wells
 
 app = FastAPI(
@@ -36,6 +37,7 @@ async def add_utf8_charset_header(request, call_next):
 
 # Register API routes FIRST so they take precedence over static files
 app.include_router(wells_router, prefix="/api")
+app.include_router(live_router)  # Stage U: WS /ws/live (SDD §11.4)
 
 
 @app.on_event("startup")
