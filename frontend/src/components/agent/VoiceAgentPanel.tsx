@@ -24,7 +24,12 @@ import {
   ToolCallEvent,
 } from '../../live/liveClient';
 import { audioPlayer } from '../../live/audioPlayer';
-import { postChat, ChatAction, ChatArtifact as ChatArtifactType } from '../../api/chat';
+import {
+  postChat,
+  ChatAction,
+  ChatArtifact as ChatArtifactType,
+  isExplicitDetailRequest,
+} from '../../api/chat';
 import { ChatArtifact } from './ChatArtifact';
 
 interface VoiceAgentPanelProps {
@@ -88,6 +93,9 @@ export const VoiceAgentPanel: React.FC<VoiceAgentPanelProps> = ({
   const isTalkingRef = useRef<boolean>(false);
   const currentUserMsgIdRef = useRef<string | null>(null);
   const currentAgentMsgIdRef = useRef<string | null>(null);
+  // Latest user utterance (typed or spoken). Agent actions open the full well view only when this
+  // explicitly asks for history / deep dive / report (isExplicitDetailRequest).
+  const lastUserTextRef = useRef<string>('');
 
   // 1. LiveClient instance per panel in useRef
   const clientRef = useRef<LiveClient | null>(null);
@@ -135,6 +143,7 @@ export const VoiceAgentPanel: React.FC<VoiceAgentPanelProps> = ({
         if (!textDelta) return;
         const msgId = currentUserMsgIdRef.current;
         if (!msgId) {
+          lastUserTextRef.current = textDelta;
           const newId = `user-live-${Date.now()}`;
           currentUserMsgIdRef.current = newId;
           const newMsg: LiveChatMessage = {
@@ -146,6 +155,7 @@ export const VoiceAgentPanel: React.FC<VoiceAgentPanelProps> = ({
           };
           setMessages((prev) => [...prev, newMsg]);
         } else {
+          lastUserTextRef.current += textDelta;
           setMessages((prev) =>
             prev.map((m) => (m.id === msgId ? { ...m, text: m.text + textDelta } : m))
           );
@@ -264,8 +274,9 @@ export const VoiceAgentPanel: React.FC<VoiceAgentPanelProps> = ({
         };
         setMessages((prev) => [...prev, agentMsg]);
         if (onAgentAction) {
+          const explicit = isExplicitDetailRequest(lastUserTextRef.current);
           for (const act of (msg.actions ?? []) as ChatAction[]) {
-            onAgentAction(act);
+            onAgentAction({ ...act, explicit });
           }
         }
       },
@@ -305,6 +316,7 @@ export const VoiceAgentPanel: React.FC<VoiceAgentPanelProps> = ({
             field: payload?.field ?? payload?.data?.field ?? field ?? null,
             well_id: payload?.well_id ?? payload?.data?.well_id ?? well?.id ?? null,
             source_tool: kind,
+            explicit: isExplicitDetailRequest(lastUserTextRef.current),
           });
         }
       },
@@ -660,6 +672,7 @@ export const VoiceAgentPanel: React.FC<VoiceAgentPanelProps> = ({
   // Text message send path: uses POST /api/chat (ADK tool-grounded agent)
   const handleSendMessage = async (textToSend: string, fromVoice: boolean = false) => {
     if (!textToSend.trim() || isProcessing) return;
+    lastUserTextRef.current = textToSend;
 
     const userMessage: LiveChatMessage = {
       id: `user-${Date.now()}`,
@@ -704,8 +717,9 @@ export const VoiceAgentPanel: React.FC<VoiceAgentPanelProps> = ({
       }
 
       if (reply.actions && reply.actions.length > 0 && onAgentAction) {
+        const explicit = isExplicitDetailRequest(textToSend);
         for (const act of reply.actions) {
-          onAgentAction(act);
+          onAgentAction({ ...act, explicit });
         }
       }
 
@@ -744,6 +758,7 @@ export const VoiceAgentPanel: React.FC<VoiceAgentPanelProps> = ({
       };
       setMessages((prev) => [...prev, userMessage]);
       setInputPrompt('');
+      lastUserTextRef.current = textToSend;
       const sent = client.sendText(textToSend);
       if (!sent) {
         // Fallback to HTTP if socket unexpectedly failed
@@ -1098,7 +1113,23 @@ export const VoiceAgentPanel: React.FC<VoiceAgentPanelProps> = ({
                 {msg.artifacts && msg.artifacts.length > 0 && (
                   <div className="mt-2 space-y-2">
                     {msg.artifacts.map((art, idx) => (
-                      <ChatArtifact key={idx} artifact={art} />
+                      <ChatArtifact
+                        key={idx}
+                        artifact={art}
+                        onOpenFullView={
+                          onAgentAction
+                            ? (wellId) =>
+                                onAgentAction({
+                                  kind: 'navigate',
+                                  screen: 'well',
+                                  field: null,
+                                  well_id: wellId,
+                                  source_tool: art.kind,
+                                  explicit: true,
+                                })
+                            : undefined
+                        }
+                      />
                     ))}
                   </div>
                 )}

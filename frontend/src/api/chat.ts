@@ -52,6 +52,20 @@ export interface ChatAction {
   field: string | null;
   well_id: string | null;
   source_tool: string;
+  /** True only when the user explicitly asked for the full well view / history / report. */
+  explicit?: boolean;
+}
+
+/**
+ * Does the user's own message ask for the full well view (history, deep dive, report)?
+ * Agent answers never open the Deep Dive drawer unless this is true (UI rule, 2026-10-08).
+ * English + Hinglish/Hindi phrasing.
+ */
+const EXPLICIT_DETAIL_RE =
+  /\b(history|histories|deep[\s-]?dive|full\s+(view|details?|report|profile|picture)|complete\s+(history|details?|report)|well\s+report|report|dossier|pre[\s-]?field|field\s+pack|everything|open\s+(the\s+)?(well|drawer|details?))\b|itihaas|poora|pura|sab\s*kuch|इतिहास|पूरा|रिपोर्ट/i;
+
+export function isExplicitDetailRequest(text: string | null | undefined): boolean {
+  return !!text && EXPLICIT_DETAIL_RE.test(text);
 }
 
 export interface ChatReply {

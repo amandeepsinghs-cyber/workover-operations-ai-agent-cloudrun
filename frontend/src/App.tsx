@@ -4,7 +4,7 @@ import { WellMap } from './components/map/WellMap';
 import { WellDetails } from './components/telemetry/WellDetails';
 import { VoiceAgentPanel } from './components/agent/VoiceAgentPanel';
 import { FleetKPIs, WellDetail, WellSummary } from './types/well';
-import { AlertCircle, Layers, MapPin, Search } from 'lucide-react';
+import { AlertCircle, Layers, MapPin, Maximize2, Minimize2, Search } from 'lucide-react';
 import { assetApi, FieldFilter, Hierarchy } from './api/asset';
 import { FieldSelector } from './components/fields/FieldSelector';
 import { FieldHistoryChart } from './components/fields/FieldHistoryChart';
@@ -46,6 +46,16 @@ export function App() {
     if (!canAggregate && screenTab !== 'map' && screenTab !== 'field_health') setScreenTab('map');
   }, [canAggregate, screenTab]);
   const [drawerWellId, setDrawerWellId] = useState<string | null>(null);
+  // Middle (well telemetry) panel expanded: map hidden, agent stays on the right as command centre.
+  const [middleExpanded, setMiddleExpanded] = useState<boolean>(false);
+  useEffect(() => {
+    if (!middleExpanded) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && !drawerWellId) setMiddleExpanded(false);
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [middleExpanded, drawerWellId]);
 
   const handleAgentAction = (a: ChatAction) => {
     if (a.kind === 'navigate') {
@@ -57,7 +67,9 @@ export function App() {
       }
       if (a.well_id) {
         setSelectedWellId(a.well_id);
-        if (a.screen === 'well') {
+        // UI rule (2026-10-08): the full Deep Dive opens only when the user explicitly asked for it
+        // (history / deep dive / report). Normal answers just highlight the well.
+        if (a.screen === 'well' && a.explicit) {
           setDrawerWellId(a.well_id);
         }
       }
@@ -250,8 +262,12 @@ export function App() {
         </div>
       ) : (
         <div className="flex-1 flex overflow-hidden">
-          {/* Left Column: Interactive Map & Well Selection (34% width) */}
-          <section className="w-[34%] min-w-[340px] flex flex-col border-r border-border relative bg-surface">
+          {/* Left Column: Interactive Map & Well Selection (34% width); hidden while the middle panel is expanded */}
+          <section
+            className={`w-[34%] min-w-[340px] flex flex-col border-r border-border relative bg-surface ${
+              middleExpanded ? 'hidden' : ''
+            }`}
+          >
             {/* Map Header Indicator */}
             <div className="h-10 px-4 border-b border-border/80 flex items-center justify-between bg-[#12161c] text-xs font-mono text-textMuted shrink-0">
               <span className="flex items-center gap-1.5 text-white font-semibold">
@@ -327,8 +343,16 @@ export function App() {
             </div>
           </section>
 
-          {/* Middle Column: Well Telemetry, 24-Month History & Workovers (38% width) */}
-          <section className="flex-1 min-w-[400px] flex flex-col border-r border-border overflow-hidden">
+          {/* Middle Column: Well Telemetry, 24-Month History & Workovers; expandable over the map */}
+          <section className="flex-1 min-w-[400px] flex flex-col border-r border-border overflow-hidden relative">
+            <button
+              onClick={() => setMiddleExpanded((v) => !v)}
+              className="absolute top-2 right-2 z-20 p-1.5 rounded border border-border bg-[#12161c]/90 text-textMuted hover:text-white hover:border-accent"
+              title={middleExpanded ? 'Restore map (ESC)' : 'Expand this panel (hide map)'}
+              aria-label={middleExpanded ? 'Restore map' : 'Expand panel'}
+            >
+              {middleExpanded ? <Minimize2 className="w-3.5 h-3.5" /> : <Maximize2 className="w-3.5 h-3.5" />}
+            </button>
             {selectedWellDetail ? (
               <WellDetails well={selectedWellDetail} />
             ) : (

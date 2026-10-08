@@ -18,10 +18,20 @@ import { ChatArtifact as ChatArtifactType } from '../../api/chat';
 
 export interface ChatArtifactProps {
   artifact: ChatArtifactType;
+  /** Opens the full well view (Deep Dive) for a well; shown as an "Open full view" button. */
+  onOpenFullView?: (wellId: string) => void;
 }
 
-export const ChatArtifact: React.FC<ChatArtifactProps> = ({ artifact }) => {
+// Small link-style artifacts stay open; data-heavy ones start collapsed so the chat stays a
+// question/answer space (UI rule, 2026-10-08). The user expands on demand.
+const OPEN_BY_DEFAULT = new Set(['dossier', 'citations']);
+const WELL_KINDS = new Set(['well_profile', 'well_production_chart', 'nba', 'counterfactual', 'intervention_classification', 'dossier']);
+
+export const ChatArtifact: React.FC<ChatArtifactProps> = ({ artifact, onOpenFullView }) => {
   const { kind, data, provenance, tool_id, tool } = artifact;
+  const [expanded, setExpanded] = React.useState<boolean>(OPEN_BY_DEFAULT.has(kind));
+  const artifactWellId: string | null =
+    (data && (data.well_id || (kind === 'well_profile' ? data.id : null))) || null;
 
   const renderDossier = () => {
     const pdfUrl = data?.pdf_url || data?.url || data?.dossier_url;
@@ -600,13 +610,37 @@ export const ChatArtifact: React.FC<ChatArtifactProps> = ({ artifact }) => {
 
   return (
     <div className="my-2 p-2.5 rounded-lg bg-[#12161c] border border-border/80 space-y-2 shadow-sm">
-      {/* Header bar */}
-      <div className="flex items-center gap-1.5 pb-1.5 border-b border-border/50 text-[11px] font-sans font-semibold text-textMain">
+      {/* Header bar: label + on-demand controls */}
+      <div
+        className={`flex items-center gap-1.5 text-[11px] font-sans font-semibold text-textMain ${
+          expanded ? 'pb-1.5 border-b border-border/50' : ''
+        }`}
+      >
         {icon}
-        <span>{label}</span>
+        <span className="truncate">{label}</span>
+        {artifactWellId && <span className="font-mono text-[10px] text-textMuted">{artifactWellId}</span>}
+        <span className="ml-auto flex items-center gap-1 shrink-0">
+          {onOpenFullView && artifactWellId && WELL_KINDS.has(kind) && (
+            <button
+              onClick={() => onOpenFullView(artifactWellId)}
+              className="px-1.5 py-0.5 rounded border border-accent/50 text-accent hover:bg-accent hover:text-white text-[9px] font-mono"
+              title="Open the full well view (deep dive)"
+            >
+              Open full view
+            </button>
+          )}
+          <button
+            onClick={() => setExpanded((e) => !e)}
+            className="px-1.5 py-0.5 rounded border border-border text-textMuted hover:text-white text-[9px] font-mono"
+            aria-expanded={expanded}
+          >
+            {expanded ? 'Hide' : 'Details'}
+          </button>
+        </span>
       </div>
 
-      {/* Body */}
+      {/* Body (on demand) */}
+      {expanded && (
       <div>
         {kind === 'dossier' && renderDossier()}
         {kind === 'citations' && renderCitations()}
@@ -637,14 +671,17 @@ export const ChatArtifact: React.FC<ChatArtifactProps> = ({ artifact }) => {
           'well_map',
         ].includes(kind) && renderGeneric()}
       </div>
+      )}
 
       {/* Provenance tiny line: tool_id · as_of */}
+      {expanded && (
       <div className="text-[9px] font-mono text-textMuted pt-1.5 border-t border-border/40 flex items-center justify-between">
         <span>
           {toolLabel}
           {asOf ? ` · ${asOf}` : ''}
         </span>
       </div>
+      )}
     </div>
   );
 };
