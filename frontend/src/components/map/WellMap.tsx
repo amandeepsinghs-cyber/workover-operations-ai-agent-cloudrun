@@ -25,6 +25,10 @@ interface WellMapProps {
   field?: FieldFilter;
   /** Stage Y: open the well deep-dive drawer (TC-029 profile) from a map popup. */
   onOpenWell?: (wellId: string) => void;
+  /** Reports map full-screen on/off so the app can dock the agent beside it. */
+  onFullscreenChange?: (fullscreen: boolean) => void;
+  /** Right inset (CSS length) kept free in full-screen, e.g. the docked agent column width. */
+  fullscreenRightInset?: string;
 }
 
 /** Central processing facility (CDP / CTF) — uses facility_master `type` when present. */
@@ -37,6 +41,8 @@ export const WellMap: React.FC<WellMapProps> = ({
   onSelectWell,
   field = 'ALL',
   onOpenWell,
+  onFullscreenChange,
+  fullscreenRightInset,
 }) => {
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<L.Map | null>(null);
@@ -49,6 +55,7 @@ export const WellMap: React.FC<WellMapProps> = ({
   const [mapStyle, setMapStyle] = useState<'satellite' | 'dark'>('satellite');
   const [showFlowlines, setShowFlowlines] = useState<boolean>(true);
   const [isFullscreen, setIsFullscreen] = useState<boolean>(false);
+  const [legendOpen, setLegendOpen] = useState<boolean>(true);
   const [infrastructure, setInfrastructure] = useState<FieldInfrastructure | null>(null);
   const [mapData, setMapData] = useState<WellMapData | null>(null);
   const [zoom, setZoom] = useState<number>(10);
@@ -80,6 +87,20 @@ export const WellMap: React.FC<WellMapProps> = ({
     }, 150);
     return () => clearTimeout(timer);
   }, [isFullscreen]);
+
+  // Tell the app when full-screen changes (agent docks beside a full-screen map).
+  useEffect(() => {
+    onFullscreenChange?.(isFullscreen);
+  }, [isFullscreen, onFullscreenChange]);
+
+  // Keep Leaflet tiles correct whenever the container is resized (50/50 split, agent dock, full-screen).
+  useEffect(() => {
+    const el = mapContainerRef.current;
+    if (!el || typeof ResizeObserver === 'undefined') return;
+    const ro = new ResizeObserver(() => mapInstanceRef.current?.invalidateSize());
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
 
   // Handle ESC key to exit fullscreen
   useEffect(() => {
@@ -681,7 +702,10 @@ export const WellMap: React.FC<WellMapProps> = ({
   const selectedWell = wells.find((w) => w.id === selectedWellId);
 
   return (
-    <div className={isFullscreen ? "fixed inset-0 z-[1000] w-screen h-screen bg-background flex flex-col" : "relative w-full h-full"}>
+    <div
+      className={isFullscreen ? "fixed inset-0 z-[1000] h-screen bg-background flex flex-col" : "relative w-full h-full"}
+      style={isFullscreen && fullscreenRightInset ? { right: fullscreenRightInset } : undefined}
+    >
       <div ref={mapContainerRef} className="w-full h-full z-0" />
 
       {/* Fullscreen Floating Header Banner (HUD) */}
@@ -780,37 +804,45 @@ export const WellMap: React.FC<WellMapProps> = ({
         </div>
       )}
 
-      {/* Map Legend Overlay */}
-      <div className="absolute bottom-4 left-4 z-[400] bg-surface/90 backdrop-blur-md border border-border px-3 py-2.5 rounded-lg text-xs font-mono shadow-xl max-w-xs">
-        <div className="text-[10px] text-textMuted uppercase font-bold tracking-wider mb-2">
-          {fieldLabel} Production &amp; Infrastructure
-        </div>
-        <div className="flex flex-col gap-1.5">
-          {/* Stage Y: TC-020 health buckets with counts (same numbers as the KPI header / GET /api/wells/kpis) */}
-          <div data-testid="map-health-counts" className="flex flex-col gap-1">
-            {HEALTH_BUCKETS.map((b) => (
-              <div key={b} className="flex items-center gap-2" data-bucket={b}>
-                <span className="w-2.5 h-2.5 rounded-full border border-surface" style={{ backgroundColor: BUCKET_COLORS[b] }}></span>
-                <span className="text-textMain text-[11px] flex-1">{t(`map.health.${b}`)}</span>
-                <strong className="text-white text-[11px]">{mapData ? healthCounts[b] : '–'}</strong>
-              </div>
-            ))}
-          </div>
-          {clusterMode && <div className="text-[10px] text-textMuted italic">{t('map.cluster_hint')}</div>}
-          <div className="border-t border-border/80 my-0.5"></div>
-          <div className="flex items-center gap-2">
-            <span className="w-2.5 h-2.5 rounded bg-amber-500 border border-amber-300"></span>
-            <span className="text-textMain text-[11px]">Gas Gathering Station (GGS)</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <span className="w-2.5 h-2.5 rounded bg-cyan-500 border border-cyan-300"></span>
-            <span className="text-textMain text-[11px]">Central Facility (CDP / CTF)</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <span className="w-5 h-0.5 border-t border-dashed border-sky-400"></span>
-            <span className="text-textMain text-[11px]">Well Flowlines & Headers</span>
-          </div>
-        </div>
+      {/* Map legend — slim, see-through strip along the bottom; collapsible so it never hides wells */}
+      <div
+        className={`absolute bottom-3 left-3 z-[400] flex items-center gap-3 flex-wrap rounded-md bg-black/35 backdrop-blur-sm border border-white/10 px-2.5 py-1 text-[10px] font-mono text-white/85 ${
+          isSynthetic ? 'max-w-[calc(100%-13rem)]' : 'max-w-[calc(100%-1.5rem)]'
+        }`}
+      >
+        <button
+          type="button"
+          onClick={() => setLegendOpen((v) => !v)}
+          className="text-white/60 hover:text-white uppercase tracking-wider font-bold"
+          title={legendOpen ? 'Hide legend' : 'Show legend'}
+        >
+          {fieldLabel} {legendOpen ? '▾' : '▸'}
+        </button>
+        {legendOpen && (
+          <>
+            {/* Stage Y: TC-020 health buckets with counts (same numbers as the KPI header / GET /api/wells/kpis) */}
+            <div data-testid="map-health-counts" className="flex items-center gap-2.5">
+              {HEALTH_BUCKETS.map((b) => (
+                <span key={b} className="flex items-center gap-1" data-bucket={b} title={t(`map.health.${b}`)}>
+                  <span className="w-2 h-2 rounded-full" style={{ backgroundColor: BUCKET_COLORS[b] }}></span>
+                  <span className="text-white/70">{t(`map.health.${b}`)}</span>
+                  <strong className="text-white">{mapData ? healthCounts[b] : '–'}</strong>
+                </span>
+              ))}
+            </div>
+            <span className="text-white/20">|</span>
+            <span className="flex items-center gap-1" title="Gas Gathering Station">
+              <span className="w-2 h-2 rounded-sm bg-amber-500"></span>GGS
+            </span>
+            <span className="flex items-center gap-1" title="Central Facility (CDP / CTF)">
+              <span className="w-2 h-2 rounded-sm bg-cyan-500"></span>CDP/CTF
+            </span>
+            <span className="flex items-center gap-1" title="Well flowlines and headers">
+              <span className="w-4 border-t border-dashed border-sky-400"></span>Flowlines
+            </span>
+            {clusterMode && <span className="text-white/50 italic">{t('map.cluster_hint')}</span>}
+          </>
+        )}
       </div>
     </div>
   );

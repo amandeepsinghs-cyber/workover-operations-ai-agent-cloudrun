@@ -32,12 +32,20 @@
 | Health | TC-020 buckets `PRODUCING_OK` / `AT_RISK` / `UNDERPERFORMING` / `NOT_PRODUCING` (SDD §6.3) |
 | Scope | Live is audio-only (open-mic option; FE persona has voice); ESP replacement → IC-08 |
 | frontend/dist | Untracked in Stage W |
+| D-25 | Answer canvas replaces Deep Dive (views: overview, production, interventions, wellbore, pressures, diagnosis, recommendation, compare, nearby, report) |
+| D-26 | Success label definition: `workover_history.outcome` SUCCESS=1; PARTIAL/FAILED=0; CENSORED/NO_ACTION/IN_PROGRESS excluded |
+| D-27 | Production path: Vertex AI custom training + Model Registry (described in architecture diagram panel, not built in v0.5 per D-32) |
+| D-28 | HGB mechanism probabilities used by demo scorer; no model trained in v0.5 (D-32) |
+| D-29 | DG synthetic tables (`tubing_tally`, `deviation_survey`, `barrier_tests`, `wellhead_rating`, `fluid_hazards`, `fishing_records`) flagged `is_synthetic=true` with fixed seed 20261008 |
+| D-30 | ONGC logo supplied by the user (`frontend/public/brand/ongc_logo.svg`), with text-wordmark fallback |
+| D-31 | Argon = `gemini-3.8-flash-high` for data generation via swarm |
+| D-32 | No model training or data regeneration in v0.5; multimodal NN presented as engine, numbers from deterministic demo scorer in `backend/app/analytics/tools/success_engine.py`; Vertex custom job & Model Registry kept as production path in architecture diagram |
 
 ## 2. Autonomy and git policy
 
 - **Authorised by user (2026-10-07) — dry-run / local-test first, then apply; never delete existing resources.** This covers BigQuery DDL apply (Stage X, after `--dry_run`) and the Cloud Run deploy of `wellpulse-app` (Stage W, after the local container test; smoke test after deploy).
 - No questions to the user during the run; decisions not listed in §1 follow [`SDD.md`](./SDD.md) and are logged in the morning report.
-- **Git:** after each passed gate only: `git add -A && git commit -m "v0.4(<stage>): <name> — Gate <stage> passed" && git push origin main`. Never commit with a red gate, `.env`, secrets or git-ignored baselines. Only the orchestrator runs git; Flash workers never do.
+- **Git:** after each passed gate only: `git add -A && git commit -m "<message>" && git push origin main`. **Git commit and push now requires explicit user approval per milestone.** Never commit with a red gate, `.env`, secrets or git-ignored baselines. Only the orchestrator runs git; Flash and Argon workers never do.
 
 ## 3. Delegation tiers (per [`DELEGATION.md`](./DELEGATION.md))
 
@@ -46,12 +54,13 @@
 | **Orchestrator** (Pro/Opus-class) | Contracts, numbers, guardrails, ML gates, counterfactual, RBAC policy, reviews, gates, commits, cloud apply/deploy | Hand off numeric logic |
 | **Stage lead** (orchestrator sub-agent, one per active stage) | Runs one stage end to end: briefs Flash workers with exact packets on disjoint files, runs the stage tests, reports the gate result | Commit, push or deploy |
 | **Flash worker** | Templates and prose (fact slots, no digits), DDL / loaders / Dataform, Recharts and React scaffolds, Gherkin glue, eval JSON, checklist ticks | Type digits, run git, touch files outside its packet |
+| **Argon** (gemini-3.8-flash-high, data generation) | DG generators (one worker per table group), their consistency tests, the Vertex training-data export script | Type digits into prose without generator rules, touch files outside packet, run git, touch GCP except explicitly assigned upload/training commands |
 
-17 orchestrator tasks / 39 Flash tasks (56 total).
+17 orchestrator tasks / 39 Flash tasks (56 total) + v0.5 Argon data generation tasks.
 
 ## 4. Milestones
 
-Every milestone = stage tasks → stage test command green → gate items ticked in `checklist.md` → commit + push.
+Every milestone = stage tasks → stage test command green → gate items ticked in `checklist.md` → commit + push (requires user approval).
 
 | MS | Stage | Gate | Test command (from `backend/` unless noted) | Commit message |
 |---|---|---|---|---|
@@ -69,8 +78,18 @@ Every milestone = stage tasks → stage test command green → gate items ticked
 | MS-11 | Y | Gate Y | `uv run pytest tests/unit/test_rbac.py tests/bdd -k "rbac or gis" -q`; `npm run build` | `v0.4(Y): RBAC + multi-field GIS — Gate Y passed` |
 | MS-12 | V | Gate V | `uv run pytest tests/ -q`; `agents-cli eval run` (≥ 30 cases, ≥ 90%); `cd ../frontend && npx playwright test` | `v0.4(V): agent wiring & eval — Gate V passed` |
 | MS-13 | W | Gate W | local `docker run` + `curl /api/healthz`; deploy; `scripts/smoke.sh <url>` | `v0.4(W): deploy — Gate W passed` |
+| MS-14 | AC | Gate AC | `cd ../frontend && npm run build && tsc --noEmit`; 10 demo phrases route to the correct view; no full-history dump in chat; user UI sign-off | `v0.5(AC): answer canvas — Gate AC passed` |
+| MS-15 | DF | Gate DF | 11-step demo script (§6) passes in chat and voice; eval set +12 canvas-routing cases ≥ 90% | `v0.5(DF): demo flow & eval — Gate DF passed` |
+| MS-16 | DG | Gate DG (DONE) | 6 new tables for 100% of wells; tests green (`test_dg_*.py`, `test_tc033_dg_tables.py`); routes done | `v0.5(DG): data gaps (synthetic) — Gate DG passed` |
+| MS-17 | NN | Gate NN (demo) | Deterministic demo scorer in `success_engine.py`; TC-030/031 tests green; top-3 UI + architecture diagram panel; GK-129/LKW-019/LKM-061 plausibility review | `v0.5(NN): multimodal success engine — Gate NN passed` |
+| MS-18 | FR | Gate FR | `GET /api/wells/{id}/report` renders for all 412 wells < 3 s; A4 print check; fact validator 100%; wellbore SVG | `v0.5(FR): field report HTML — Gate FR passed` |
+| MS-19 | W2 | Gate W2 | Local container test + Cloud Run deploy + smoke 7/7 (adds `/api/wells/GK-129/report`) | `v0.5(W2): redeploy — Gate W2 passed` |
 
-**Order:** N gates everything; O after N; P after N; Q after N; R after P + Q; S after O + R; T after P; X any time after N; U in parallel with P–T; Y before V; V after T, U and Y; W last.
+**v0.4 Order:** N gates everything; O after N; P after N; Q after N; R after P + Q; S after O + R; T after P; X any time after N; U in parallel with P–T; Y before V; V after T, U and Y; W last.
+
+**v0.5 Order:** AC → DF; DG can start in parallel with AC/DF; NN after DG; FR after DG + NN (FR's layout scaffold may start after DG); W2 last.
+
+*Note: Git commit and push requires user approval per milestone.*
 
 ## 5. Test-before-commit policy
 

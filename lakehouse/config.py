@@ -72,6 +72,12 @@ TABLE_KEYS: dict[str, list[str]] = {
     "job_catalogue": ["job_code"],
     "mro_inventory": ["item_code", "base"],
     "rig_calendar": ["rig_id", "date"],
+    "tubing_tally": ["well_id", "joint_no"],
+    "deviation_survey": ["well_id", "md_m"],
+    "barrier_tests": ["test_id"],
+    "wellhead_rating": ["well_id"],
+    "fluid_hazards": ["well_id"],
+    "fishing_records": ["event_id"],
 }
 
 # Physical design of Silver (SDD §15.1). daily_production: PARTITION BY production_date
@@ -101,7 +107,9 @@ ARROW_TO_BQ = {
     "date32[day]": "DATE",
     "timestamp[us]": "TIMESTAMP",
     "timestamp[ns]": "TIMESTAMP",
+    "timestamp[ms]": "TIMESTAMP",
     "timestamp[us, tz=UTC]": "TIMESTAMP",
+    "timestamp[ms, tz=UTC]": "TIMESTAMP",
     # all-NULL columns (e.g. well_master.max_dls_deg_30m) are written to Bronze as float64
     "null": "FLOAT64",
 }

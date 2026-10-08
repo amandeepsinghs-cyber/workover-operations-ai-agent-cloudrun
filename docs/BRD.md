@@ -1,12 +1,12 @@
 # Business Requirements Document (BRD)
 ## WellPulse: Energy Well Operations & Voice AI Platform
 
-**Document Version:** 3.0.0 (v0.4 verbatim expansion)  
-**Date:** 2026-10-07  
-**Status:** Approved for build (all decisions resolved; autonomous run authorised by user 2026-10-07)  
+**Document Version:** 0.5.0-draft (v0.5 canonical expansion)  
+**Date:** 2026-10-08  
+**Status:** In progress (v0.5 expansion; canonical brief: [v05_change_brief.md](./v05_change_brief.md))  
 **Author:** Energy Operations & AI Engineering Team  
-**Source of truth:** [verbatim.md](../verbatim.md) (repo root)  
-**Companion docs:** [features.md](./features.md) · [BDD.md](./BDD.md) · [SDD.md](./SDD.md) · [build.md](./build.md) · [checklist.md](./checklist.md) · [DELEGATION.md](./DELEGATION.md) · [EXECUTION_PLAN.md](./EXECUTION_PLAN.md). Routes: [SDD.md](./SDD.md) §13 is authoritative.  
+**Source of truth:** [`docs/v05_change_brief.md`](./v05_change_brief.md) (canonical for v0.5); [`verbatim.md`](../verbatim.md) (repo root for v0.4 baseline). Feedback U-1..U-7 from brief §1 governs v0.5.  
+**Companion docs:** [features.md](./features.md) · [BDD.md](./BDD.md) · [SDD.md](./SDD.md) · [build.md](./build.md) · [checklist.md](./checklist.md) · [DELEGATION.md](./DELEGATION.md) · [EXECUTION_PLAN.md](./EXECUTION_PLAN.md) · [v05_change_brief.md](./v05_change_brief.md). Routes: [SDD.md](./SDD.md) §13 and brief §9 are authoritative.  
 
 ---
 
@@ -20,6 +20,9 @@ Verbatim requirement:
 > *"So I am meeting the head of the workover operations in ONGC. And for them I need to showcase the capabilities in production and workover operations."*
 
 The operational scope expands from a single field (Geleki) to three ONGC Assam fields: Geleki, Lakwa, and Lakhmani. All underlying data across the platform is synthetic and representative; the application explicitly acknowledges this representative status whenever asked.
+
+### 1.2 v0.5 Expansion Objectives (Answer Canvas & Multimodal Workover Intelligence)
+Following user feedback on 2026-10-08 (U-1..U-7 in [`v05_change_brief.md`](./v05_change_brief.md)), WellPulse v0.5 transforms from a monolithic "everything at once" well dump into a **question-driven answer canvas**. When an engineer asks a question, the middle panel surfaces only the specific matching view (`overview`, `production`, `interventions`, `wellbore`, `pressures`, `diagnosis`, `recommendation`, `compare`, `nearby`, `report`), while chat answers stay concise (≤ 3 sentences). In addition, v0.5 introduces a **multimodal success engine** (presented as an art-of-the-possible multimodal neural network, powered by a deterministic demo scorer per Decision D-32) ranking the top 3 interventions with calibrated P(success), look-alike analog wells, top drivers, and an architecture diagram of the production Vertex AI path; an **expandable middle panel** with the conversational agent as command centre; a **printable HTML field report** with wellbore schematics for workover crews; and closes 6 synthetic data gaps across all 412 wells.
 
 ---
 
@@ -36,6 +39,11 @@ WellPulse maximizes operational uptime and streamlines workover decisions across
 8. **Deliver Asset-Manager Visibility** — T1: *"Which particular field is not performing?"*. Identify which field underperforms against target, and why.
 9. **Automate Field-Engineer Dossiers** — T1: *"aggregate all the history and give it to the person who is going to the field operations"*. Consolidated pre-visit dossier of mechanical, production and intervention history.
 10. **Enable Real Gemini Live Voice** — T1: *"Gemini Live is not working well in the current build"*. True bidirectional streaming audio (WebSocket + AudioWorklet), replacing today's text-chat wrapper and browser TTS. v3.0 is audio-only: camera/image input ("multimodal", WS-5) is out of scope. Push-to-talk plus an open-mic hands-free option; the `FIELD_ENGINEER` persona keeps Live voice.
+11. **Question-Driven Answer Canvas (U-1, U-2)**: Eliminate monolithic well-history dumps by displaying only the specific view matching the user's targeted inquiry in the middle panel (`overview`, `production`, `interventions`, `wellbore`, `pressures`, `diagnosis`, `recommendation`, `compare`, `nearby`, `report`), keeping conversational responses focused and concise (≤ 3 sentences).
+12. **Expandable Operational Command Centre (U-3)**: Allow the middle answer canvas to expand over the map area for deep wellbore schematics and time-series analysis while pinning the AI agent on the right as a persistent operational command centre.
+13. **Top-3 Interventions with P(Success) & Multi-modal Explainability (U-4)**: Deliver ranked top 3 candidate interventions (primary + 2 alternatives) plus `NO_JOB_JUSTIFIED`, each with calibrated P(success), expected uplift, rig-days, qualitative cost band (`LOW`/`MED`/`HIGH`), operational risks, look-alike analog wells, and driving features.
+14. **Multimodal Success Engine (U-5, D-32)**: Present a multimodal neural network as the intervention ranking engine with an architecture diagram panel showing fusion of 24-month production time series, static mechanical/geology features, and history. Compute believable, deterministic P(success) via the demo scorer (`backend/app/analytics/tools/success_engine.py`) combining `ic-hgb-v1` mechanism probabilities, historical field base rates with Bayesian shrinkage, and k=5 analog well success rates.
+15. **Field Workover Crew Readiness via Printable Field Report (U-6)**: Generate an on-demand, printable A4 HTML field report with ONGC branding, wellbore architecture SVG, completion diagrams, and an actionable job program for field execution.
 
 ---
 
@@ -148,6 +156,34 @@ Detailed specifications for these requirements are provided in [features.md](./f
 - **BRD-F12 (F-15)**: **Medallion Lakehouse in BigQuery** — T2: *"showcase that in the Medallion architecture… Lakehouse"*. Bronze / Silver / Gold in BigQuery `asia-south1` (D-9); Bronze files in existing `gs://workover-operations-agentic-ai-datalake`. Vertex AI Search is optional later (D-17).
 - **BRD-F13 (F-17, F-18)**: **Multi-screen demo and 5-level flow** — T2: *"different screens opened"*, *"do you see the hierarchy of question and answering?"*. Acceptance per §4.6.
 
+### 4.8 v0.5 Functional Requirements (BRD-F14–BRD-F19)
+Detailed technical specifications and BDD mappings are provided in [features.md](./features.md) and [`v05_change_brief.md`](./v05_change_brief.md):
+
+- **BRD-F14 (F-20, F-21)**: **Question-Driven Answer Canvas & Command Centre (Stage AC)**
+  - Replaces the monolithic all-in-one Deep Dive with an answer canvas: middle panel surfaces only the view matching the user's specific inquiry (`overview`, `production`, `interventions`, `wellbore`, `pressures`, `diagnosis`, `recommendation`, `compare`, `nearby`, `report`) via deterministic routing `pickCanvasView` (D-25).
+  - Chat responses are strictly capped at ≤ 3 sentences plus an optional collapsed card; full-history data dumps in chat are prohibited.
+  - Middle panel can expand over the map area to give maximum room for logs and diagrams, keeping the voice/chat agent docked on the right as the command centre; pressing ESC or clicking restore restores the split map view.
+- **BRD-F15 (F-22)**: **Synthetic Data Gap Closure (Stage DG)**
+  - Closes 6 structural data gaps across all 412 wells in `well_master`: `tubing_tally` (WH-06), `deviation_survey` (WH-08), `barrier_tests` (WH-14), `wellhead_rating` (WH-14), `fluid_hazards` (WH-13), and `fishing_records` (WH-10).
+  - Deterministic generation (seed `20261008`), written to parquet landing and bronze → silver in BigQuery (D-19).
+  - Every row carries `is_synthetic=true`, `_source_system='wellpulse_dg_v1'`, and `_batch_id` (D-29); read access via `TC-033` and endpoints (`/tubing-tally`, `/deviation`, `/integrity`).
+- **BRD-F16 (F-23)**: **Multimodal Success Engine (Stage NN, D-32)**
+  - Presented to users as an art-of-the-possible multimodal neural network combining 4 modalities: 24-month production time series (1D-CNN/GRU), static geology and mechanical casing/tubing features, decline attribution and health context, and candidate intervention embeddings.
+  - Per Decision D-32, **no model training, no Vertex AI training job, and no synthetic data regeneration are executed in v0.5**.
+  - All numbers are computed by a deterministic demo scorer (`backend/app/analytics/tools/success_engine.py`): `P(success | c) = clip(p_mechanism(c)^0.5 × (0.5·base_rate + 0.5·analog_rate), 0.05, 0.95)`, combining real `ic-hgb-v1` mechanism probabilities with historical field base rates (Bayesian shrink to asset) and k=5 analog well success rates.
+  - Full training on Vertex AI (custom job in `us-central1` + Model Registry) is presented in the "How did you decide?" panel as an architecture diagram showing the production path.
+- **BRD-F17 (F-24)**: **Top-3 Recommendations with Analogs & Attributions (Stage NN, AC)**
+  - Tool `TC-030` (`recommend_interventions(well_id, k=3)`) returns top 3 interventions (primary + 2 alternatives) plus `NO_JOB_JUSTIFIED`, ranked by deferred bbl × p_success ÷ rig-days with qualitative cost band (`LOW`/`MED`/`HIGH`).
+  - Explainability ("How did you decide?"): evidence chain (signals → mechanism → candidate), look-alike analog wells (`TC-031`, k=5; cosine similarity on standardised `build_features` vectors that ran candidate c), top 3 feature drivers from SHAP on `ic-hgb-v1`, and the neural network architecture diagram.
+  - Endpoints: `GET /api/wells/{id}/recommendations?k=3` and `GET /api/wells/{id}/similar?class=`. Strictly no point currency estimates (D-1).
+- **BRD-F18 (F-25)**: **Printable HTML Field Report & Job Program (Stage FR)**
+  - Tool `TC-032` generates an on-demand, printable A4 HTML field report for workover crews via `GET /api/wells/{id}/report?intervention=<class>`, opening in the expanded middle panel iframe.
+  - Contains sections WH-01…WH-19 of `well_history_template.md`: ONGC branding (logo or fallback text wordmark "ONGC", D-30), wellbore architecture SVG, candidate job program (steps, rig class, kill fluid weight from reservoir pressure, barriers, risks, contingencies, SOP citation), and top-3 recommendation rationale.
+  - Rendered server-side with Jinja2 from deterministic tool returns; 100% fact-validated through `facts.json` sidecar. Chat shows a single-line link to open the report.
+- **BRD-F19 (F-26)**: **11-Step Demo Flow & Verification (Stage DF)**
+  - End-to-end 11-step demo script (Lakwa → `LKW-019`: Field compare → Sick wells → Priority list → Overview → Production → Interventions → Wellbore → Diagnosis → Recommendation top 3 → Compare why not sand cleanout → Prepare me for field).
+  - Evaluated in chat and voice with +12 canvas routing test cases in `backend/eval/` (≥ 90% accuracy).
+
 ---
 
 ## 5. Non-Functional Requirements
@@ -165,7 +201,7 @@ Detailed specifications for these requirements are provided in [features.md](./f
 ---
 
 ## 6. Success Metrics
-System performance, data fidelity, and operational efficacy are validated against six quantifiable criteria:
+System performance, data fidelity, and operational efficacy are validated against twelve quantifiable criteria:
 
 | ID | Metric | Target | How Verified |
 |---|---|---|---|
@@ -175,11 +211,17 @@ System performance, data fidelity, and operational efficacy are validated agains
 | **SM-04** | Field Performance Attribution | Agent correctly identifies the underperforming field along with the primary driver; Lakwa designed at about −18% vs target (design target, pinned after Stage N) | BDD F-09 test scenarios |
 | **SM-05** | 5-Level Question Flow | Complete L1–L5 question hierarchy executes smoothly end-to-end without manual user intervention | Automated Playwright test and evaluation suite |
 | **SM-06** | ML Classifier Quality (Gate Q) | Holdout macro-F1 0.70–0.92 (upper bound = leakage ceiling), top-3 accuracy ≥ 0.90, and Expected Calibration Error (ECE) ≤ 0.08 | Offline model evaluation report |
+| **SM-07** | Canvas Routing Accuracy (Gate AC, DF) | ≥ 90% routing accuracy across 12 eval cases; 10 demo phrases route to the correct canvas view; zero full-history dumps in chat | Automated eval suite in `backend/eval/` |
+| **SM-08** | Chat Answer Conciseness | ≤ 3 sentences per chat response, accompanied by an optional collapsed card; no monolithic history dumps | Chat length verification and demo assertions |
+| **SM-09** | Field Report Performance & Fidelity (Gate FR) | p95 < 3.0 s local render across all 412 wells; 100% fact verification via `facts.json` sidecar; A4 print layout verified | `test_field_report.py` and print layout validation |
+| **SM-10** | Multimodal Demo Gate (Gate NN) | Top 3 render for all producing wells; deterministic P(success) in [0.05, 0.95] stable across calls; analog counts recomputed from data; explanation panel shows all 4 elements; plausibility review GK-129, LKW-019, LKM-061 passes (D-32) | Demo verification tests and orchestrator review |
+| **SM-11** | Synthetic Data Gap Parity (Gate DG) | 100% well coverage across all 6 DG tables with `is_synthetic=true` and 0 consistency violations | Unit tests in `backend/tests/unit/test_dg_consistency.py` |
+| **SM-12** | End-to-End Demo Script (Gate DF) | 11/11 steps of Lakwa → `LKW-019` demo flow pass smoothly in chat and voice without manual intervention | Automated demo runner (`docs/demo_flow.md`) |
 
 ---
 
-## 7. Constraints
-Implementation and operational execution must adhere strictly to six non-negotiable constraints:
+## 7. Constraints & Scope Boundaries
+Implementation and operational execution must adhere strictly to six non-negotiable constraints, along with defined v0.5 scope boundaries:
 
 - **C-01: No Fabricated Numbers**: Tools must return `UNAVAILABLE` or `LOW_CONFIDENCE` rather than guess or extrapolate. Hard-coded recommendations containing fabricated cost estimates, uplifts, or payback periods are prohibited and must be replaced.
 - **C-02: Cost Banding Only**: Operational costs must be expressed strictly as a qualitative cost band (`LOW` / `MED` / `HIGH`) plus rig-days (Decision D-1). Point estimates in currency (such as INR, USD, or lakhs) are strictly prohibited.
@@ -187,3 +229,13 @@ Implementation and operational execution must adhere strictly to six non-negotia
 - **C-04: Trilingual Data Integrity**: The data integrity rules and zero-hallucination standards must hold equally across all three supported voice and chat interaction languages (Hinglish default, English, Hindi).
 - **C-05: Cloud Infrastructure & Model Controls**: GCP project `workover-operations-agentic-ai` (D-4, resolved): Cloud Run service `wellpulse-app` in `us-central1`, BigQuery in `asia-south1`. Calls go through Vertex AI with Application Default Credentials; the API key is removed. Text model stays `gemini-3.8-flash` (D-13, resolved); the Live model is verified by listing models.
 - **C-06: Deployment Gate**: Authorised by user (2026-10-07) — dry-run / local-test first, then apply; never delete existing resources. This covers BigQuery DDL apply and the Cloud Run deploy of `wellpulse-app` (smoke test after); see [EXECUTION_PLAN.md](./EXECUTION_PLAN.md).
+
+### 7.1 Scope & Out-of-Scope (v0.5 Boundaries)
+
+| Dimension | In-Scope (v0.5) | Out-of-Scope (v0.5) | Rationale / Decision |
+|---|---|---|---|
+| **Model Training & Serving** | Multimodal NN presented as engine; deterministic demo scorer in `backend/app/analytics/tools/success_engine.py` | **No model training, no Vertex AI training job, no data regeneration in v0.5**; no online endpoint | Art-of-the-possible demo engine; production path (Vertex custom training + Model Registry) described in architecture panel (D-32) |
+| **Financial / Economics** | Qualitative cost bands (`LOW` / `MED` / `HIGH`) and rig-days | **No point currency estimates (₹ / USD / Lakhs)**; no NPV, ROI, or payback calculations | Adheres strictly to core integrity rule C-02 and Decision D-1 |
+| **Operational Telemetry** | 60 months synthetic telemetry and 6 synthetic gap tables for 412 wells | **No live SCADA feeds or real ONGC corporate database connections** | Demonstrates complete platform capabilities using representative synthetic data (D-3, C-03) |
+| **Interface / Interaction** | Question-driven answer canvas (10 views), expandable panel, streaming voice (AudioWorklet) | **No camera / video streaming input** to Live voice | Audio-only bidirectional streaming satisfies field operations without video overhead |
+| **Field Artefact Delivery** | Printable A4 HTML field report (`GET /api/wells/{id}/report`) and dossier PDF | **No offline-first native mobile application** | Printable, self-contained HTML/PDF reports provide immediate field-readiness on any device |

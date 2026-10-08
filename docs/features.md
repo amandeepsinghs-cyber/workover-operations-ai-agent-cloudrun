@@ -1,12 +1,12 @@
 # Feature Catalog & Roadmap (`features.md`)
 ## WellPulse: Energy Well Operations & Voice AI Platform
 
-**Document Version:** 3.0.0 (v0.4 verbatim expansion)
-**Date:** 2026-10-07
-**Status:** Approved for build (all decisions resolved, §7; autonomous run authorised 2026-10-07)
-**Source of truth:** [`verbatim.md`](../verbatim.md) (repo root), the stakeholder brief for the demo to Ajay Ratan, ED, ONGC IDWE Dehradun. §1 = Transcript 1 (**T1**), §3 = Transcript 2 (**T2**), §2 = work-stream breakdown (**WS-n**). §4–§8 were written afterwards by an agent; their numbers are **illustrative and not in the data**.
-**Companion docs:** [`BRD.md`](./BRD.md) · [`BDD.md`](./BDD.md) · [`SDD.md`](./SDD.md) · [`build.md`](./build.md) · [`checklist.md`](./checklist.md) · [`DELEGATION.md`](./DELEGATION.md) · [`EXECUTION_PLAN.md`](./EXECUTION_PLAN.md)
-**Previous version:** 2.0.0 (FEAT-01…FEAT-16, MoSCoW). Those features are now the **baseline** in §1.
+**Document Version:** 0.5.0-draft (v0.5 canonical expansion)
+**Date:** 2026-10-08
+**Status:** In progress (v0.5 specification; canonical brief: [`v05_change_brief.md`](./v05_change_brief.md))
+**Source of truth:** [`docs/v05_change_brief.md`](./v05_change_brief.md) (canonical for v0.5); [`verbatim.md`](../verbatim.md) (repo root for v0.4 baseline). §1 = Transcript 1 (**T1**), §3 = Transcript 2 (**T2**), §2 = work-stream breakdown (**WS-n**). User feedback U-1..U-7 from brief §1 governs v0.5.
+**Companion docs:** [`BRD.md`](./BRD.md) · [`BDD.md`](./BDD.md) · [`SDD.md`](./SDD.md) · [`build.md`](./build.md) · [`checklist.md`](./checklist.md) · [`DELEGATION.md`](./DELEGATION.md) · [`EXECUTION_PLAN.md`](./EXECUTION_PLAN.md) · [`v05_change_brief.md`](./v05_change_brief.md)
+**Previous versions:** 2.0.0 (FEAT-01…FEAT-16, MoSCoW), 3.0.0 (F-01…F-19, v0.4). Those features form the baseline in §1 and §2.
 
 > [!IMPORTANT]
 > Every feature below cites a verbatim anchor. Anything without one is labelled **derived**, with the reason. Routes, module paths and component names follow [`SDD.md`](./SDD.md) §4 and §13, which are authoritative.
@@ -77,6 +77,22 @@
 | **F-17** | Multi-screen interface showing fields and wells | T2: *"different screens opened… they can see different fields… and the wells"* | `PARTIAL` (FEAT-01, single field) | `/api/fields`, `/api/wells?field=` | BDD-F17-S01…S03 | T, Y | `App.tsx` tabs: asset map, field history, field comparison, priority queue, well deep-dive (+ docked voice panel) |
 | **F-18** | Hierarchical 5-level demo flow L1–L5 | T2: *"do you see the hierarchy of question and answering?"* | `NEW` (acceptance) | all | BDD-F18-S01…S03 | V | Whole app; `POST /api/chat` |
 | **F-19** | Delegation: orchestrator vs. Flash workers | T2: *"what are the tasks that Opus would do… outsourced to the Flash models… document generation"* | Process | — | BDD-F19-S01…S02 | all | — |
+
+---
+
+### 2.1 v0.5 feature summary (F-20…F-26)
+
+**Seven new and upgraded features driven by user feedback (U-1..U-7 from brief §1).** Build order follows stages AC → DF → DG → NN → FR → W2 (Decisions D-25..D-32; Milestones MS-14..MS-19).
+
+| ID | Feature | Verbatim anchor | Status in WellPulse | Tool contract(s) | BDD | Stage | UI surface in WellPulse |
+|---|---|---|---|---|---|---|---|
+| **F-20** | Answer canvas | U-1: *"The moment I ask the first question I get the whole well history at once."* · U-2: *"Every time a user asks a specific question, the relevant data should be shown."* | `REPLACE` (replaces Deep Dive, D-25) | `pickCanvasView` routing (TC-017 v2, TC-019, TC-020, TC-022, TC-027, TC-029) | BDD-F20-S01…S04 | AC | `WellDeepDiveDrawer.tsx` (`CanvasView`), middle panel embedded canvas |
+| **F-21** | Expandable middle panel / command centre | U-3: *"Expand the middle screen like the map; the agent is the command centre on the right."* | `NEW` | — | BDD-F21-S01…S02 | AC | Middle panel expand/restore button, ESC key, docked voice agent command centre |
+| **F-22** | Synthetic data-gap tables (6 new tables) | U-6: *"A final report the workover crew takes to the field, with completion diagrams."* (brief §4 data gaps for WH-06, WH-08, WH-10, WH-13, WH-14) | `NEW` | TC-033 | BDD-F22-S01…S03 | DG | `wellbore` canvas view, HTML field report; `GET /api/wells/{id}/tubing-tally`, `GET /api/wells/{id}/deviation`, `GET /api/wells/{id}/integrity` |
+| **F-23** | Multimodal success engine (demo scorer) | U-5: *"A multimodal neural network trained on history, geology, casing, production."* · D-32 | `NEW` | TC-030 | BDD-F23-S01…S03 | NN | `backend/app/analytics/tools/success_engine.py`; `recommendation` canvas view |
+| **F-24** | Top-3 recommendation with analogs & drivers | U-4: *"Recommendation can't be one; 2–3 interventions, and show how it arrived at it."* | `REPLACE` (upgrades F-04 single NBA) | TC-030, TC-031 | BDD-F24-S01…S04 | NN, AC | `recommendation` and `compare` canvas views; `GET /api/wells/{id}/recommendations?k=3`, `GET /api/wells/{id}/similar?class=` |
+| **F-25** | HTML field report with job program | U-6: *"A final report the workover crew takes to the field, with completion diagrams."* | `NEW` | TC-032 | BDD-F25-S01…S04 | FR | `report` canvas view (iframe); `GET /api/wells/{id}/report`; A4 print button |
+| **F-26** | 11-step demo flow & evaluation | U-7: *"Clear delegation; data generation to Argon, grunt work to Flash."* · brief §6 11-step flow | `NEW` | all (TC-019…TC-033) | BDD-F26-S01…S02 | DF | Chat and voice interface end-to-end; `backend/eval/` (+12 cases) |
 
 ---
 
@@ -258,6 +274,121 @@ Runs through `POST /api/chat` (ADK `Runner`, persona- and field-aware, D-12) and
 
 Orchestrator (Opus/Pro-class): contracts, numeric logic, guardrails, ML gates, counterfactual, RBAC policy, reviews, commits, deploys. Gemini Flash workers: document templates and prose (fact slots only; never digits), DDL/loaders/Dataform, Recharts components, React screen scaffolds, Gherkin/step glue, eval JSON, README/checklist ticks — always behind a deterministic gate.
 
+### F-20 · Answer canvas — `REPLACE` (replaces Deep Dive, D-25)
+> U-1: *"The moment I ask the first question I get the whole well history at once."* · U-2: *"Every time a user asks a specific question, the relevant data should be shown."*
+
+**What it does:** Replaces the monolithic all-in-one Deep Dive drawer with a question-driven answer canvas (D-25). When a user asks a question, the middle panel displays only the specific view that directly answers it:
+- `overview`: Identity, status, latest test, health bucket ("tell me about LKW-019")
+- `production`: Oil/gas/water cut/GOR chart with job markers ("show production history")
+- `interventions`: Job history table with dates, rig-days, uplift, outcome, doc links ("past interventions", "workover history")
+- `wellbore`: Casing, tubing, perforations, formation tops ("casing", "completion", "wellbore diagram"; SVG in FR)
+- `pressures`: Pressure & temperature series ("THP / CHP / pressure survey / gas lift")
+- `diagnosis`: Health classification, decline attribution, mechanism ("why is it declining", "what's wrong")
+- `recommendation`: Top 3 next-best-actions + `NO_JOB_JUSTIFIED` from NN model ("what should we do", "next best action")
+- `compare`: Counterfactual trade-off table ("why not sand cleanout", "compare")
+- `nearby`: Offset wells table + map highlight ("nearby / offset wells")
+- `report`: HTML field report iframe in expanded panel ("prepare me for the field", "field report")
+
+**Routing & Rules:** `pickCanvasView(toolKindOrToolName, userText)` in `frontend/src/api/chat.ts`. Order: keyword table `KW` on user text first, then `TOOL_TO_KIND` alias map, fallback to `overview`. Applied to every action path (Live `onAction`, chat reply, fallback, card "Open full view"). Chat responses are capped at ≤ 3 sentences plus an optional collapsed card; chat never renders a multi-section well history dump. A tab strip in the canvas header enables manual switching; Back button closes the canvas.
+**WellPulse build:** `frontend/src/components/well/WellDeepDiveDrawer.tsx` (`CanvasView`), `frontend/src/api/chat.ts`.
+**Acceptance (Stage AC):** BDD-F20-S01…S04; 10 demo phrases route to correct views; no full history dump in chat; `npm run build` and `tsc` green.
+
+### F-21 · Expandable middle panel / command centre — `NEW`
+> U-3: *"Expand the middle screen like the map; the agent is the command centre on the right."*
+
+**What it does:** The middle answer canvas panel can expand to cover the map area, maximizing data density and readability for wellbore schematics, 5-year logs, and field reports. While expanded, the conversational AI agent remains pinned on the right as the operational command centre. Pressing ESC or clicking the restore button immediately restores the standard split view with the map.
+**WellPulse build:** `frontend/src/App.tsx`, `frontend/src/components/well/WellDeepDiveDrawer.tsx`.
+**Acceptance (Stage AC):** BDD-F21-S01…S02; expand button toggles middle canvas over map area; agent panel stays pinned on the right; ESC key restores split map layout.
+
+### F-22 · Synthetic data-gap tables — `NEW`
+> U-6: *"A final report the workover crew takes to the field, with completion diagrams."* · brief §4: *"Generated for every well in well_master (412 wells)"*
+
+**What it does:** Closes 6 structural data gaps across all 412 wells in `well_master` to feed wellbore schematics, integrity reviews, and the field report:
+1. `tubing_tally` (well × joint; `well_id, joint_no, top_md_m, bottom_md_m, od_in, id_in, drift_in, grade, weight_ppf, component_type`): Sum of joint lengths matches `tubing_string` depth (WH-06).
+2. `deviation_survey` (well × station; `well_id, md_m, inc_deg, azi_deg, tvd_m`): Station every 30 m to TD; TVD ≤ MD (WH-08).
+3. `barrier_tests` (well × test; `well_id, test_date, barrier, result, test_pressure_kgcm2, next_due`): Tests post-last-workover, ≤ AS_OF; FAIL rate ≤ 5% on annulus-pressure flagged wells (WH-14).
+4. `wellhead_rating` (well; `well_id, wellhead_class_psi, xmas_tree_rating_psi, last_service_date`): Class ≥ 1.5 × field max THP (WH-14).
+5. `fluid_hazards` (well; `well_id, h2s_ppm, co2_mol_pct, wax_flag, sand_flag, scale_flag`): Consistent with field bands and well failure codes (WH-13).
+6. `fishing_records` (well × event; `well_id, event_date, fish_type, top_md_m, recovered, workover_id`): Only on wells with fishing/stuck failure codes (WH-10).
+
+**Data Storage & Lineage:** Written to `backend/app/data/landing/<field>/<table>.parquet`, bronze → silver in BigQuery (append-only, D-19). Deterministic seed `20261008`. Every row carries `is_synthetic=true`, `_source_system='wellpulse_dg_v1'`, `_batch_id` (D-29).
+**WellPulse build:** `backend/app/analytics/generator/dg_tables.py`, TC-033 (`dg_tables`), routes `GET /api/wells/{id}/tubing-tally`, `GET /api/wells/{id}/deviation`, `GET /api/wells/{id}/integrity`.
+**Acceptance (Stage DG):** BDD-F22-S01…S03; 100% coverage across 412 wells; `backend/tests/unit/test_dg_consistency.py` green (tally length within ±1 joint of tubing depth; TVD monotonic and ≤ MD; barrier dates in range; rating ≥ 1.5 × max THP; fishing only where failure codes allow; `is_synthetic` on every row).
+
+### F-23 · Multimodal success engine (demo scorer) — `NEW`
+> U-5: *"A multimodal neural network trained on history, geology, casing, production."* · Decision D-32
+
+> [!IMPORTANT]
+> **Decision D-32 (user, 2026-10-08): No model is trained in v0.5.** This is an art-of-the-possible showcase. The agent presents a **multimodal neural network** as the engine that ranks interventions. The scores it shows come from a deterministic **demo scorer** over the demo data (`backend/app/analytics/tools/success_engine.py`), so they are stable, believable, and consistent with the well's history. The synthetic world is NOT regenerated, and there is no Vertex AI training job in v0.5.
+
+**What the user sees (story):** "The multimodal NN combines the well's production time series, geology, casing/completion and its intervention history, and compares them with every past job in the asset. It ranks the candidates by probability of success."
+
+**Architecture (shown in the "How did you decide?" panel as a diagram):**
+- *Inputs:*
+  1. Production time-series encoder: 24 months of oil, gas, water cut, GOR, THP, and uptime, through a 1D-CNN/GRU.
+  2. Static encoder: geology, formation tops, casing/tubing/completion, lift type, deviation, fluid hazards.
+  3. History encoder: past jobs and their outcomes.
+  4. Candidate-intervention embedding (15 classes).
+- *Fusion:* Fused by an MLP that outputs P(success) per candidate.
+- *Production path:* Training on Vertex AI (custom job + Model Registry) and batch scoring into `gold.intervention_success_scores` are described in the architecture panel as the production path, but not built in v0.5.
+
+**Demo Scorer (`backend/app/analytics/tools/success_engine.py`):**
+- `p_mechanism(c)`: the existing trained model `ic-hgb-v1` top-k probability for class c (TC-021). This part is real.
+- `base_rate(c, field)`: historical success rate of class c in this field from `workover_history.outcome`, with a Bayesian shrink to the asset rate when n is small.
+- `analog_rate(c)`: success share of class c among the k = 5 most similar wells (cosine on standardised `build_features` vectors) that ran c.
+- **Formula:** `P(success | c) = clip(p_mechanism(c)^0.5 × (0.5·base_rate + 0.5·analog_rate), 0.05, 0.95)`, rounded to 2 dp. Deterministic and pinned; every input is visible to the user.
+- *Drivers:* Top 3 feature contributions from SHAP on `ic-hgb-v1` (already computed by TC-021), mapped to plain-English labels.
+
+**WellPulse build:** `backend/app/analytics/tools/success_engine.py`, `backend/app/analytics/tools/recommendations.py`.
+**Acceptance (Stage NN demo gate):** BDD-F23-S01…S03; top-3 render for all producing wells; p_success is in [0.05, 0.95] and stable across calls; analog counts recompute exactly from data; explanation panel shows evidence chain + analogs + drivers + architecture diagram; orchestrator plausibility review for GK-129, LKW-019, LKM-061 passes.
+
+### F-24 · Top-3 recommendation with analogs & drivers — `REPLACE` (upgrades F-04)
+> U-4: *"Recommendation can't be one; 2–3 interventions, and show how it arrived at it."*
+
+**What it does:** TC-030 `recommend_interventions(well_id, k=3)` delivers top-3 interventions (primary + 2 alternatives) plus explicit `NO_JOB_JUSTIFIED` thresholding.
+**Candidate fields:** `class`, `sop_id`, `p_success`, `expected_uplift_bopd` (median of analogs), `rig_days`, `cost_band` (`LOW`/`MED`/`HIGH`), `risks[]`, `why[]`, `analogs{n, n_success, well_ids[]}`, `top_drivers[]`.
+**Ranking:** Deferred bbl × p_success ÷ rig-days with cost band (K-7).
+**Explainability ("How did you decide?"):**
+- *Evidence chain:* Symptoms/signals → diagnosed mechanism → ranked candidate interventions.
+- *Analog wells (TC-031 `similar_wells`):* Cosine similarity on standardised `build_features` vectors (k=5) for jobs of the same class (e.g., "5 look-alikes, 4 succeeded", with clickable well IDs).
+- *Top drivers:* Top 3 feature contributions from SHAP on `ic-hgb-v1`, mapped to plain-English labels.
+- *Architecture:* The neural network architecture diagram and one-line methodology.
+**WellPulse build:** `backend/app/analytics/tools/recommendations.py`, `backend/app/analytics/tools/success_engine.py`, `GET /api/wells/{id}/recommendations?k=3`, `GET /api/wells/{id}/similar?class=`.
+**Acceptance (Stage NN/AC):** BDD-F24-S01…S04; returns exactly 3 ranked actions with P(success), analogs and drivers; `NO_JOB_JUSTIFIED` when below threshold in `pinned_values.md`; strictly no currency point values.
+
+### F-25 · HTML field report with job program — `NEW`
+> U-6: *"A final report the workover crew takes to the field, with completion diagrams."*
+
+**What it does:** TC-032 `field_report` serves a standalone, printable A4 HTML field report for workover crews via `GET /api/wells/{id}/report?intervention=<class>`.
+**Report Sections:** Incorporates sections WH-01…WH-19 of `well_history_template.md`:
+- Header with ONGC logo (top-left and print footer, D-30; fallback text wordmark "ONGC" if asset missing) and "SYNTHETIC DATA — DEMO" banner
+- Wellbore architecture SVG schematic (casing, tubing, perfs, formation tops)
+- Selected intervention **job program**: Execution steps, equipment / rig class, kill fluid weight (computed from reservoir pressure), barriers, operational risks, contingencies, SOP link
+- Technical rationale: Top 3 candidate recommendations with P(success), look-alike analog wells, and top drivers
+**Integrity:** Rendered server-side with Jinja2 from deterministic tool outputs only; zero LLM prose hallucination; all numbers validated via `facts.json` sidecar. Chat shows a single-line link ("Field report for LKW-019 is ready → open").
+**WellPulse build:** `backend/app/analytics/tools/field_report.py`, `backend/app/templates/field_report.html`, `GET /api/wells/{id}/report`.
+**Acceptance (Stage FR):** BDD-F25-S01…S04; renders for all 412 wells; p95 latency < 3 s; A4 print layout verified; fact validator at 100%.
+
+### F-26 · 11-step demo flow & evaluation — `NEW`
+> U-7: *"Clear delegation; data generation to Argon, grunt work to Flash."* · brief §6: *"Lakwa → LKW-019: 11 steps"*
+
+**What it does:** Orchestrates and evaluates the end-to-end 11-step demo flow on Lakwa → `LKW-019`:
+1. Field compare
+2. Sick wells
+3. Priority list
+4. Overview
+5. Production
+6. Interventions
+7. Wellbore
+8. Diagnosis
+9. Recommendation (top 3)
+10. "Why not sand cleanout" (compare)
+11. "Prepare me for the field" (report link)
+
+**Rules & Acceptance:** Each step verifies the answer canvas view, enforces chat replies of ≤ 3 sentences, and ensures no full-history data dump in chat. Supported by an expanded evaluation suite in `backend/eval/` (+12 canvas routing cases).
+**WellPulse build:** `docs/demo_flow.md`, `backend/eval/test_canvas_routing.py`.
+**Acceptance (Stage DF):** BDD-F26-S01…S02; all 11 steps pass in text chat and voice; eval set canvas-routing accuracy ≥ 90%.
+
 ---
 
 ## 4. Cross-cutting rules (apply to every feature)
@@ -297,7 +428,7 @@ Orchestrator (Opus/Pro-class): contracts, numeric logic, guardrails, ML gates, c
 
 ---
 
-## 6. Out of scope for v0.4
+## 6. Out of scope for v0.4 and v0.5
 
 - Live SCADA or real ONGC data (synthetic only)
 - Absolute cost, NPV, payback or ROI in ₹ or USD (X-3)
@@ -307,6 +438,7 @@ Orchestrator (Opus/Pro-class): contracts, numeric logic, guardrails, ML gates, c
 - Gemini Enterprise republish (D-6: not applicable to WellPulse; future)
 - Vertex AI Search vector store and grounding cache (verbatim §5; optional later, D-17)
 - Non-English dossier (Q-2: English-only)
+- Model training, Vertex AI training job, Model Registry registration, and synthetic data regeneration in v0.5 (D-32; multimodal NN presented as engine with deterministic demo scorer; Vertex/registry kept as production path described in architecture panel)
 
 ---
 
@@ -343,3 +475,17 @@ Orchestrator (Opus/Pro-class): contracts, numeric logic, guardrails, ML gates, c
 | frontend/dist | Untracked in Stage W | Resolved |
 | Autonomy | Overnight autonomous build incl. BigQuery DDL apply (dry-run first), Cloud Run deploy of `wellpulse-app` (smoke after), commit + push after each passed gate | Authorised by user (2026-10-07 19:52) |
 | Git | Stray GitHub branch `v0.4-build` (ADK code pushed by mistake) | Done: deleted by user |
+| D-25 | Answer canvas replaces monolithic Deep Dive drawer (views: overview, production, interventions, wellbore, pressures, diagnosis, recommendation, compare, nearby, report) | Accepted (v0.5) |
+| D-26 | Success label definition (§5): SUCCESS = 1; PARTIAL, FAILED = 0; CENSORED, NO_ACTION, IN_PROGRESS excluded | Accepted (v0.5) |
+| D-27 | Production path: Vertex AI custom training + Model Registry (described in architecture panel, not built in v0.5 per D-32) | Accepted (v0.5) |
+| D-28 | HGB `ic-hgb-v1` mechanism probabilities used by demo scorer; no new model trained in v0.5 (D-32) | Accepted (v0.5) |
+| D-29 | DG synthetic tables (tubing_tally, deviation_survey, barrier_tests, wellhead_rating, fluid_hazards, fishing_records) flagged is_synthetic=true | Accepted (v0.5) |
+| D-30 | ONGC logo supplied by user in frontend/public/brand/ongc_logo.svg; fallback to text wordmark "ONGC" if missing | Accepted (v0.5) |
+| D-31 | Argon = gemini-3.8-flash-high via swarm add for DG data generation and consistency tests | Accepted (v0.5) |
+| D-32 | No model training or data regeneration in v0.5; multimodal NN presented as the engine, numbers from deterministic demo scorer (supersedes the training/Vertex parts of D-26/D-27/D-28) | Accepted (v0.5) |
+| MS-14 | Stage AC: Answer canvas (10 demo phrases route correctly, no history dump, npm run build + tsc green) | Milestone (v0.5) |
+| MS-15 | Stage DF: Demo flow & eval (11-step demo script passes, eval +12 cases ≥ 90%) | Milestone (v0.5) |
+| MS-16 | Stage DG: Data gaps synthetic (6 tables for 100% of wells, is_synthetic=true, consistency green) | Milestone (v0.5) |
+| MS-17 | Stage NN: Multimodal success engine (demo scorer in success_engine.py, TC-030 recommend_interventions, TC-031 similar_wells, NbaCard top-3 UI with P(success)/analogs/drivers, architecture diagram panel, plausibility review GK-129/LKW-019/LKM-061; D-32) | Milestone (v0.5) |
+| MS-18 | Stage FR: Field report HTML (GET /api/wells/{id}/report < 3 s, A4 print, fact check 100%) | Milestone (v0.5) |
+| MS-19 | Stage W2: Redeploy (local container + Cloud Run deploy + smoke 7/7) | Milestone (v0.5) |

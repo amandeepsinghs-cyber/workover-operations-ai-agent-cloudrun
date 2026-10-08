@@ -281,6 +281,11 @@ def recommend_next_best_action(well_id: str = "", top_k: int = 3, tool_context: 
         d = env.get("data")
         if isinstance(d, dict):
             d.pop("job_menu", None)
+            try:  # v0.5 (D-32): multimodal success engine ranking, analogs and drivers for the spoken answer
+                from app.analytics.tools.success_engine import compact_summary
+                d["multimodal"] = compact_summary(wid)
+            except Exception:  # noqa: BLE001 - never break TC-022 on the decoration
+                pass
         return env
 
     return invoke(tool_context, tool_id="TC-022", capability="well.nba", fn=tc022,

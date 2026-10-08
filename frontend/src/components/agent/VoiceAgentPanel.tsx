@@ -29,6 +29,7 @@ import {
   ChatAction,
   ChatArtifact as ChatArtifactType,
   isExplicitDetailRequest,
+  pickCanvasView,
 } from '../../api/chat';
 import { ChatArtifact } from './ChatArtifact';
 
@@ -37,6 +38,19 @@ interface VoiceAgentPanelProps {
   field?: string | null;
   screen?: string | null;
   onAgentAction?: (a: ChatAction) => void;
+  /** Extra header buttons supplied by the floating frame (expand / minimise). */
+  headerActions?: React.ReactNode;
+  /** Short "what the agent sees" label, e.g. "Lakwa · LKW-019 · Production". */
+  contextLabel?: string;
+  /** Reports voice state so the minimised launcher can show LIVE / listening / speaking. */
+  onStatusChange?: (s: AgentVoiceStatus) => void;
+}
+
+export interface AgentVoiceStatus {
+  live: boolean;
+  listening: boolean;
+  speaking: boolean;
+  thinking: boolean;
 }
 
 type AgentLanguage = 'hinglish' | 'english' | 'hindi';
@@ -66,9 +80,17 @@ export const VoiceAgentPanel: React.FC<VoiceAgentPanelProps> = ({
   field,
   screen,
   onAgentAction,
+  headerActions,
+  contextLabel,
+  onStatusChange,
 }) => {
   const [messages, setMessages] = useState<LiveChatMessage[]>([]);
   const [inputPrompt, setInputPrompt] = useState<string>('');
+  const composerRef = useRef<HTMLTextAreaElement>(null);
+  // Shrink the text box back after a message is sent / cleared.
+  useEffect(() => {
+    if (!inputPrompt && composerRef.current) composerRef.current.style.height = '';
+  }, [inputPrompt]);
   const [language, setLanguage] = useState<AgentLanguage>('hinglish');
   const [currentRecommendation, setCurrentRecommendation] = useState<SafeRecommendation | null>(null);
 
@@ -116,14 +138,14 @@ export const VoiceAgentPanel: React.FC<VoiceAgentPanelProps> = ({
             id: `sys-${Date.now()}`,
             sender: 'agent',
             timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-            text: 'Gemini Live session resumed — conversation memory kept.',
+            text: 'Live voice resumed — conversation memory kept.',
             live: true,
           };
           setMessages((prev) => [...prev, resumeMsg]);
         } else if (s === 'fallback') {
           const fbText = info?.message
-            ? `Gemini Live unavailable — switched to text (retry). (${info.message})`
-            : 'Gemini Live unavailable — switched to text (retry).';
+            ? `Live voice unavailable — switched to text (retry). (${info.message})`
+            : 'Live voice unavailable — switched to text (retry).';
           const fbMsg: LiveChatMessage = {
             id: `sys-${Date.now()}`,
             sender: 'agent',
@@ -276,7 +298,7 @@ export const VoiceAgentPanel: React.FC<VoiceAgentPanelProps> = ({
         if (onAgentAction) {
           const explicit = isExplicitDetailRequest(lastUserTextRef.current);
           for (const act of (msg.actions ?? []) as ChatAction[]) {
-            onAgentAction({ ...act, explicit });
+            onAgentAction({ ...act, explicit, view: pickCanvasView(act.source_tool, lastUserTextRef.current) });
           }
         }
       },
@@ -298,13 +320,16 @@ export const VoiceAgentPanel: React.FC<VoiceAgentPanelProps> = ({
 
       onAction: (kind, payload: any) => {
         if (!onAgentAction) return;
+        const actionWellId: string | null =
+          payload?.well_id ?? payload?.data?.well_id ?? payload?.data?.identity?.well_id ?? null;
         let targetScreen: ChatAction['screen'] | null = null;
         if (kind === 'field_history_chart') targetScreen = 'field_history';
         else if (kind === 'field_comparison') targetScreen = 'field_compare';
         else if (kind === 'health_buckets') targetScreen = 'field_health';
         else if (kind === 'priority_queue') targetScreen = 'priority';
         else if (
-          ['well_profile', 'well_production_chart', 'nba', 'counterfactual'].includes(kind)
+          ['well_profile', 'well_production_chart', 'nba', 'counterfactual', 'intervention_classification'].includes(kind) ||
+          (kind === 'attribution_waterfall' && actionWellId)
         ) {
           targetScreen = 'well';
         }
@@ -314,9 +339,10 @@ export const VoiceAgentPanel: React.FC<VoiceAgentPanelProps> = ({
             kind: 'navigate',
             screen: targetScreen,
             field: payload?.field ?? payload?.data?.field ?? field ?? null,
-            well_id: payload?.well_id ?? payload?.data?.well_id ?? well?.id ?? null,
+            well_id: actionWellId ?? well?.id ?? null,
             source_tool: kind,
             explicit: isExplicitDetailRequest(lastUserTextRef.current),
+            view: pickCanvasView(kind, lastUserTextRef.current),
           });
         }
       },
@@ -435,11 +461,11 @@ export const VoiceAgentPanel: React.FC<VoiceAgentPanelProps> = ({
       }
     } else {
       if (language === 'hinglish') {
-        greetingText = `Assam Asset operations copilot active. Kisi bhi field ya well ke baare mein puchhiye.`;
+        greetingText = `WellPulse AI Agent ready for Assam Asset. Kisi bhi field ya well ke baare mein puchhiye.`;
       } else if (language === 'hindi') {
         greetingText = `असम एसेट ऑपरेशंस कोपायलट सक्रिय है। किसी भी फील्ड या वेल के बारे में पूछ सकते हैं।`;
       } else {
-        greetingText = `Assam Asset operations copilot active. Ask about any field, priority candidates, or select a wellhead.`;
+        greetingText = `WellPulse AI Agent ready for Assam Asset. Ask about any field, priority candidates, or select a wellhead.`;
       }
     }
 
@@ -719,7 +745,7 @@ export const VoiceAgentPanel: React.FC<VoiceAgentPanelProps> = ({
       if (reply.actions && reply.actions.length > 0 && onAgentAction) {
         const explicit = isExplicitDetailRequest(textToSend);
         for (const act of reply.actions) {
-          onAgentAction({ ...act, explicit });
+          onAgentAction({ ...act, explicit, view: pickCanvasView(act.source_tool, textToSend) });
         }
       }
 
@@ -821,6 +847,16 @@ export const VoiceAgentPanel: React.FC<VoiceAgentPanelProps> = ({
   const activeSpeaking = isLiveMode ? voiceState === 'speaking' : legacySpeaking;
   const activeThinking = isLiveMode ? voiceState === 'thinking' : isProcessing;
 
+  // Let the floating launcher mirror voice state while the panel is minimised.
+  useEffect(() => {
+    onStatusChange?.({
+      live: isLiveReady,
+      listening: activeListening || isTalking,
+      speaking: activeSpeaking,
+      thinking: activeThinking,
+    });
+  }, [isLiveReady, activeListening, isTalking, activeSpeaking, activeThinking, onStatusChange]);
+
   const renderStatusBadge = () => {
     if (!isLiveMode) {
       return (
@@ -841,7 +877,7 @@ export const VoiceAgentPanel: React.FC<VoiceAgentPanelProps> = ({
       case 'resumed':
         return (
           <span
-            title={statusInfo.model ? `Model: ${statusInfo.model}` : 'Gemini Live Connected'}
+            title={statusInfo.model ? `Model: ${statusInfo.model}` : 'Live voice connected'}
             className="flex items-center gap-1 text-[9px] font-mono text-emerald-400 bg-emerald-950/60 px-1.5 py-0.5 rounded border border-emerald-700/60 font-semibold cursor-help"
           >
             <Zap className="w-2.5 h-2.5 text-emerald-400" /> LIVE
@@ -879,110 +915,88 @@ export const VoiceAgentPanel: React.FC<VoiceAgentPanelProps> = ({
   };
 
   return (
-    <div className="flex flex-col h-full bg-surface border-l border-border">
-      {/* Header */}
-      <div className="h-14 border-b border-border px-3.5 flex items-center justify-between shrink-0 bg-[#12161c]">
-        <div className="flex items-center gap-2">
-          <div className="w-7 h-7 rounded-md bg-accent/20 border border-accent/40 flex items-center justify-center">
-            <Bot className="w-4 h-4 text-accent" />
-          </div>
-          <div>
-            <h3 className="text-xs font-bold text-white font-sans flex items-center gap-1.5">
-              WellPulse Copilot
-              {renderStatusBadge()}
-            </h3>
-            <div className="flex items-center gap-1.5">
-              <span className="text-[10px] font-mono text-textMuted">
-                {isLiveMode ? 'Gemini Live Voice Engine' : 'Standard Copilot'}
-              </span>
-              {isLiveMode && firstAudioLatency !== null && (
-                <span className="text-[9px] font-mono text-emerald-400 bg-[#0d1117] px-1 py-0.2 rounded border border-border/50">
-                  1st audio {Math.round(firstAudioLatency)} ms
-                </span>
-              )}
+    <div className="flex flex-col h-full bg-surface">
+      {/* Header — row 1: identity + controls */}
+      <div className="border-b border-border px-3 pt-2 pb-1.5 shrink-0 bg-[#12161c]">
+        <div className="flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2 min-w-0">
+            <div className="w-7 h-7 rounded-md bg-accent/20 border border-accent/40 flex items-center justify-center shrink-0">
+              <Bot className="w-4 h-4 text-accent" />
             </div>
+            <div className="min-w-0">
+              <h3 className="text-xs font-bold text-white font-sans flex items-center gap-1.5">
+                WellPulse AI Agent
+                {renderStatusBadge()}
+              </h3>
+              <div className="flex items-center gap-1.5">
+                <span className="text-[10px] font-mono text-textMuted">
+                  {isLiveMode ? 'Live voice + text' : 'Text mode'}
+                </span>
+                {isLiveMode && firstAudioLatency !== null && (
+                  <span className="text-[9px] font-mono text-emerald-400 bg-[#0d1117] px-1 py-0.2 rounded border border-border/50">
+                    1st audio {Math.round(firstAudioLatency)} ms
+                  </span>
+                )}
+              </div>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-1 shrink-0">
+            <button
+              type="button"
+              onClick={() => setIsLiveMode((prev) => !prev)}
+              title={
+                !isLiveSupported()
+                  ? 'Live voice not supported in this browser'
+                  : isLiveMode
+                  ? 'Switch to text mode'
+                  : 'Switch to live voice'
+              }
+              className={`flex items-center gap-1 px-2 py-1 rounded text-[11px] font-sans transition-colors ${
+                isLiveMode
+                  ? 'bg-emerald-950/70 text-emerald-300 border border-emerald-700/60 font-semibold'
+                  : 'bg-[#0d1117] text-textMuted border border-border hover:text-white'
+              }`}
+            >
+              <Radio className={`w-3.5 h-3.5 ${isLiveMode ? 'text-emerald-400 animate-pulse' : 'text-textMuted'}`} />
+              <span>Live</span>
+            </button>
+            <button
+              type="button"
+              onClick={handleToggleMute}
+              title={isMuted ? 'Unmute audio' : 'Mute audio'}
+              className="p-1.5 rounded text-textMuted hover:text-white hover:bg-border transition-colors"
+            >
+              {isMuted ? <VolumeX className="w-4 h-4 text-rose-400" /> : <Volume2 className="w-4 h-4" />}
+            </button>
+            {headerActions}
           </div>
         </div>
 
-        {/* Live Mode Toggle, Language Selector & Audio Mute Controls */}
-        <div className="flex items-center gap-2">
-          {/* Mode Toggle Button */}
-          <button
-            type="button"
-            onClick={() => setIsLiveMode((prev) => !prev)}
-            title={
-              !isLiveSupported()
-                ? 'Gemini Live not supported in this browser'
-                : isLiveMode
-                ? 'Switch to Text Mode'
-                : 'Switch to Gemini Live'
-            }
-            className={`flex items-center gap-1 px-2 py-1 rounded text-[11px] font-sans transition-colors ${
-              isLiveMode
-                ? 'bg-emerald-950/70 text-emerald-300 border border-emerald-700/60 font-semibold'
-                : 'bg-[#0d1117] text-textMuted border border-border hover:text-white'
-            }`}
-          >
-            <Radio className={`w-3.5 h-3.5 ${isLiveMode ? 'text-emerald-400 animate-pulse' : 'text-textMuted'}`} />
-            <span>Live</span>
-          </button>
-
-          {/* Language Switcher */}
-          <div className="flex items-center bg-[#0d1117] border border-border rounded-md p-0.5 text-[11px] font-sans">
-            <button
-              type="button"
-              onClick={() => setLanguage('hinglish')}
-              title="Hinglish (Hindi + English)"
-              className={`px-1.5 py-0.5 rounded transition-colors ${
-                language === 'hinglish'
-                  ? 'bg-accent/20 text-accent font-bold'
-                  : 'text-textMuted hover:text-white'
-              }`}
-            >
-              🇮🇳 Hinglish
-            </button>
-            <button
-              type="button"
-              onClick={() => setLanguage('english')}
-              title="English (Concise)"
-              className={`px-1.5 py-0.5 rounded transition-colors ${
-                language === 'english'
-                  ? 'bg-blue-900/60 text-blue-300 font-bold'
-                  : 'text-textMuted hover:text-white'
-              }`}
-            >
-              🇬🇧 Eng
-            </button>
-            <button
-              type="button"
-              onClick={() => setLanguage('hindi')}
-              title="Hindi (हिंदी)"
-              className={`px-1.5 py-0.5 rounded transition-colors ${
-                language === 'hindi'
-                  ? 'bg-amber-900/60 text-amber-300 font-bold'
-                  : 'text-textMuted hover:text-white'
-              }`}
-            >
-              🇮🇳 हिंदी
-            </button>
+        {/* Row 2: what the agent sees + language */}
+        <div className="mt-1.5 flex items-center justify-between gap-2 text-[10px] font-mono">
+          <div className="flex items-center gap-1 min-w-0 text-textMuted" title="Screen context sent with every question">
+            <span>Context:</span>
+            <span className="text-white truncate" data-testid="agent-context-chip">
+              {contextLabel || 'Assam Asset'}
+            </span>
+            {activeSpeaking && (
+              <span className="flex items-center gap-1 text-accent animate-pulse ml-1">
+                <span className="w-1.5 h-1.5 rounded-full bg-accent"></span> Speaking
+              </span>
+            )}
           </div>
-
-          {/* Speaking Indicator */}
-          {activeSpeaking && (
-            <div className="flex items-center gap-1 text-[10px] font-mono text-accent animate-pulse">
-              <span className="w-1.5 h-1.5 rounded-full bg-accent"></span> Speaking
-            </div>
-          )}
-
-          {/* Audio Mute Toggle */}
-          <button
-            type="button"
-            onClick={handleToggleMute}
-            title={isMuted ? 'Unmute Audio' : 'Mute Audio'}
-            className="p-1.5 rounded text-textMuted hover:text-white hover:bg-border transition-colors"
+          <select
+            value={language}
+            onChange={(e) => setLanguage(e.target.value as AgentLanguage)}
+            title="Agent language"
+            aria-label="Agent language"
+            className="bg-[#0d1117] border border-border rounded px-1 py-0.5 text-[10px] text-textMain focus:outline-none focus:border-accent"
           >
-            {isMuted ? <VolumeX className="w-4 h-4 text-rose-400" /> : <Volume2 className="w-4 h-4" />}
-          </button>
+            <option value="hinglish">Hinglish</option>
+            <option value="english">English</option>
+            <option value="hindi">हिंदी</option>
+          </select>
         </div>
       </div>
 
@@ -1015,7 +1029,7 @@ export const VoiceAgentPanel: React.FC<VoiceAgentPanelProps> = ({
             ) : (
               <>
                 <Volume2 className="w-3.5 h-3.5 text-accent animate-pulse" />
-                <span>{isLiveMode ? 'Gemini Live speaking...' : 'Speaking diagnosis (Indian English)...'}</span>
+                <span>{isLiveMode ? 'Agent speaking...' : 'Speaking diagnosis (Indian English)...'}</span>
               </>
             )}
           </span>
@@ -1126,6 +1140,7 @@ export const VoiceAgentPanel: React.FC<VoiceAgentPanelProps> = ({
                                   well_id: wellId,
                                   source_tool: art.kind,
                                   explicit: true,
+                                  view: pickCanvasView(art.kind, ''),
                                 })
                             : undefined
                         }
@@ -1259,14 +1274,67 @@ export const VoiceAgentPanel: React.FC<VoiceAgentPanelProps> = ({
             e.preventDefault();
             submitMessage();
           }}
-          className="flex items-center gap-2"
+          className="flex flex-col gap-2"
         >
+          {/* Text box — full width, grows with the message (Enter sends, Shift+Enter adds a line) */}
+          <div className="relative">
+            <textarea
+              ref={composerRef}
+              rows={2}
+              value={inputPrompt}
+              onChange={(e) => {
+                setInputPrompt(e.target.value);
+                const el = e.currentTarget;
+                el.style.height = 'auto';
+                el.style.height = `${Math.min(el.scrollHeight, 160)}px`;
+              }}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && !e.shiftKey && !e.nativeEvent.isComposing) {
+                  e.preventDefault();
+                  submitMessage();
+                }
+              }}
+            placeholder={
+              activeListening
+                ? isOpenMic
+                  ? 'Listening continuously (open mic)...'
+                  : 'Listening to your voice... Release to send'
+                : isLiveMode && isLiveReady
+                ? language === 'hinglish'
+                  ? 'Type, or hold Space to talk to the agent...'
+                  : language === 'hindi'
+                  ? 'टाइप करें या बोलने के लिए Space दबाए रखें...'
+                  : 'Type, or hold Space to talk to the agent...'
+                : !isLiveSupported()
+                ? 'Voice unavailable in this browser — use text'
+                : language === 'hinglish'
+                ? 'Type in Hinglish or English...'
+                : language === 'hindi'
+                ? 'हिंदी में टाइप करें...'
+                : 'Type well or field query...'
+            }
+            disabled={activeListening || (!isLiveMode && isProcessing)}
+              className="w-full min-h-[56px] max-h-40 resize-none bg-[#0d1117] border border-border text-[13px] leading-snug pl-3 pr-12 py-2.5 rounded-lg text-white placeholder-textMuted focus:outline-none focus:border-accent font-sans"
+            />
+            <button
+              type="submit"
+              disabled={!inputPrompt.trim() || (!isLiveMode && isProcessing)}
+              title="Send (Enter)"
+              aria-label="Send"
+              className="absolute right-2 bottom-2 p-2 rounded-md bg-blue-600 hover:bg-blue-500 disabled:opacity-40 disabled:hover:bg-blue-600 text-white transition-colors"
+            >
+              <Send className="w-4 h-4" />
+            </button>
+          </div>
+
+          {/* Voice controls row */}
+          <div className="flex items-center gap-2 flex-wrap">
           {!isLiveSupported() ? (
             <button
               type="button"
               disabled
               title="Voice unavailable in this browser — use text"
-              className="flex items-center gap-1.5 px-3 py-2.5 rounded-lg bg-[#0d1117] text-textMuted border border-border/50 font-mono text-xs opacity-50 shrink-0 cursor-not-allowed"
+              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-[#0d1117] text-textMuted border border-border/50 font-mono text-xs opacity-50 shrink-0 cursor-not-allowed"
             >
               <MicOff className="w-4 h-4 text-textMuted" />
               <span className="hidden sm:inline">Voice unavailable</span>
@@ -1279,7 +1347,7 @@ export const VoiceAgentPanel: React.FC<VoiceAgentPanelProps> = ({
                   type="button"
                   onClick={toggleOpenMic}
                   title={isOpenMic ? 'Disable open mic' : 'Enable continuous open mic (server VAD)'}
-                  className={`flex items-center gap-1 px-2.5 py-2.5 rounded-lg text-xs font-mono font-medium transition-colors shrink-0 ${
+                  className={`flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-mono font-medium transition-colors shrink-0 ${
                     isOpenMic
                       ? 'bg-red-950/80 text-red-300 border border-red-700 shadow-sm shadow-red-700/50'
                       : 'bg-[#0d1117] text-textMuted hover:text-white border border-border'
@@ -1300,8 +1368,8 @@ export const VoiceAgentPanel: React.FC<VoiceAgentPanelProps> = ({
                     onPointerDown={handlePointerDown}
                     onPointerUp={handlePointerUp}
                     onPointerLeave={handlePointerLeave}
-                    title="Hold to talk with Gemini Live (or hold Spacebar)"
-                    className={`flex items-center gap-1.5 px-3 py-2.5 rounded-lg font-mono text-xs font-semibold select-none transition-all shrink-0 ${
+                    title="Hold to talk to the agent (or hold Spacebar)"
+                    className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg font-mono text-xs font-semibold select-none transition-all shrink-0 ${
                       isTalking
                         ? 'bg-red-600 hover:bg-red-700 text-white border border-red-400 shadow-lg shadow-red-600/40 animate-pulse'
                         : 'bg-[#0d1117] text-emerald-400 hover:text-white hover:bg-emerald-600/30 border border-emerald-500/50'
@@ -1316,8 +1384,8 @@ export const VoiceAgentPanel: React.FC<VoiceAgentPanelProps> = ({
               <button
                 type="button"
                 disabled
-                title={`Gemini Live ${liveStatus}`}
-                className="flex items-center gap-1.5 px-3 py-2.5 rounded-lg bg-[#0d1117] text-textMuted border border-border/50 font-mono text-xs opacity-50 shrink-0 cursor-not-allowed"
+                title={`Live voice ${liveStatus}`}
+                className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-[#0d1117] text-textMuted border border-border/50 font-mono text-xs opacity-50 shrink-0 cursor-not-allowed"
               >
                 <Mic className="w-4 h-4 text-textMuted" />
                 <span>{liveStatus === 'connecting' ? 'Connecting...' : 'Hold to talk'}</span>
@@ -1327,48 +1395,17 @@ export const VoiceAgentPanel: React.FC<VoiceAgentPanelProps> = ({
             <button
               type="button"
               onClick={() => setIsLiveMode(true)}
-              title="Switch to Gemini Live Voice"
-              className="flex items-center gap-1.5 px-3 py-2.5 rounded-lg bg-[#0d1117] text-emerald-400 hover:text-white hover:bg-emerald-600/30 border border-emerald-500/50 hover:border-emerald-400 font-mono text-xs font-medium transition-all shrink-0"
+              title="Switch to live voice"
+              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-[#0d1117] text-emerald-400 hover:text-white hover:bg-emerald-600/30 border border-emerald-500/50 hover:border-emerald-400 font-mono text-xs font-medium transition-all shrink-0"
             >
               <Mic className="w-4 h-4 text-emerald-400" />
               <span>Live Voice</span>
             </button>
           )}
-
-          <input
-            type="text"
-            value={inputPrompt}
-            onChange={(e) => setInputPrompt(e.target.value)}
-            placeholder={
-              activeListening
-                ? isOpenMic
-                  ? 'Listening continuously (open mic)...'
-                  : 'Listening to your voice... Release to send'
-                : isLiveMode && isLiveReady
-                ? language === 'hinglish'
-                  ? 'Type or hold Space to talk with Gemini Live...'
-                  : language === 'hindi'
-                  ? 'टाइप करें या बोलने के लिए Space दबाए रखें...'
-                  : 'Type or hold Space to talk with Gemini Live...'
-                : !isLiveSupported()
-                ? 'Voice unavailable in this browser — use text'
-                : language === 'hinglish'
-                ? 'Type in Hinglish or English...'
-                : language === 'hindi'
-                ? 'हिंदी में टाइप करें...'
-                : 'Type well or field query...'
-            }
-            disabled={activeListening || (!isLiveMode && isProcessing)}
-            className="flex-1 bg-[#0d1117] border border-border text-xs px-3 py-2.5 rounded-lg text-white placeholder-textMuted focus:outline-none focus:border-accent font-sans"
-          />
-
-          <button
-            type="submit"
-            disabled={!inputPrompt.trim() || (!isLiveMode && isProcessing)}
-            className="p-2.5 rounded-lg bg-blue-600 hover:bg-blue-500 disabled:opacity-40 disabled:hover:bg-blue-600 text-white transition-colors"
-          >
-            <Send className="w-4 h-4" />
-          </button>
+            <span className="ml-auto text-[10px] font-mono text-textMuted hidden min-[380px]:inline">
+              Enter to send · Shift+Enter new line
+            </span>
+          </div>
         </form>
       </div>
     </div>

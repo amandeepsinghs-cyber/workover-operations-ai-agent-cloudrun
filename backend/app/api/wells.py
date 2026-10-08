@@ -10,6 +10,7 @@ from pydantic import BaseModel
 
 from app.agent import rbac
 from app.analytics.generator.fields import FIELD_CONFIGS
+from app.analytics.tools.dg_tables import deviation_survey, integrity, tubing_tally
 from app.data_access.adapters import as_of_timestamp
 from app.data_access.repository import RetiredWellId, get_repository
 from app.services.ai_agent import generate_structured_recommendation
@@ -224,3 +225,21 @@ def export_well_dossier(well_id: str):
         "as_of": w.get("as_of"),
         "health_rule": w.get("health_rule"),
     }
+
+
+@router.get("/wells/{well_id}/tubing-tally")
+def get_well_tubing_tally(well_id: str):
+    _well_or_404(well_id)
+    return tubing_tally(well_id)
+
+
+@router.get("/wells/{well_id}/deviation")
+def get_well_deviation_survey(well_id: str):
+    _well_or_404(well_id)
+    return deviation_survey(well_id)
+
+
+@router.get("/wells/{well_id}/integrity")
+def get_well_integrity(well_id: str):
+    _well_or_404(well_id)
+    return integrity(well_id)

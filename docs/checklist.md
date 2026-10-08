@@ -1,13 +1,13 @@
 # Implementation & Verification Checklist (`checklist.md`)
 ## WellPulse: Energy Well Operations & Voice AI Platform
 
-**Document Version:** 3.0.0 (v0.4 verbatim expansion)  
-**Date:** 2026-10-07  
-**Status:** Phases 1-7 done (baseline); Phase 8+ (v0.4) in progress — see ticks below  
-**Companion Docs:** [`build.md`](./build.md) · [`verbatim.md`](../verbatim.md) · [`BRD.md`](./BRD.md) · [`features.md`](./features.md) · [`BDD.md`](./BDD.md) · [`SDD.md`](./SDD.md) · [`DELEGATION.md`](./DELEGATION.md) · [`EXECUTION_PLAN.md`](./EXECUTION_PLAN.md)  
+**Document Version:** 3.1.0 (v0.5 answer canvas & multimodal model)  
+**Date:** 2026-10-08  
+**Status:** Phases 1-7 done (baseline); Phase 8+ (v0.4) deployed; v0.5 (Milestones MS-14..MS-19) in progress — see ticks below  
+**Companion Docs:** [`v05_change_brief.md`](./v05_change_brief.md) · [`build.md`](./build.md) · [`verbatim.md`](../verbatim.md) · [`BRD.md`](./BRD.md) · [`features.md`](./features.md) · [`BDD.md`](./BDD.md) · [`SDD.md`](./SDD.md) · [`DELEGATION.md`](./DELEGATION.md) · [`EXECUTION_PLAN.md`](./EXECUTION_PLAN.md)  
 **Autonomy:** Authorised by user (2026-10-07) — dry-run / local-test first, then apply; never delete existing resources. A gate that fails 3 times is marked **BLOCKED** here and independent stages continue; never fake a gate; never change the model.  
 **User rule:** "During the build, do a git commit and push to origin main after every major milestone (each passed stage gate)."  
-**Legend:** `[O]` = orchestrator (Opus/Pro), `[F]` = Gemini Flash worker (lands only after its deterministic gate passes and `[O]` reviews it).
+**Legend:** `[O]` = orchestrator (Opus/Pro), `[A]` = Argon (`gemini-3.8-flash-high`), `[F]` = Gemini Flash worker (lands only after its deterministic gate passes and `[O]` reviews it).
 
 ---
 
@@ -393,6 +393,122 @@
 
 ---
 
+## Phase 21+ · v0.5 answer canvas & multimodal model
+
+> [!IMPORTANT]
+> **Rule:** After each passed gate and user approval: commit + push to origin main (orchestrator only).
+
+### Milestone MS-14 · Stage AC — Answer canvas
+**Anchor:** brief §1 U-1, U-2, U-3; §3 (D-25)
+
+#### Tasks
+- [~] built, awaiting user sign-off: Answer canvas views (`overview`, `production`, `interventions`, `wellbore`, `pressures`, `diagnosis`, `recommendation`, `compare`, `nearby`, `report`) in `WellDeepDiveDrawer.tsx`
+- [~] built, awaiting user sign-off: `pickCanvasView(toolKindOrToolName, userText)` routing in `frontend/src/api/chat.ts` (keyword table, tool aliases, fallback)
+- [~] built, awaiting user sign-off: Expandable middle panel hiding the map, with ESC hotkey and restore button
+- [~] built, awaiting user sign-off: Interventions table view with job dates, rig-days, uplift, outcome, and doc links
+- [~] built, awaiting user sign-off: Compare view auto-open on counterfactual questions
+- [ ] [F] AC-F1 Chat brevity enforcement: strictly ≤ 3 sentences plus optional collapsed card; eliminate multi-section well history dumps
+- [ ] [O] AC-O2 User UI sign-off: verify canvas interaction, view switching, map restore, and responsive drawer behavior
+
+#### Gate AC
+- [ ] 10 demo phrases route to the correct view via `pickCanvasView`
+- [ ] No full-history dump in chat; replies strictly ≤ 3 sentences
+- [ ] `cd frontend && npm run build` and `tsc` green
+- [ ] User UI sign-off on expandable middle panel, map hide, and ESC restore
+
+---
+
+### Milestone MS-15 · Stage DF — Demo flow & eval
+**Anchor:** brief §1 U-1..U-4; §6
+
+#### Tasks
+- [ ] [F] DF-F1 11-step demo script: author `docs/demo_flow.md` (Lakwa → LKW-019) covering Field compare, Sick wells, Priority list, Overview, Production, Interventions, Wellbore, Diagnosis, Recommendation (top 3), "Why not sand cleanout" (compare), and "Prepare me for the field" (report link)
+- [ ] [F] DF-F2 Eval dataset expansion: add +12 canvas-routing and brevity cases to `backend/tests/eval/wellpulse-eval.json`
+- [ ] [O] DF-O3 Automated demo rehearsal: run `tests/eval/run_eval.py` asserting canvas routing and tool selection ≥ 90% across chat and voice
+
+#### Gate DF
+- [ ] 11-step demo script (§6) passes in chat and voice
+- [ ] Eval set +12 canvas-routing cases ≥ 90%
+- [ ] Each demo turn yields ≤ 3 sentence answer in chat and voice
+
+---
+
+### Milestone MS-16 · Stage DG — Synthetic data gaps — **DONE**
+**Anchor:** brief §4; WH-06, WH-08, WH-10, WH-13, WH-14 (D-29, D-31)
+**Status:** **DONE**. 6 tables generated for 412 wells; unit tests green; DG integration complete.
+
+#### Tasks
+- [x] [A] DG-A1 Table group A generators: `tubing_tally` (WH-06) and `deviation_survey` (WH-08) — DONE (412 wells, tests green)
+- [x] [A] DG-A2 Table group B generators: `barrier_tests` (WH-14) and `wellhead_rating` (WH-14) — DONE (412 wells, tests green)
+- [x] [A] DG-A3 Table group C generators: `fluid_hazards` (WH-13) and `fishing_records` (WH-10) — DONE (412 wells, tests green)
+- [x] [A] DG-A4 Consistency test suite: `backend/tests/unit/test_dg_*.py` and `test_tc033_dg_tables.py` green
+- [x] [O] DG-O5 Landing data generation & DG integration: 6 tables generated (seed `20261008`), routes `/tubing-tally`, `/deviation`, `/integrity` implemented, lakehouse DDL regenerated (not applied), `well_history_template.md` data gap register updated from GAP to AVAILABLE (synthetic)
+
+#### Gate DG
+- [x] 6 new tables generated for 100% of wells (412 wells), `is_synthetic=true` on every row
+- [x] `tests/unit/test_dg_*.py` and `tests/unit/test_tc033_dg_tables.py` green (tally length within ±1 joint, TVD monotonic and ≤ MD, barrier dates in range, rating ≥ 1.5 × max THP, fishing matches failure codes)
+- [x] DG integration complete: routes `/tubing-tally`, `/deviation`, `/integrity` done; lakehouse DDL regenerated (not applied)
+- [x] `well_history_template.md` data gap register flips GAP → AVAILABLE (synthetic)
+
+---
+
+### Milestone MS-17 · Stage NN — Multimodal success engine (demo scorer)
+**Anchor:** brief §1 U-4, U-5; §5 (D-32)
+
+#### Tasks
+- [ ] [O] NN-O1 Deterministic demo scorer: implement `backend/app/analytics/tools/success_engine.py` evaluating `P(success | c) = clip(p_mechanism(c)^0.5 × (0.5·base_rate + 0.5·analog_rate), 0.05, 0.95)` with Bayesian shrinkage to asset rate
+- [ ] [O] NN-O2 Recommendation contract TC-030: implement `recommend_interventions` in `backend/app/analytics/tools/recommendations.py` returning top 3 candidates + `NO_JOB_JUSTIFIED`, expected uplift, rig-days, cost band, risks, analogs, drivers
+- [ ] [O] NN-O3 Analog search TC-031: implement `similar_wells` in `backend/app/analytics/tools/similar_wells.py` (k=5 analogs via cosine similarity on standardised `build_features` vectors that ran candidate c)
+- [ ] [F] NN-F4 NbaCard top-3 UI: update frontend with P(success), look-alike analog counts, and plain-English top drivers
+- [ ] [F] NN-F5 "How did you decide?" panel: implement explanation panel with evidence chain, analog wells, top drivers, and multimodal NN architecture diagram (with Vertex AI custom job + Model Registry described as production path)
+- [ ] [O] NN-O6 Plausibility review: verify outputs for hero wells GK-129, LKW-019, and LKM-061 for engineering soundness
+
+#### Gate NN (demo)
+- [ ] Top 3 render for all producing wells via TC-030 `recommend_interventions`
+- [ ] p_success is strictly in [0.05, 0.95] and stable across calls
+- [ ] Analog counts recompute exactly from data (TC-031 `similar_wells`, k=5)
+- [ ] The explanation panel shows all four elements: evidence chain, look-alike analogs, top drivers (SHAP), and multimodal NN architecture diagram (with Vertex AI custom job + Model Registry described as production path)
+- [ ] Plausibility review of GK-129, LKW-019, and LKM-061 outputs passes orchestrator inspection
+
+---
+
+### Milestone MS-18 · Stage FR — Field report (HTML)
+**Anchor:** brief §1 U-6; §7 (D-30)
+
+#### Tasks
+- [ ] [F] FR-F1 Jinja2 HTML report template: implement A4-printable layout in `backend/app/analytics/templates/field_report.html` covering WH-01…WH-19, ONGC header/footer branding (wordmark fallback), and "SYNTHETIC DATA — DEMO" banner
+- [ ] [F] FR-F2 Wellbore SVG generator: dynamic schematic rendering casing, tubing, perforations, and formation tops with placeholders for missing data per WH-05
+- [ ] [O] FR-O3 TC-032 assembly engine: implement `backend/app/analytics/tools/field_report.py` assembling job program, kill fluid weight, barriers, contingencies, top-3 rationale, and `facts.json` sidecar
+- [ ] [O] FR-O4 Fact validator & route wiring: implement `GET /api/wells/{id}/report` and `backend/tests/unit/test_tc032_field_report.py` ensuring 100% digits trace to tool returns
+- [ ] [F] FR-F5 Canvas iframe view: integrate field report inside expanded middle panel with print/save button and one-line chat link
+
+#### Gate FR
+- [ ] `GET /api/wells/{id}/report` renders for all 412 wells in < 3 s locally (p95)
+- [ ] Clean A4 print layout verified with repeating headers, print-friendly styling, and "SYNTHETIC DATA — DEMO" banner
+- [ ] ONGC logo (`frontend/public/brand/ongc_logo.svg`) displayed at top left and print footer, with text wordmark fallback if missing
+- [ ] Wellbore SVG renders dynamically from casing/tubing/perf/formation data (with placeholders for missing data per WH-05)
+- [ ] 100% of digits validated against `facts.json` sidecar; Flash writes template prose only with no hard-coded numerals
+- [ ] Chat and voice provide a concise one-line link to open the field report
+
+---
+
+### Milestone MS-19 · Stage W2 — Redeploy
+**Anchor:** brief §2; §8
+
+#### Tasks
+- [ ] [O] W2-O1 Container build configuration: update Dockerfile and `deploy/selfcheck.py` for v0.5 assets (DG tables, NN scores, report templates)
+- [ ] [O] W2-O2 Local container validation: execute `deploy/deploy.sh build` and run local smoke test
+- [ ] [O] W2-O3 Cloud Run deployment: execute `deploy/deploy.sh deploy` with zero-downtime revision rollout
+- [ ] [O] W2-O4 Post-deployment smoke test: execute `deploy/deploy.sh smoke` against live Cloud Run URL (7/7 checks)
+
+#### Gate W2
+- [ ] Local container validation passes via `deploy/deploy.sh build`
+- [ ] Cloud Run deployment completes successfully via `deploy/deploy.sh deploy` with min-instances=1 and session affinity
+- [ ] `deploy/deploy.sh smoke` passes 7/7 checks (including new endpoint `/api/wells/GK-129/report`)
+- [ ] End-to-end 11-step demo script verified on public Cloud Run URL
+
+---
+
 ## Verbatim §8 Gates → v0.4 stages
 
 | Verbatim §8 gate | Stages | Done when |
@@ -435,3 +551,19 @@
 | — | D-4 project = `workover-operations-agentic-ai` | — | — | Resolved 2026-10-07 |
 | — | D-13 text model = `gemini-3.8-flash` on Vertex ADC | — | — | Resolved 2026-10-07 |
 | — | Stray `v0.4-build` branch on GitHub | — | — | Deleted 2026-10-07 |
+
+---
+
+## Key decisions (v0.5)
+
+| ID | Decision | Status | Resolution / detail |
+|---|---|---|---|
+| **D-25** | Answer canvas replaces Deep Dive | Accepted | Question-driven views (`overview`, `production`, `interventions`, `wellbore`, `pressures`, `diagnosis`, `recommendation`, `compare`, `nearby`, `report`); chat answers ≤ 3 sentences; full well history accessible only via field report (brief §1, §3). |
+| **D-26** | Success label definition | Accepted | P(success) from `workover_history.outcome`: `SUCCESS` = 1; `PARTIAL`, `FAILED` = 0; `CENSORED`, `NO_ACTION`, `IN_PROGRESS` excluded (~3.6k labelled jobs across 393 wells, 15 classes; brief §5). |
+| **D-27** | Production path: Vertex AI custom training + Model Registry | Accepted | Described in architecture diagram panel as production path; not built in v0.5 per D-32 (brief §5). |
+| **D-28** | HGB mechanism probabilities used by demo scorer | Accepted | `ic-hgb-v1` mechanism probabilities used by demo scorer; no model trained in v0.5 per D-32 (brief §5). |
+| **D-29** | DG synthetic tables flagged `is_synthetic` | Accepted | All 6 generated DG tables flagged `is_synthetic=true`, `_source_system='wellpulse_dg_v1'`, deterministic seed `20261008` (brief §4). |
+| **D-30** | ONGC logo branding | Accepted | ONGC logo (`frontend/public/brand/ongc_logo.svg`) supplied by user, with text wordmark "ONGC" fallback if asset is missing; "SYNTHETIC DATA — DEMO" banner on every report page (brief §7). |
+| **D-31** | Argon tier for data generation | Accepted | Argon = `gemini-3.8-flash-high` via `swarm add` for data generation and consistency test suites; orchestrator owns architecture, leakage rules, and gates; Flash handles prose and templates (brief §8). |
+| **D-32** | No model training or data regeneration in v0.5 | Accepted | Multimodal NN presented as engine (art-of-the-possible demo); numbers from deterministic demo scorer in `backend/app/analytics/tools/success_engine.py`; Vertex custom job & Model Registry kept as production path in architecture diagram; supersedes training parts of D-26/D-27/D-28 (brief §5). |
+

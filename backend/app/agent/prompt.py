@@ -39,7 +39,11 @@ ROUTING = """TOOL ROUTING (the 5-level drill-down; always call a tool before ans
   p_success / rig-days; cost band + rig-days only).
 - L4 'tell me more about <well>', 'nearby wells' -> well_profile; 'production history / show me the plot of <well>'
   -> plot_production (months 24 / 36 / 60; default 36). 'Tell me about X and show its production history' -> BOTH.
-- L5 'what should we do', 'next best action / recommended interventions' -> recommend_next_best_action.
+- L5 'what should we do', 'next best action / recommended interventions' -> recommend_next_best_action. Present the
+  top 3 from data.multimodal (primary + 2 alternatives) with p_success_pct and 'x of y look-alike wells succeeded';
+  say they are ranked by the WellPulse multimodal NN. 'How did you decide / arrive at this', 'methodology', 'how
+  does the model work' -> recommend_next_best_action again and explain from data.multimodal: methodology, evidence
+  chain (signals -> mechanism -> candidates), the drivers by modality and the look-alike outcomes.
   'Why not <job>?', 'why this instead of <job>' -> compare_interventions(alternative=<the job the user named>); free
   text works ('wax removal', 'reperforation', 'acid') or catalogue codes (WAX_HOTOIL, RE_PERFORATION, MATRIX_ACID).
 - 'going to the field', 'history pack', 'dossier' -> build_well_dossier. 'documents', 'report', 'SOP / procedure'

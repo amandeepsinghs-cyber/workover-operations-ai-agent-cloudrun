@@ -12,13 +12,44 @@ import { ProductionMarkersChart } from './ProductionMarkersChart';
 import { NearbyWellsList } from './NearbyWellsList';
 // Stage R (additive): TC-022 next best action, TC-027 counterfactual, TC-019 attribution
 import { NbaCard } from '../decision/NbaCard';
+import { RecommendationPanel } from '../decision/RecommendationPanel';
 import { CounterfactualTable } from '../decision/CounterfactualTable';
 import { AttributionWaterfall } from '../decision/AttributionWaterfall';
+
+/** One focused view per question (answer canvas). Undefined = all sections (legacy overlay). */
+export type CanvasView =
+  | 'overview'
+  | 'production'
+  | 'interventions'
+  | 'wellbore'
+  | 'pressures'
+  | 'diagnosis'
+  | 'recommendation'
+  | 'compare'
+  | 'nearby';
+
+export const CANVAS_VIEWS: { key: CanvasView; label: string }[] = [
+  { key: 'overview', label: 'Overview' },
+  { key: 'production', label: 'Production' },
+  { key: 'interventions', label: 'Interventions' },
+  { key: 'wellbore', label: 'Wellbore' },
+  { key: 'pressures', label: 'Tests & Pressure' },
+  { key: 'diagnosis', label: 'Diagnosis' },
+  { key: 'recommendation', label: 'Recommendation' },
+  { key: 'nearby', label: 'Nearby' },
+];
 
 export interface WellDeepDiveDrawerProps {
   wellId: string;
   onClose: () => void;
   onSelectWell: (id: string) => void;
+  /** Render inside the parent (middle panel) instead of as a fixed right-hand overlay. */
+  embedded?: boolean;
+  /** Show only the sections for this view (answer canvas). */
+  view?: CanvasView;
+  onViewChange?: (v: CanvasView) => void;
+  /** Recommended job to compare against in the 'compare' view. */
+  compareRecommended?: string;
 }
 
 function formatNum(val: number | null | undefined, digits = 1): string {
@@ -46,15 +77,20 @@ export const WellDeepDiveDrawer: React.FC<WellDeepDiveDrawerProps> = ({
   wellId,
   onClose,
   onSelectWell,
+  embedded = false,
+  view,
+  onViewChange,
+  compareRecommended,
 }) => {
+  const show = (vs: CanvasView[]) => !view || vs.includes(view);
   const [months, setMonths] = useState<24 | 36 | 60>(36);
   // Stage R: counterfactual panel (opened from the NBA card or the toggle)
   const [compareOpen, setCompareOpen] = useState<boolean>(false);
   const [compareRec, setCompareRec] = useState<string | undefined>(undefined);
   useEffect(() => {
-    setCompareOpen(false);
-    setCompareRec(undefined);
-  }, [wellId]);
+    setCompareOpen(view === 'compare');
+    setCompareRec(view === 'compare' ? compareRecommended : undefined);
+  }, [wellId, view, compareRecommended]);
 
   // Profile state
   const [profileEnvelope, setProfileEnvelope] = useState<Envelope<WellProfile> | null>(null);
@@ -167,11 +203,26 @@ export const WellDeepDiveDrawer: React.FC<WellDeepDiveDrawerProps> = ({
   };
 
   return (
-    <aside className="fixed top-0 right-0 h-full w-[640px] max-w-full z-[1100] bg-[#0d1117] border-l border-border shadow-2xl overflow-y-auto flex flex-col">
+    <aside
+      className={
+        embedded
+          ? 'h-full w-full bg-[#0d1117] overflow-y-auto flex flex-col'
+          : 'fixed top-0 right-0 h-full w-[640px] max-w-full z-[1100] bg-[#0d1117] border-l border-border shadow-2xl overflow-y-auto flex flex-col'
+      }
+    >
       {/* Sticky Header */}
-      <div className="sticky top-0 bg-[#0d1117]/95 backdrop-blur border-b border-border p-4 z-20 flex items-start justify-between gap-3">
+      <div
+        className={`sticky top-0 bg-[#0d1117]/95 backdrop-blur border-b border-border p-4 z-20 flex items-start justify-between gap-3 ${
+          embedded ? 'pr-12' : ''
+        }`}
+      >
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
+            {embedded && (
+              <span className="text-[10px] font-mono uppercase tracking-wider text-accent">
+                {view ? CANVAS_VIEWS.find((v) => v.key === view)?.label ?? 'Why not another job' : 'Well detail'}
+              </span>
+            )}
             <h2 className="text-base font-bold font-mono text-white tracking-wide">{wellId}</h2>
             {bucket && (
               <span
@@ -189,13 +240,32 @@ export const WellDeepDiveDrawer: React.FC<WellDeepDiveDrawerProps> = ({
           <div className="text-xs font-mono text-textMuted mt-1">
             {profile?.identity.field ?? '—'} · {profile?.identity.cluster_id ? `Cluster ${profile.identity.cluster_id}` : '—'}
           </div>
+          {embedded && onViewChange && (
+            <div className="flex flex-wrap gap-1 mt-2">
+              {CANVAS_VIEWS.map((v) => (
+                <button
+                  key={v.key}
+                  onClick={() => onViewChange(v.key)}
+                  className={`px-2 py-0.5 rounded border text-[10px] font-mono ${
+                    view === v.key || (view === 'compare' && v.key === 'recommendation')
+                      ? 'border-accent text-white bg-surface'
+                      : 'border-border text-textMuted hover:text-white'
+                  }`}
+                >
+                  {v.label}
+                </button>
+              ))}
+            </div>
+          )}
         </div>
 
         <button
           onClick={onClose}
-          className="p-1 rounded text-textMuted hover:text-white hover:bg-surface transition-colors shrink-0"
-          aria-label="Close drawer"
+          className="p-1 rounded text-textMuted hover:text-white hover:bg-surface transition-colors shrink-0 flex items-center gap-1 text-[10px] font-mono"
+          aria-label={embedded ? 'Back to production view' : 'Close drawer'}
+          title={embedded ? 'Back to production view (ESC)' : 'Close (ESC)'}
         >
+          {embedded && <span>Back</span>}
           <X className="w-5 h-5" />
         </button>
       </div>
@@ -224,6 +294,8 @@ export const WellDeepDiveDrawer: React.FC<WellDeepDiveDrawerProps> = ({
           </div>
         ) : profile ? (
           <>
+            {show(['overview']) && (
+            <>
             {/* Section 1: Status & Current Performance */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               {/* Status Box */}
@@ -286,7 +358,11 @@ export const WellDeepDiveDrawer: React.FC<WellDeepDiveDrawerProps> = ({
                 </div>
               </div>
             </div>
+            </>
+            )}
 
+            {show(['overview', 'production']) && (
+            <>
             {/* Section 2: Decline & Forecast */}
             <div className="bg-[#0d1117] border border-border rounded-lg p-3 space-y-2">
               <div className="text-xs font-mono uppercase text-textMuted font-bold flex items-center gap-1.5">
@@ -312,7 +388,11 @@ export const WellDeepDiveDrawer: React.FC<WellDeepDiveDrawerProps> = ({
                 </div>
               </div>
             </div>
+            </>
+            )}
 
+            {show(['overview']) && (
+            <>
             {/* Section 3: Identity */}
             <div className="bg-[#0d1117] border border-border rounded-lg p-4 space-y-3">
               <div className="text-xs font-mono uppercase text-textMuted font-bold flex items-center gap-1.5">
@@ -358,7 +438,11 @@ export const WellDeepDiveDrawer: React.FC<WellDeepDiveDrawerProps> = ({
                 </div>
               </div>
             </div>
+            </>
+            )}
 
+            {show(['overview', 'wellbore']) && (
+            <>
             {/* Section 4: Artificial Lift */}
             <div className="bg-[#0d1117] border border-border rounded-lg p-4 space-y-3">
               <div className="text-xs font-mono uppercase text-textMuted font-bold flex items-center justify-between">
@@ -382,7 +466,11 @@ export const WellDeepDiveDrawer: React.FC<WellDeepDiveDrawerProps> = ({
                   ))}
               </div>
             </div>
+            </>
+            )}
 
+            {show(['wellbore']) && (
+            <>
             {/* Section 5: Construction Tables */}
             <div className="bg-[#0d1117] border border-border rounded-lg p-4 space-y-4">
               <div className="text-xs font-mono uppercase text-textMuted font-bold flex items-center gap-1.5">
@@ -517,7 +605,11 @@ export const WellDeepDiveDrawer: React.FC<WellDeepDiveDrawerProps> = ({
                 </div>
               </div>
             </div>
+            </>
+            )}
 
+            {show(['wellbore']) && (
+            <>
             {/* Section 6: Lithology Column */}
             <div className="bg-[#0d1117] border border-border rounded-lg p-4 space-y-3">
               <div className="text-xs font-mono uppercase text-textMuted font-bold flex items-center justify-between">
@@ -590,7 +682,11 @@ export const WellDeepDiveDrawer: React.FC<WellDeepDiveDrawerProps> = ({
                 <div className="text-xs text-textMuted italic py-2">No lithology tops recorded</div>
               )}
             </div>
+            </>
+            )}
 
+            {show(['pressures']) && (
+            <>
             {/* Section 7: Tests & Pressure Surveys */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               {/* Last Test Grid */}
@@ -605,7 +701,11 @@ export const WellDeepDiveDrawer: React.FC<WellDeepDiveDrawerProps> = ({
                 {renderKvGrid(profile.last_pressure_survey, 'No pressure survey recorded')}
               </div>
             </div>
+            </>
+            )}
 
+            {show(['interventions']) && (
+            <>
             {/* Section 8: Interventions Summary */}
             <div className="bg-[#0d1117] border border-border rounded-lg p-3 space-y-2">
               <div className="text-xs font-mono uppercase text-textMuted font-bold flex items-center justify-between">
@@ -635,7 +735,11 @@ export const WellDeepDiveDrawer: React.FC<WellDeepDiveDrawerProps> = ({
                 </div>
               </div>
             </div>
+            </>
+            )}
 
+            {show(['production', 'interventions']) && (
+            <>
             {/* Section 9: Production Section with Months Selector */}
             <div className="bg-[#0d1117] border border-border rounded-lg p-4 space-y-3">
               <div className="flex items-center justify-between flex-wrap gap-2">
@@ -696,19 +800,106 @@ export const WellDeepDiveDrawer: React.FC<WellDeepDiveDrawerProps> = ({
                 </div>
               )}
             </div>
+            </>
+            )}
 
-            {/* Stage R: Next best action (TC-022) */}
-            <div className="bg-[#0d1117] border border-border rounded-lg p-4 space-y-3">
-              <NbaCard
-                wellId={wellId}
-                topK={3}
-                onCompare={(jobCode) => {
-                  setCompareRec(jobCode);
-                  setCompareOpen(true);
-                }}
-              />
-            </div>
+            {show(['interventions']) && production && (
+              <div className="bg-[#0d1117] border border-border rounded-lg p-4 space-y-2">
+                <div className="text-xs font-mono uppercase text-textMuted font-bold flex items-center gap-1.5">
+                  <Wrench className="w-3.5 h-3.5 text-accent" />
+                  Intervention History ({months / 12} years{production.historical_interventions?.length ? ' + earlier' : ''})
+                </div>
+                {production.interventions.length === 0 && !production.historical_interventions?.length ? (
+                  <div className="text-xs text-textMuted italic py-2">No interventions recorded</div>
+                ) : (
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-[11px] font-mono">
+                      <thead>
+                        <tr className="text-textMuted text-left border-b border-border/60">
+                          <th className="py-1 px-2">Date</th>
+                          <th className="py-1 px-2">Job</th>
+                          <th className="py-1 px-2">Class</th>
+                          <th className="py-1 px-2">Outcome</th>
+                          <th className="py-1 px-2 text-right">Rig-days</th>
+                          <th className="py-1 px-2 text-right">Uplift BOPD</th>
+                          <th className="py-1 px-2">Report</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {[...production.interventions].reverse().map((j) => (
+                          <tr key={j.workover_id} className="border-b border-border/30">
+                            <td className="py-1 px-2 text-white">{j.date}</td>
+                            <td className="py-1 px-2 text-white" title={j.job_name ?? undefined}>{j.job_name ?? j.job_code}</td>
+                            <td className="py-1 px-2 text-textMuted">{j.intervention_class ?? '—'}</td>
+                            <td
+                              className={`py-1 px-2 ${
+                                j.outcome === 'SUCCESS' ? 'text-emerald-400' : j.outcome === 'FAILED' ? 'text-red-400' : 'text-amber-300'
+                              }`}
+                            >
+                              {j.outcome}
+                            </td>
+                            <td className="py-1 px-2 text-right">{j.rig_days ?? '—'}</td>
+                            <td className="py-1 px-2 text-right">{j.uplift_bopd ?? '—'}</td>
+                            <td className="py-1 px-2">
+                              {j.doc_url ? (
+                                <a href={j.doc_url} target="_blank" rel="noopener noreferrer" className="text-accent hover:underline">
+                                  {j.doc_id}
+                                </a>
+                              ) : (
+                                '—'
+                              )}
+                            </td>
+                          </tr>
+                        ))}
+                        {(production.historical_interventions ?? []).map((h, i) => (
+                          <tr key={`h-${i}`} className="border-b border-border/20 text-textMuted">
+                            <td className="py-1 px-2">{h.date}</td>
+                            <td className="py-1 px-2">{h.job_name ?? h.job_code}</td>
+                            <td className="py-1 px-2">historical</td>
+                            <td className="py-1 px-2">{h.outcome}</td>
+                            <td className="py-1 px-2 text-right">—</td>
+                            <td className="py-1 px-2 text-right">—</td>
+                            <td className="py-1 px-2">—</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </div>
+            )}
 
+            {show(['recommendation']) && (
+            <>
+            <RecommendationPanel
+              wellId={wellId}
+              onCompare={(job) => {
+                setCompareRec(job);
+                setCompareOpen(true);
+              }}
+              onOpenWell={onSelectWell}
+            />
+
+            <details className="bg-[#0d1117] border border-border rounded-lg p-4 space-y-3">
+              <summary className="text-xs font-mono uppercase text-textMuted font-bold cursor-pointer hover:text-white select-none">
+                Full next-best-action detail (TC-022)
+              </summary>
+              <div className="pt-2">
+                <NbaCard
+                  wellId={wellId}
+                  topK={3}
+                  onCompare={(jobCode) => {
+                    setCompareRec(jobCode);
+                    setCompareOpen(true);
+                  }}
+                />
+              </div>
+            </details>
+            </>
+            )}
+
+            {show(['recommendation', 'compare']) && (
+            <>
             {/* Stage R: Counterfactual — why this job and not another (TC-027) */}
             <div className="bg-[#0d1117] border border-border rounded-lg p-4 space-y-3">
               <button
@@ -720,12 +911,20 @@ export const WellDeepDiveDrawer: React.FC<WellDeepDiveDrawerProps> = ({
               </button>
               {compareOpen && <CounterfactualTable key={`${wellId}-${compareRec ?? 'nba'}`} wellId={wellId} recommended={compareRec} />}
             </div>
+            </>
+            )}
 
+            {show(['diagnosis']) && (
+            <>
             {/* Stage R: Decline attribution (TC-019) */}
             <div className="bg-[#0d1117] border border-border rounded-lg p-4 space-y-3">
               <AttributionWaterfall wellId={wellId} windowDays={180} />
             </div>
+            </>
+            )}
 
+            {show(['nearby']) && (
+            <>
             {/* Section 10: Nearby Wells */}
             <div className="bg-[#0d1117] border border-border rounded-lg p-4 space-y-3">
               <div className="text-xs font-mono uppercase text-textMuted font-bold">
@@ -738,6 +937,8 @@ export const WellDeepDiveDrawer: React.FC<WellDeepDiveDrawerProps> = ({
                 onSelectWell={onSelectWell}
               />
             </div>
+            </>
+            )}
 
             {/* Profile Provenance Footer */}
             {profileEnvelope?.provenance && (

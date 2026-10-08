@@ -79,6 +79,26 @@ def well_next_best_action(well_id: str, top_k: int = Query(3, ge=1, le=5), as_of
     return rbac.redact(persona, "well.nba", env)
 
 
+@router.get("/wells/{well_id}/recommendations")
+def well_recommendations(well_id: str, k: int = Query(3, ge=1, le=5), as_of: str | None = None,
+                         persona: str = Depends(rbac.require("well.nba"))):
+    """TC-030 (v0.5): top-k with P(success), analogs, drivers, architecture (multimodal engine, D-32)."""
+    from app.analytics.tools.success_engine import recommend_interventions
+
+    wid = _known_well_or_404(well_id)
+    return rbac.redact(persona, "well.nba", recommend_interventions(wid, as_of=_as_of_or_422(as_of), k=k))
+
+
+@router.get("/wells/{well_id}/similar")
+def well_similar(well_id: str, ic: str = Query(..., alias="class", min_length=4), as_of: str | None = None,
+                 persona: str = Depends(rbac.require("well.nba"))):
+    """TC-031 (v0.5): look-alike wells that ran the same intervention class, with outcomes."""
+    from app.analytics.tools.success_engine import similar_wells
+
+    wid = _known_well_or_404(well_id)
+    return similar_wells(wid, ic.strip().upper(), as_of=_as_of_or_422(as_of))
+
+
 @router.get("/wells/{well_id}/compare")
 def well_compare(well_id: str, alternative: str = Query(..., min_length=1), recommended: str | None = None,
                  as_of: str | None = None, persona: str = Depends(rbac.require("well.nba"))):

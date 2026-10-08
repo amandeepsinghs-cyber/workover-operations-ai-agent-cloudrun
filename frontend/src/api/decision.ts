@@ -130,6 +130,106 @@ export interface NextBestActions {
   job_menu: JobMenuItem[]; // catalogue jobs for the "why not X?" picker (from job_catalogue)
 }
 
+/* ------------------------------------------------------------------ TC-030 recommendations (v0.5 Multimodal NN) */
+export interface RecArchitectureInput {
+  modality: string;
+  encoder: string;
+}
+
+export interface RecArchitecture {
+  name: string;
+  inputs: RecArchitectureInput[];
+  fusion: string;
+  training: string;
+  serving: string;
+}
+
+export interface PInputs {
+  p_mechanism: number;
+  ml_prob: number | null;
+  diagnostic_fit: DiagnosticFit;
+  base_rate: number | null;
+  base_rate_n: number;
+  analog_rate: number;
+}
+
+export interface AnalogJob {
+  well_id: string;
+  workover_id: string;
+  job_code: string;
+  start_date: string;
+  outcome: string;
+  uplift_bopd: number | null;
+  similarity: number;
+}
+
+export interface CandidateAnalogs {
+  n: number;
+  n_success: number;
+  well_ids: string[];
+  jobs: AnalogJob[];
+}
+
+export interface RecCandidate {
+  rank: number;
+  job_code: string;
+  job_name: string;
+  ic: string;
+  ic_label: string;
+  p_success: number;
+  p_inputs: PInputs;
+  expected_uplift_bopd: number | null;
+  deferred_bbl_12mo: number | null;
+  rig_days: number;
+  requires_rig: boolean;
+  cost_band?: CostBand | null;
+  risks: string[];
+  why: string;
+  fit_symbol: FitSymbol;
+  fit_evidence: string;
+  sources: string[];
+  sop_doc_id: string | null;
+  sop_title: string | null;
+  sop_url: string | null;
+  sop_steps?: SopPhase[];
+  earliest_start_date: string | null;
+  guardrail: string | null;
+  alternative_note: string | null;
+  analogs: CandidateAnalogs;
+}
+
+export interface RecEvidenceChain {
+  signals: string[];
+  mechanism: string | null;
+  candidates: string[];
+}
+
+export interface RecDriver {
+  feature: string;
+  label: string;
+  modality: string;
+  value: number | null;
+  direction: 'supports' | 'argues against' | string;
+  weight: number;
+}
+
+export interface Recommendations {
+  status: string;
+  well_id: string;
+  field: string;
+  lift_type: string;
+  as_of: string;
+  engine: string;
+  architecture: RecArchitecture;
+  candidates: RecCandidate[];
+  rejected?: RejectedAction[];
+  flags?: string[];
+  evidence_chain: RecEvidenceChain;
+  drivers: RecDriver[];
+  message?: string | null;
+  is_synthetic?: boolean;
+}
+
 /* ------------------------------------------------------------------ TC-027 counterfactual */
 export type CounterfactualDimension =
   | 'diagnostic_fit'
@@ -273,8 +373,19 @@ async function getEnvelope<T>(url: string): Promise<Envelope<T>> {
   return body as Envelope<T>;
 }
 
+async function getDirect<T>(url: string): Promise<T> {
+  const res = await fetch(url, { headers: { 'X-Persona': 'ASSET_MANAGER' } });
+  const body = await res.json();
+  if (!res.ok) {
+    throw new Error((body && body.detail) || `HTTP ${res.status} for ${url}`);
+  }
+  return body as T;
+}
+
 export const decisionApi = {
   nba: (wellId: string, topK = 3) => getEnvelope<NextBestActions>(`/api/wells/${wellId}/nba?top_k=${topK}`),
+  recommendations: (wellId: string, k = 3) =>
+    getDirect<Recommendations>(`/api/wells/${wellId}/recommendations?k=${k}`),
   compare: (wellId: string, alternative: string, recommended?: string) => {
     const q = new URLSearchParams({ alternative });
     if (recommended) q.set('recommended', recommended);

@@ -29,11 +29,12 @@ The Pre-field Well Pack is generated on explicit user demand and **never** dumpe
 ### 1.4 Delivery Mechanism & UI Presentation
 1. **Chat UI Interaction:** Emits a single-line markdown link with metadata chip:
    ```markdown
-   📋 **Pre-Field Well Pack Generated:** [Open GK-129 Field Pack (HTML)](/api/wells/GK-129/history-pack) · *As of 2026-09-30 | 19 Sections | Print Ready (A4)*
+   📋 **Field Report Generated:** [Open GK-129 Field Report (HTML)](/api/wells/GK-129/report) · *As of 2026-09-30 | 19 Sections + Job Program | Print Ready (A4)*
    ```
-2. **Presentation Panel:** Opens in WellPulse's expanded middle workspace panel (full-width iframe overlay with split-pane docking).
-3. **Branding & Print:** Features the official ONGC corporate header banner, asset name, synthetic disclaimer watermark, and print CSS formatting optimized for A4 hardcopy export (`@media print`).
-4. **Latency Target:** Complete report generation and DOM render in `< 3.0 seconds`.
+2. **Canonical Report Route:** `GET /api/wells/{id}/report` (optional query param `?intervention=<class>`, returning `text/html` per TC-032). Rendered server-side via Jinja2 from deterministic tool outputs and facts sidecar. Opens in the expanded middle panel with a Print / Save-as-PDF action.
+3. **Presentation Panel:** Opens in WellPulse's expanded middle workspace panel (full-width iframe overlay with split-pane docking).
+4. **Branding & Print:** Features the official ONGC corporate header banner, asset name, synthetic disclaimer watermark, and print CSS formatting optimized for A4 hardcopy export (`@media print`).
+5. **Latency Target:** Complete report generation and DOM render in `< 3.0 seconds`.
 
 ### 1.5 Persona & RBAC Visibility Rules
 | Section Group | Field Engineer (`FE`) | Asset Manager (`AM`) | Executive Director (`ED`) |
@@ -163,7 +164,7 @@ The report comprises 19 structured sections (`WH-01` through `WH-19`). Every eng
 
 ### WH-06: Tubing Joint-by-Joint Tally
 * **Why the engineer needs it:** During pulling or running tubing, the winchman and derrickman tally each single joint to know the exact bit/packer depth down to the centimetre.
-* **Status:** `GAP`
+* **Status:** `PLANNED (Stage DG, synthetic)` (DG table `tubing_tally`)
 * **Fields & Visuals:**
   * Joint Number ($1 \dots N$).
   * Individual Joint Length ($m$, Range 2 typical $9.14 \dots 9.75\,m$).
@@ -172,8 +173,8 @@ The report comprises 19 structured sections (`WH-01` through `WH-19`). Every eng
   * Thread Type (EUE 8rd, NUE, Premium).
   * Visual Condition / Pipe Inspection Grade (Class 1, Class 2, Red Band).
 * **Data Sources:**
-  * `tubing_string` stores only aggregated component length.
-  * Synthetic generation rule: Synthesize joint-by-joint array summing exactly to `tubing_string.length_m` using pseudo-random normal distribution ($\mu=9.45\,m, \sigma=0.15\,m$).
+  * Sourced from DG table: `tubing_tally` (TC-033: `well_id, joint_no, top_md_m, bottom_md_m, od_in, id_in, drift_in, grade, weight_ppf, component_type`). Sum of joint lengths = `tubing_string` depth; OD/ID from `tubing_string`; components at existing depths; deterministic seed `20261008`; `is_synthetic=true`.
+  * Route: `GET /api/wells/{id}/tubing-tally`.
 
 ---
 
@@ -195,14 +196,15 @@ The report comprises 19 structured sections (`WH-01` through `WH-19`). Every eng
 
 ### WH-08: Well Deviation & Directional Survey
 * **Why the engineer needs it:** High dogleg severity causes rod wear, parted rods, tubing leaks, and tool hang-ups.
-* **Status:** `GAP`
+* **Status:** `PLANNED (Stage DG, synthetic)` (DG table `deviation_survey`)
 * **Fields & Visuals:**
   * Station Survey Table: Measured Depth ($MD\,m$), True Vertical Depth ($TVD\,m$), Inclination ($deg$), Azimuth ($deg$), Dogleg Severity ($DLS,\,^\circ/30m$), Vertical Section ($m$).
   * Max DLS callout ($^\circ/30m$) and Depth of Kickoff Point ($KOP\,m$).
   * Well Profile Classification: Vertical ($<5^\circ$), S-Type, J-Type, Slanted.
 * **Data Sources:**
   * `PARTIAL`: `well_master.total_depth_md_m`, `well_master.total_depth_tvd_m`, `well_master.max_dls_deg_30m`.
-  * `GAP`: Full station survey table (generated via minimum curvature method connecting surface to $TVD/MD$).
+  * Sourced from DG table: `deviation_survey` (TC-033: `well_id, md_m, inc_deg, azi_deg, tvd_m`). Station every 30 m to TD; TVD $\le$ MD; vertical wells inc $< 3^\circ$; deviated wells build profile from well-type flag; deterministic seed `20261008`; `is_synthetic=true`.
+  * Route: `GET /api/wells/{id}/deviation`.
 
 ---
 
@@ -228,14 +230,14 @@ The report comprises 19 structured sections (`WH-01` through `WH-19`). Every eng
 
 ### WH-10: Failure, Fishing & Wellbore Obstruction Log
 * **Why the engineer needs it:** Critical warning system: alerts rig crew to unrecovered junk, parted rods, packers left in hole, or recurrent parted tubing depths.
-* **Status:** `PARTIAL`
+* **Status:** `PLANNED (Stage DG, synthetic)` (DG table `fishing_records`)
 * **Fields & Visuals:**
   * Failure Frequency Summary: Grouped by failure mechanism over the last 24 months vs. life-of-well.
   * Repeat Failure Warning Callout: Triggers warning if the same failure mode recurred $\ge 2$ times within 730 days.
   * Fishing History Record: Date of incident, Fish description (e.g. 3 joints 2-7/8" tubing, parted sucker rod string, stuck slickline tool), Top of Fish ($TOF\,m$), Bottom of Fish ($BOF\,m$), Catch tool used (Over-shot, Spear, Magnet), Retrieval status (`RECOVERED` or `LEFT_IN_HOLE`).
 * **Data Sources:**
   * `AVAILABLE`: `workover_history.failure_code`, `workover_history.outcome`, `workover_history.run_life_days`.
-  * `GAP`: Specific fish dimensional specs, TOF depth, and fishing BHA records (synthesized for failed workover jobs).
+  * Sourced from DG table: `fishing_records` (TC-033: `well_id, event_date, fish_type, top_md_m, recovered, workover_id`). Populated only for wells whose `workover_history` has fishing/stuck failure codes; date inside job window; deterministic seed `20261008`; `is_synthetic=true`.
 
 ---
 
@@ -273,7 +275,7 @@ The report comprises 19 structured sections (`WH-01` through `WH-19`). Every eng
 
 ### WH-13: Fluid Properties, Flow Assurance & Subsurface Hazards
 * **Why the engineer needs it:** Toxic gas ($H_2S$) and flow assurance issues (heavy paraffin wax, sand ingestion, calcium carbonate scale) dictate metallurgy, chemical wash volumes, and PPE.
-* **Status:** `PARTIAL`
+* **Status:** `PLANNED (Stage DG, synthetic)` (DG table `fluid_hazards`)
 * **Fields & Visuals:**
   * Produced Fluid Character: Oil Gravity ($^\circ API$), Pour Point ($^\circ C$), Wax Content (% wt), Wax Appearance Temperature ($WAT,\,^\circ C$).
   * Water Chemistry & Scaling Index: Total Dissolved Solids ($TDS,\,mg/L$), Chlorides ($mg/L$), Bicarbonates, Stiff-Davis Scaling Index ($CaCO_3 / BaSO_4$).
@@ -281,13 +283,13 @@ The report comprises 19 structured sections (`WH-01` through `WH-19`). Every eng
   * Flow Assurance History Table: Dates of past solvent flushes, hot oil treatments, scale inhibitor squeezes, or sand bailings.
 * **Data Sources:**
   * `AVAILABLE`: `workover_history.failure_code` (contains `WAX`, `SAND`, `SCALE`), `document_index` (D06 chemical treatment reports).
-  * `GAP`: Quantitative laboratory values for $H_2S\,ppm$, $CO_2\%$, $WAT\,^\circ C$, $API^\circ$ (synthesized per formation/field geologic standards).
+  * Sourced from DG table: `fluid_hazards` (TC-033: `well_id, h2s_ppm, co2_mol_pct, wax_flag, sand_flag, scale_flag`). H2S/CO2 by field band; wax/sand/scale consistent with failure codes and job history; deterministic seed `20261008`; `is_synthetic=true`.
 
 ---
 
 ### WH-14: Well Integrity, Barrier Status & Wellhead Pressure Ratings
 * **Why the engineer needs it:** Ensures secondary well control barriers are validated before unbolting the X-mas tree or pulling the tubing hanger.
-* **Status:** `GAP`
+* **Status:** `PLANNED (Stage DG, synthetic)` (DG tables `barrier_tests`, `wellhead_rating`)
 * **Fields & Visuals:**
   * Wellhead & Tree Specifications: Wellhead Make/Model, Flange Size ($in$), API Pressure Rating ($psi / kg/cm^2$, e.g. API 3000 / 5000), Tubing Hanger Type.
   * Annulus Pressure Monitoring:
@@ -299,7 +301,8 @@ The report comprises 19 structured sections (`WH-01` through `WH-19`). Every eng
   * Most Recent Pressure Test Log: Date of last casing positive pressure test, surface tree test date, test pressure ($kg/cm^2$), duration (min), result.
 * **Data Sources:**
   * `document_index` (D05 CBL log citations).
-  * `GAP`: Annulus pressures, API wellhead rating, and valve test log table (synthesized relative to well age and field maximum THP).
+  * Sourced from DG tables: `wellhead_rating` (TC-033: `well_id, wellhead_class_psi, xmas_tree_rating_psi, last_service_date`; class $\ge$ 1.5 $\times$ max THP) and `barrier_tests` (TC-033: `well_id, test_date, barrier, result, test_pressure_kgcm2, next_due`; tests after last workover, FAIL rate $\le$ 5% only on annulus-pressure wells). Both flagged `is_synthetic=true` with deterministic seed `20261008`.
+  * Route: `GET /api/wells/{id}/integrity`.
 
 ---
 
@@ -320,11 +323,32 @@ The report comprises 19 structured sections (`WH-01` through `WH-19`). Every eng
     * Risk Flags & Logistics / MRO Spares Status.
     * SOP Reference Document ID (hyperlink to D11).
   * Counterfactual Analysis ("Why not alternative?"): Selected job vs. rejected alternatives with diagnostic rationale (e.g. why water shut-off squeeze instead of pump overhaul).
+  * **Job Program Link:** The detailed operational execution program for the selected intervention is documented in the [Job Program](#job-program-selected-intervention-operational-program) section below, rendered via `GET /api/wells/{id}/report?intervention=<class>` (TC-032).
 * **Data Sources:**
   * Tool function: `well_health()` (TC-020)
   * Tool function: `attribute_decline()` (TC-019)
-  * Tool function: `recommend_next_best_action()` (TC-022)
+  * Tool function: `recommend_interventions()` (TC-030) / `recommend_next_best_action()` (TC-022)
   * Tool function: `compare_interventions()` (TC-027)
+
+---
+
+### Job Program: Selected Intervention Operational Program
+* **Why the engineer needs it:** The operational core of the field report: workover crews take this executable program to the field to execute the selected intervention safely, with step-by-step instructions, equipment requirements, well-kill specifications, barrier envelopes, and contingency plans.
+* **Status:** `AVAILABLE (Stage FR)` (rendered server-side for the selected intervention)
+* **Report Route:** Accessible via `GET /api/wells/{id}/report?intervention=<class>` (TC-032 `field_report`).
+* **Fields & Visuals:**
+  * **Selected Intervention:** Primary recommended intervention from TC-030 `recommend_interventions` (Class `IC-01`…`IC-15`, Job Code, Title, Target Formation/Zone).
+  * **Operational Steps:** Numbered sequential execution steps (mobilisation, well kill, tubular retrieval, treatment/repair execution, post-job barrier test, string run, wellhead hookup, production restoration).
+  * **Equipment & Rig Class:** Rig mast tonnage capacity (e.g. 50T / 100T workover rig vs. coiled tubing / slickline spread), mud pump pressure rating ($psi$), minimum BOP stack configuration (e.g. Double Ram 7-1/16" 3000/5000 psi), workstring specification.
+  * **Kill Fluid Program:** Datum reservoir pressure ($SBHP$, $kg/cm^2$), TVD ($m$), required kill fluid density ($\rho_{kill}$, $SG$) with safety margin ($0.03 \dots 0.05\,SG$), fluid type (treated $KCl$ brine / formation water), wellbore volume to perforations ($m^3$). Linked directly to WH-17 kill calculations.
+  * **Barrier Verification Envelope:** Primary barrier (hydrostatic fluid column, mechanical plug/retainer) and secondary barrier (casing, wellhead, BOP stack) verification requirements, test pressures ($kg/cm^2$), hold durations (min), and pass/fail criteria per NORSOK D-010.
+  * **Operational Risks & Hazards:** Well integrity constraints (casing age, burst/collapse margins), fluid hazards ($H_2S$, $CO_2$, wax/scale from `fluid_hazards`), logistics lead times, and MRO spares status.
+  * **Contingency Procedures:** Remedial procedures if primary job encounters excessive injection pressure, string hang-up, micro-annular leak, or loss of circulation.
+  * **SOP Link:** Direct link to approved Standard Operating Procedure document (`/api/docs/<sop_id>.pdf`).
+* **Data Sources:**
+  * Tool contract TC-030 `recommend_interventions(well_id, k=3)`
+  * Tool contract TC-032 `field_report(well_id, intervention)`
+  * `pressure_surveys`, `casing_tally`, `tubing_string`, `barrier_tests`, `fluid_hazards`, SOP library (D11).
 
 ---
 
@@ -421,11 +445,11 @@ The table below catalogs every `GAP` and `PARTIAL` section, defining determinist
 |---|---|---|---|---|---|
 | **WH-02** | Plinth & Road Access | `PARTIAL` | Derive road type (`Paved` vs. `Monsoon_Gravel`) from cluster geography (`GK-NE` = Paved, `GK-SW` = Gravel). Plinth set to standard ONGC workover pad $40\,m \times 40\,m$. | Stage S | `P2` |
 | **WH-05** | API Drift Diameters | `PARTIAL` | Calculate from standard API Spec 5CT lookup based on `od_in` and `weight_ppf`: e.g. 5-1/2" 15.5# casing drift = $4.825\,in$; 2-7/8" 6.5# tubing drift = $2.347\,in$. | Stage S | `P1` |
-| **WH-06** | Tubing Joint Tally | `GAP` | Synthesize joint array ($1 \dots N$) where $\sum \text{length} = \text{tubing\_string.length\_m}$. Joint length generated from Gaussian distribution ($\mu=9.45\,m, \sigma=0.15\,m$, bounded $9.15 \dots 9.75\,m$). | Stage N/S | `P2` |
-| **WH-08** | Directional Station Surveys | `GAP` | Generate station surveys every $100\,m$ from $0\,m$ to TD. For vertical wells ($TD_{MD} - TD_{TVD} < 5\,m$), inclination $\le 1.5^\circ$. For deviated wells, distribute dogleg smoothly up to `max_dls_deg_30m`. | Stage N/S | `P2` |
-| **WH-10** | Detailed Fishing Records | `PARTIAL` | For any `workover_history` row where `outcome = 'FAILED'`, synthesize fish details: Fish Top ($TOF$) placed $10 \dots 50\,m$ above pump depth, fish type matching failure code (e.g. parted rod or parted tubing). | Stage S | `P2` |
-| **WH-13** | Fluid Lab Chemistry ($H_2S$, $CO_2$, $WAT$) | `PARTIAL` | Assign formation-level properties: Tipam sand = Sweet ($H_2S < 2\,ppm$, $CO_2 < 0.5\%$, $API=28^\circ$, $WAT=34^\circ C$, Wax 11%); Barail = Light sweet ($H_2S=0$, $CO_2 < 0.2\%$, $API=32^\circ$). | Stage N/S | `P1` |
-| **WH-14** | Wellhead Rating & Annulus Pressure | `GAP` | Assign Wellhead API rating based on field max THP class (Geleki = API 3000 / $210\,kg/cm^2$; Lakwa = API 2000). Annulus 'A' pressure synthesized as $0.05 \dots 0.15 \times CHP$ unless casing leak. | Stage S | `P1` |
+| **WH-06** | Tubing Joint Tally | `PLANNED (Stage DG, synthetic)` | Sourced from DG table `tubing_tally`. Synthesize joint array ($1 \dots N$) where $\sum \text{length} = \text{tubing\_string.length\_m}$. Joint length generated deterministically (seed 20261008) from Gaussian distribution ($\mu=9.45\,m, \sigma=0.15\,m$, bounded $9.15 \dots 9.75\,m$). | Stage DG | `P1` |
+| **WH-08** | Directional Station Surveys | `PLANNED (Stage DG, synthetic)` | Sourced from DG table `deviation_survey`. Station survey every 30 m to TD; TVD $\le$ MD; vertical wells inc $< 3^\circ$; deviated wells build profile from well-type flag; deterministic seed 20261008. | Stage DG | `P1` |
+| **WH-10** | Detailed Fishing Records | `PLANNED (Stage DG, synthetic)` | Sourced from DG table `fishing_records`. Populated only for wells whose `workover_history` has fishing/stuck failure codes; event date inside job window; deterministic seed 20261008. | Stage DG | `P2` |
+| **WH-13** | Fluid Lab Chemistry ($H_2S$, $CO_2$, $WAT$) | `PLANNED (Stage DG, synthetic)` | Sourced from DG table `fluid_hazards` (`h2s_ppm`, `co2_mol_pct`, `wax_flag`, `sand_flag`, `scale_flag`). Assigned by field band and consistent with failure codes and job history; deterministic seed 20261008. | Stage DG | `P1` |
+| **WH-14** | Wellhead Rating & Barrier Tests | `PLANNED (Stage DG, synthetic)` | Sourced from DG tables `wellhead_rating` (class $\ge$ 1.5 $\times$ field max THP rounded up to API class) and `barrier_tests` (SSSV/master valve/wing valve/annulus/packer tests after last workover, FAIL rate $\le$ 5% only on annulus-pressure wells); deterministic seed 20261008. | Stage DG | `P1` |
 | **WH-17** | Kill Mud Weight & Capacity | `PARTIAL` | Calculate directly: $\rho_{kill} = (SBHP_{kgcm2} \times 10 / TVD_m) + 0.04$. Casing internal volume calculated from casing ID and TVD. | Stage S | `P1` |
 | **WH-19** | Contacts & Sign-off Roles | `GAP` | Standardized ONGC Assam Asset operational directory template mapped to field name (`Geleki Base Office, Nazira`, `Sivasagar Asset HQ`). | Stage S | `P3` |
 
@@ -599,6 +623,33 @@ REPORT DATE: 2026-09-30    DATA SOURCE: Synthetic Ingestion (WellPulse v0.4 Benc
   * **Risk Flags:** `WELL_INTEGRITY` (50-year-old casing requires low squeeze pressure), `LOGISTICS_DELAY`.
   * **SOP Link:** `SOP-WSO-002` (Standard Operating Procedure: Water Shut-Off Squeeze).
 * **Counterfactual Analysis (TC-027):** Alternative considered was `PUMP_OVERHAUL` (`IC-01`). Rejected because pump mechanical efficiency is $>82\%$; mechanical overhaul would produce higher water volumes without arresting the root water channeling.
+* **Job Program Link:** See detailed execution program below, rendered via `GET /api/wells/GK-129/report?intervention=IC-11` (TC-032).
+
+#### Job Program: GK-129 Selected Intervention Program (Stage FR / TC-030 / TC-032)
+
+> [!WARNING]
+> **Illustrative layout only.** Tubing depth (3293.8 m), perforations (3335.4–3383.1 m, Tipam) and the 5-1/2" casing are real parquet values. Rig class, tubing grade, joint count, retainer depth, intervention class id and step details are placeholders. In the HTML report they are replaced by DG tables and TC-030/TC-032 outputs, and the fact validator enforces this.
+
+* **Report Route:** `GET /api/wells/GK-129/report?intervention=IC-11` (render time $< 3.0\,\text{s}$)
+* **Selected Intervention:** `CEMENT_SQUEEZE` (`IC-11`: Water Shut-Off Squeeze across Tipam Sand)
+* **Operational Steps:**
+  1. Mobilise 50-tonne workover spread to wellsite pad ($40\,m \times 40\,m$ plinth); bleed casing pressure to zero.
+  2. Spot 1.03 SG treated $KCl$ kill fluid down tubing; confirm well is statically dead with zero surface pressure.
+  3. Unseat rod pump and pull 2-7/8" J-55 tubing string (348 joints, $3293.8\,m$); inspect pipe condition.
+  4. Run 4-3/4" casing scraper and gauge ring to $3330\,m\,MD$; confirm $4.825\,in$ drift clearance inside 5-1/2" casing.
+  5. Run drillable cement retainer on 2-7/8" workstring; set at $3320\,m\,MD$ ($15.4\,m$ above active perfs $3335.4 \dots 3383.1\,m\,MD$).
+  6. Establish injection rate into water channelling zone; pump neat Class 'G' cement slurry (squeeze pressure capped at $105\,kg/cm^2$ to safeguard 50-year-old casing).
+  7. Sting out of retainer; reverse circulate workstring clean; pull string to surface.
+  8. WOC 24 hours. Pressure test casing and retainer to $70\,kg/cm^2$ for 15 minutes.
+  9. Run 3-1/8" casing gun; reperforate upper Tipam Sand interval $3335.4 \dots 3345.0\,m\,MD$ (6 SPF, 60° phasing).
+  10. Re-run 2-7/8" production tubing string with overhauled insert SRP pump landed at $3293.8\,m\,MD$; set tubing anchor at $3301.1\,m\,MD$.
+  11. Land tubing hanger, pressure-test wellhead packoff, connect flowline, and restore production.
+* **Equipment & Rig Class:** 50-tonne workover rig, 3000-psi Double Ram BOP stack, 2-7/8" workstring.
+* **Kill Fluid:** Datum $SBHP = 228.4\,kg/cm^2$ at TVD $3379.9\,m$; required $\rho_{kill} = 1.03\,SG$ ($8.6\,ppg$ treated $KCl$ brine); wellbore capacity to perfs = $38.4\,m^3$ ($241\,bbl$).
+* **Barriers:** Primary: 1.03 SG hydrostatic fluid column + drillable cement retainer; Secondary: 5-1/2" 15.5# K-55 production casing + 3000-psi BOP stack / master valve.
+* **Risks:** Well integrity (50-year-old casing requires low squeeze pressure $<105\,kg/cm^2$), logistics delay on cement retainer (`TRANSFER_REQUIRED`).
+* **Contingencies:** If formation refuses squeeze pressure below casing burst limit, stage squeeze in 5-bbl hesitation cycles; if micro-annulus leaks persist across $3290 \dots 3330\,m$, apply chemical resin seal; if casing leak detected during WOC pressure test, set retrievable bridge plug at $3300\,m$ to isolate fault.
+* **SOP Link:** `SOP-WSO-002` (`/api/docs/SOP-WSO-002.pdf`).
 
 #### WH-16: Offset & Nearby Well Performance (Same Cluster GK-NE)
 | Offset Well ID | Distance ($m$) | Zone | Lift Type | Health Bucket | Oil Rate ($BOPD$) | Water Cut (%) | Last Job Code & Date |

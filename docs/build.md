@@ -1,16 +1,16 @@
 # Build & Local Run Guide (`build.md`)
 ## WellPulse: Energy Well Operations & Voice AI Platform
 
-**Document Version:** 3.0.0 (v0.4 verbatim expansion) · **Date:** 2026-10-07
+**Document Version:** 3.1.0 (v0.5 answer canvas & multimodal model) · **Date:** 2026-10-08
 **Target Environment:** Local workstation (Linux, macOS, Windows WSL) and Cloud Run
-**Requirements source:** [`verbatim.md`](../verbatim.md). Companion docs: [`BRD.md`](./BRD.md) · [`features.md`](./features.md) · [`BDD.md`](./BDD.md) · [`SDD.md`](./SDD.md) · [`checklist.md`](./checklist.md)
+**Requirements source:** [`verbatim.md`](../verbatim.md) and [`v05_change_brief.md`](./v05_change_brief.md). Companion docs: [`BRD.md`](./BRD.md) · [`features.md`](./features.md) · [`BDD.md`](./BDD.md) · [`SDD.md`](./SDD.md) · [`checklist.md`](./checklist.md)
 
 > [!IMPORTANT]
 > **This file has two parts.**
 > - **[Part I](#part-i--run-wellpulse-today-baseline)** explains how to run the WellPulse that exists today (the v2 baseline). It has been corrected against the code as of 2026-10-07. The earlier ports 8000/8001/5173/5175 were wrong.
-> - **[Part II](#part-ii--v04-verbatim-expansion-build)** is the build for v0.4. It has 13 stages (M…W), each with commands, owner and a gate, and delivers every requirement in `verbatim.md`.
+> - **[Part II](#part-ii--v04-verbatim-expansion-build)** is the build for v0.4 (Stages M…W) and v0.5 (Stages AC, DF, DG, NN, FR, W2), each with commands, owner and a gate, delivering every requirement in `verbatim.md` and `v05_change_brief.md`.
 >
-> **Citation rule.** Every Part II stage cites its verbatim anchor: §, then a short quote. Anything without an anchor is marked **derived**, with the reason. The numbers in verbatim §4–§8 (GK-104, "+180 bopd", "₹18 Lakhs", "142 bar", "25 wells"…) are **illustrative only, not data**. Design targets look like «target ± tol» and are pinned after Stage N.
+> **Citation rule.** Every Part II stage cites its verbatim anchor or v0.5 change brief: §, then a short quote. Anything without an anchor is marked **derived**, with the reason. The numbers in verbatim §4–§8 (GK-104, "+180 bopd", "₹18 Lakhs", "142 bar", "25 wells"…) are **illustrative only, not data**. Design targets look like «target ± tol» and are pinned after Stage N.
 
 ---
 
@@ -165,7 +165,7 @@ export DI2_REPO="../Drilling-Intelligence-2.0"      # Live reference (read-only)
 
 ### Stage map (Part II)
 
-| Stage | Name | Verbatim anchor | Est. | Owner [O]=orchestrator [F]=Flash |
+| Stage | Name | Verbatim anchor | Est. | Owner [O]=orchestrator [A]=Argon [F]=Flash |
 |---|---|---|---|---|
 | **M** | Preflight & baseline | derived: safe migration (D-14), no tests exist today | 0.5 d | O |
 | **N** | Data foundation v2 | §1 *"Lakwa… Lakhmani… three areas, with their individual cluster"*; §1 *"generate more data"* | 3 d | O + F×2 |
@@ -180,14 +180,27 @@ export DI2_REPO="../Drilling-Intelligence-2.0"      # Live reference (read-only)
 | **Y** | RBAC + multi-field GIS | §3 *"role-based access… Executive Director… versus a field engineer"*; §3 *"they can see different fields… and the wells"* | 1.5 d | O + F×1 |
 | **V** | Agent wiring & eval | §3 *"do you see the hierarchy of question and answering?"* (5-level flow, §4 L1–L5) | 2 d | O + F×3 |
 | **W** | Deploy | derived: demo must run on the existing public URL | 0.5 d | O (authorised 2026-10-07; local test first) |
+| **AC** | Answer canvas | brief §1 U-1, U-2, U-3; §3 (views, router, expandable middle panel) | 1 d | O + F |
+| **DF** | Demo flow & eval | brief §6 (11-step demo script Lakwa → LKW-019, +12 eval cases) | 1 d | F + O |
+| **DG** | Data gaps (synthetic) | brief §4 (6 tables for 100% of wells, WH-06, WH-08, WH-10, WH-13, WH-14) — **DONE** | 1.5 d | A×3 + O |
+| **NN** | Multimodal success engine (demo scorer) | brief §1 U-4, U-5; §5 (D-32 demo scorer, P(success), analogs, drivers, architecture panel) | 1 d | O + F |
+| **FR** | Field report HTML | brief §1 U-6; §7 (Jinja2, wellbore SVG, job program, A4 print) | 1.5 d | F + O |
+| **W2** | Redeploy | brief §2; §8 (Cloud Run v0.5, smoke 7/7) | 0.5 d | O |
 
 **Parallelism (derived from data dependencies):**
-- **N** gates everything.
+- **N** gates everything in v0.4.
 - **O** can start once N's `workover_history` and construction tables exist.
 - **U** (transport and audio client) can run in parallel with P–T, using TC-025 as its first voice tool.
 - **Q** needs N; **R** needs P and Q; **S** needs O and R; **T** needs P.
 - **X** can run any time after N.
-- **V** comes after T, U and Y. **W** comes last.
+- **V** comes after T, U and Y. **W** comes last in v0.4.
+- **v0.5 Order & Parallelism (brief §2, §8):**
+  - **AC** builds the answer canvas and expandable panel.
+  - **DF** follows AC (validates the 11-step flow on canvas).
+  - **DG** (DONE): Argon workers generated 6 synthetic gap tables (412 wells); tests and API routes green.
+  - **NN** follows DG and Q (implements `success_engine.py` demo scorer and recommendation contracts TC-030/031 with architecture diagram panel showing production Vertex AI path; D-32).
+  - **FR** follows DG and NN (HTML field report with SVG wellbore, DG tables, and NN recommendations; layout scaffold may start after DG).
+  - **W2** redeploys all v0.5 features to Cloud Run and verifies smoke checks (adds `/api/wells/GK-129/report`).
 
 **Target layout after v0.4:** authoritative tree in [`SDD.md`](./SDD.md) §4. Key paths: `backend/app/analytics/generator/docs_pdf/` (O), `analytics/tools/{attribution,health,intervention_classifier,nba,counterfactual,dossier,field_performance,hierarchy,well_profile,document_search}.py` (P–T), `analytics/model/{features,train,train_classifier}.py` + `intervention_classifier_v1.pkl` / `intervention_classifier_metrics.json` (N, Q), `analytics/config/{factor_map,ic_map,sla}.yaml`, `agent/{runner,adk_tools,prompt,callbacks,rbac}.py` (V, Y), `live/{session,voice_tools,fallback}.py` + `live_prompt.md` (U), `data/index/{doc_chunks.parquet,tfidf.pkl}` (O), `data/geodata/<field>.geojson` (T), `lakehouse/` (X); frontend `components/{common,field,well,map,telemetry,agent}/` and `live/{liveClient,micCapture,audioPlayer}.ts` + `pcm-worklet.js` (T, U, Y).
 
@@ -818,6 +831,165 @@ git add -A && git commit -m "v0.4(W): deploy — Gate W passed" && git push orig
 
 ---
 
+## Stage AC · Answer canvas
+
+**Goal:** Turn WellPulse from an all-in-one well history dump into a question-driven answer canvas. The middle panel shows only the specific view matching the user's question; the chat provides concise replies (≤ 3 sentences plus an optional collapsed card); the middle panel can expand to full width hiding the map (ESC or restore button restores map); the agent remains as the command center on the right. *Anchor: brief §1 U-1, U-2, U-3; §3 (D-25).*
+**Owner:** [O] Orchestrator (routing architecture, action contracts, review), [F] Flash (view components in `WellDeepDiveDrawer.tsx`, expandable middle panel, hotkeys, brevity guardrails).
+**Files:** `frontend/src/api/chat.ts`, `frontend/src/components/well/WellDeepDiveDrawer.tsx`, `frontend/src/App.tsx`, `frontend/src/components/agent/VoiceAgentPanel.tsx`.
+
+```bash
+# Frontend build & typecheck
+cd frontend && npm run build
+```
+
+### ✅ Gate AC
+- [ ] 10 demo phrases route to the correct canvas view via `pickCanvasView` (`overview`, `production`, `interventions`, `wellbore`, `pressures`, `diagnosis`, `recommendation`, `compare`, `nearby`, `report`)
+- [ ] Chat replies are strictly concise (≤ 3 sentences plus optional collapsed card); no full-history dump in chat
+- [ ] Expandable middle panel hides the map; ESC key and restore button return to standard split layout
+- [ ] Interventions table and compare view auto-open on counterfactual questions
+- [ ] `cd frontend && npm run build` and `tsc` green; user UI sign-off
+
+**Commit (gate passed and user approved, orchestrator only):**
+```bash
+git add -A && git commit -m "v0.5(AC): answer canvas — Gate AC passed" && git push origin main
+```
+
+---
+
+## Stage DF · Demo flow & eval
+
+**Goal:** Standardize and automate the 11-step Lakwa → LKW-019 demo sequence in chat and voice, and expand the evaluation dataset with canvas-routing assertions. *Anchor: brief §1 U-1..U-4; §6.*
+**Owner:** [F] Flash (demo script documentation, eval dataset additions), [O] Orchestrator (rehearsal runner, evaluation verification).
+**Files:** `docs/demo_flow.md`, `backend/tests/eval/wellpulse-eval.json`, `backend/tests/integration/test_demo_flow.py`.
+
+```bash
+# Run backend tests and eval suite
+cd backend && uv run pytest -q
+uv run python -m tests.eval.run_eval
+```
+
+### ✅ Gate DF
+- [ ] 11-step demo script (`docs/demo_flow.md`: Lakwa → LKW-019) passes end-to-end in chat and voice
+- [ ] Eval dataset includes +12 canvas-routing test cases with ≥ 90% routing and tool selection accuracy
+- [ ] Every turn asserts correct canvas view, chat response ≤ 3 sentences, and 0 history dumps
+
+**Commit (gate passed and user approved, orchestrator only):**
+```bash
+git add -A && git commit -m "v0.5(DF): demo flow & eval — Gate DF passed" && git push origin main
+```
+
+---
+
+## Stage DG · Synthetic data gaps — **DONE**
+
+**Goal:** Generate 6 new synthetic tables for 100% of wells (412 wells across 3 fields) to fill critical well integrity, survey, hazard, and completion data gaps, with deterministic seed `20261008`, `is_synthetic=true` flag on every row, and full lakehouse parity. *Anchor: brief §4; WH-06, WH-08, WH-10, WH-13, WH-14 (D-29, D-31).*
+**Status:** **DONE**. Argon workers completed 6 tables for 412 wells; tests green (`backend/tests/unit/test_dg_*.py` and `backend/tests/unit/test_tc033_dg_tables.py`). DG integration (routes `/tubing-tally`, `/deviation`, `/integrity`, lakehouse DDL regenerated, not applied) is done.
+**Owner:** [A] Argon (`gemini-3.8-flash-high` via `swarm add`) for table generators and consistency tests:
+- Worker 1: `tubing_tally` (WH-06), `deviation_survey` (WH-08)
+- Worker 2: `barrier_tests` (WH-14), `wellhead_rating` (WH-14)
+- Worker 3: `fluid_hazards` (WH-13), `fishing_records` (WH-10)
+[O] Orchestrator (landing integration, Lakehouse Bronze/Silver ingestion, gap register updates).
+**Files:** `backend/app/analytics/generator/dg.py`, `backend/app/analytics/generator/fields/{tubing,deviation,integrity,hazards}.py`, `backend/tests/unit/test_dg_consistency.py`, `lakehouse/ddl/dg_tables.sql`, `lakehouse/load/bronze_to_silver.py`.
+
+```bash
+# Generate all 6 DG tables across all fields and run consistency validation
+cd backend && uv run python -m app.analytics.generator.dg --field all
+uv run pytest tests/unit/test_dg_*.py tests/unit/test_tc033_dg_tables.py -q
+uv run pytest -q
+```
+
+### ✅ Gate DG
+- [x] 6 new tables generated for 100% of wells (412 wells), written to `backend/app/data/landing/<field>/<table>.parquet`
+- [x] Every row tagged with `is_synthetic=true`, `_source_system='wellpulse_dg_v1'`, deterministic seed `20261008`
+- [x] Consistency tests green: `tests/unit/test_dg_*.py` and `tests/unit/test_tc033_dg_tables.py` (tally length within ±1 joint of tubing depth, TVD monotonic and ≤ MD, barrier dates in valid range with FAIL ≤ 5%, wellhead class ≥ 1.5 × max THP, fishing records only where failure codes allow)
+- [x] DG integration complete: routes `/tubing-tally`, `/deviation`, `/integrity` implemented; lakehouse DDL regenerated (not applied); `well_history_template.md` data gap register updated from GAP to AVAILABLE (synthetic)
+
+**Commit (gate passed and user approved, orchestrator only):**
+```bash
+git add -A && git commit -m "v0.5(DG): synthetic data gaps — Gate DG passed" && git push origin main
+```
+
+---
+
+## Stage NN · Multimodal success engine (demo scorer)
+
+**Goal:** Present a multimodal neural network as the intervention ranking engine with an architecture diagram panel showing the production path (Vertex AI custom job + Model Registry). Per Decision D-32, no model is trained in v0.5; compute stable, believable P(success) numbers using the deterministic demo scorer in `backend/app/analytics/tools/success_engine.py` (formula in brief §5); rank top 3 interventions + `NO_JOB_JUSTIFIED` with expected uplift, analogs, and top drivers; provide "How did you decide?" explanation panel with architecture diagram. *Anchor: brief §1 U-4, U-5; §5 (D-32).*
+**Owner:** [O] Orchestrator (demo scorer formula in `success_engine.py`, recommendation contract TC-030, analog search TC-031, architecture panel, plausibility reviews), [F] Flash (explanation card UI, architecture SVG/diagram, documentation).
+**Files:** `backend/app/analytics/tools/success_engine.py`, `backend/app/analytics/tools/recommendations.py`, `backend/app/analytics/tools/similar_wells.py`, `backend/tests/unit/test_tc030_recommend.py`, `backend/tests/unit/test_success_engine.py`.
+
+```bash
+# Run success engine and recommendation unit tests
+cd backend && uv run pytest tests/unit/test_success_engine.py tests/unit/test_tc030_recommend.py -q
+uv run pytest -q
+```
+
+### ✅ Gate NN (demo)
+- [ ] Top 3 render for all producing wells via TC-030 `recommend_interventions`
+- [ ] p_success is strictly in [0.05, 0.95] and stable across calls
+- [ ] Analog counts recompute exactly from data (TC-031 `similar_wells`, k=5)
+- [ ] The explanation panel shows all four elements: evidence chain, look-alike analogs, top drivers (SHAP), and multimodal NN architecture diagram (with Vertex AI custom job + Model Registry described as production path)
+- [ ] Plausibility review of GK-129, LKW-019, and LKM-061 outputs passes orchestrator inspection
+
+**Commit (gate passed and user approved, orchestrator only):**
+```bash
+git add -A && git commit -m "v0.5(NN): multimodal success engine — Gate NN passed" && git push origin main
+```
+
+---
+
+## Stage FR · Field report (HTML)
+
+**Goal:** Server-side rendered A4-printable HTML field report (`GET /api/wells/{id}/report?intervention=<class>`) with ONGC branding, wellbore schematic SVG, complete job program, top-3 rationale, and 100% fact-checked tool provenance. *Anchor: brief §1 U-6; §7 (D-30).*
+**Owner:** [F] Flash (Jinja2 HTML template prose, wellbore SVG drawing component, A4 print CSS, canvas iframe viewer), [O] Orchestrator (TC-032 report data assembly engine, job program synthesis, fact validator, route registration).
+**Files:** `backend/app/analytics/tools/field_report.py`, `backend/app/analytics/templates/field_report.html`, `backend/app/api/wells.py`, `frontend/src/components/well/FieldReportView.tsx`, `backend/tests/unit/test_tc032_field_report.py`.
+
+```bash
+# Run field report unit tests and fact validator
+cd backend && uv run pytest tests/unit/test_tc032_field_report.py -q
+uv run pytest -q
+```
+
+### ✅ Gate FR
+- [ ] `GET /api/wells/{id}/report` renders for all 412 wells in < 3 s locally (p95)
+- [ ] Clean A4 print layout verified with repeating headers, print-friendly styling, and "SYNTHETIC DATA — DEMO" banner
+- [ ] ONGC logo (`frontend/public/brand/ongc_logo.svg`) displayed at top left and print footer, with text wordmark fallback if missing
+- [ ] Wellbore SVG renders dynamically from casing/tubing/perf/formation data (with placeholders for missing data per WH-05)
+- [ ] 100% of digits validated against `facts.json` sidecar; Flash writes template prose only with no hard-coded numerals
+- [ ] Chat and voice provide a concise one-line link to open the field report
+
+**Commit (gate passed and user approved, orchestrator only):**
+```bash
+git add -A && git commit -m "v0.5(FR): field report HTML — Gate FR passed" && git push origin main
+```
+
+---
+
+## Stage W2 · Redeploy
+
+**Goal:** Redeploy WellPulse v0.5 container to Cloud Run with zero-downtime revision rollout, verifying answer canvas, multimodal success scoring, data gap tables, and field report via 7/7 smoke tests. *Anchor: brief §2; §8.*
+**Owner:** [O] Orchestrator all (container configuration, deployment, smoke verification).
+**Files:** `Dockerfile`, `deploy/deploy.sh`, `deploy/smoke_test.py`, `deploy/selfcheck.py`.
+
+```bash
+# Build, deploy, and smoke test Cloud Run deployment
+deploy/deploy.sh build
+deploy/deploy.sh deploy
+deploy/deploy.sh smoke
+```
+
+### ✅ Gate W2
+- [ ] Local container validation passes via `deploy/deploy.sh build`
+- [ ] Cloud Run deployment completes successfully via `deploy/deploy.sh deploy` with min-instances=1 and session affinity
+- [ ] `deploy/deploy.sh smoke` passes 7/7 checks (including new endpoint `/api/wells/GK-129/report`)
+- [ ] End-to-end 11-step demo script verified on public Cloud Run URL
+
+**Commit (gate passed and user approved, orchestrator only):**
+```bash
+git add -A && git commit -m "v0.5(W2): redeploy — Gate W2 passed" && git push origin main
+```
+
+---
+
 ## Definition of done (v0.4)
 - [ ] Every verbatim §1–§3 requirement maps to a passing BDD scenario ([`features.md`](./features.md) traceability)
 - [ ] The 5-level demo flow L1–L5 (verbatim §4) passes as automated tests and in a manual rehearsal on the Cloud Run URL
@@ -826,6 +998,20 @@ git add -A && git commit -m "v0.4(W): deploy — Gate W passed" && git push orig
 - [ ] Live survives a forced reconnect and a forced fallback
 - [ ] The baseline UI (map, telemetry, timeline, reports, export, language toggle) is not regressed
 - [ ] Deployed (authorised 2026-10-07) and smoke-tested; the URL is rehearsed; one commit + push to `origin main` per passed stage gate (13 `v0.4(<stage>):` commits)
+
+---
+
+## Definition of done (v0.5)
+- [ ] Answer canvas active: chat replies ≤ 3 sentences, no full-history dumps, 10 key phrases route correctly via `pickCanvasView` (F-20, F-21)
+- [ ] Middle panel expandable with map hiding, ESC hotkey and restore button (F-21)
+- [x] 6 synthetic data gap tables generated for 100% of wells (412 wells), `is_synthetic=true`, consistency tests 100% green (F-22)
+- [ ] Multimodal success engine implemented (demo scorer in `success_engine.py`, D-32), top 3 recommendations + `NO_JOB_JUSTIFIED` served with P(success), analogs, drivers, and architecture diagram panel (F-23, F-24)
+- [ ] Printable HTML field report (`GET /api/wells/{id}/report`) renders for all 412 wells < 3 s with ONGC branding, wellbore SVG, job program, and 100% fact validation (F-25)
+- [ ] 11-step demo script (Lakwa → LKW-019) passes in chat and voice with canvas routing and brevity (F-26)
+- [ ] Deployed to Cloud Run with `deploy/deploy.sh deploy` and smoke test 7/7 green
+- [ ] One commit + push to `origin main` per passed stage gate with user sign-off (orchestrator only)
+
+---
 
 ## Former open items (all resolved 2026-10-07)
 

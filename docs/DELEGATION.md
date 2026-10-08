@@ -147,9 +147,42 @@ Technical petroleum documents (Well Completion Reports, CBLs, Daily Workover Rep
 | **W** | **F-W1** | README and runbook update with architecture diagrams, CLI guides, and checklist status | F | Stage progress | `README.md`, `docs/runbook.md`, `docs/checklist.md` | Markdown link and lint validation |
 | | **O-W2** | Production Cloud Run build, deploy (`wellpulse-app` in `${PROJECT_ID}`), smoke test | O | Authorised by user (2026-10-07); local container test first | Deployment manifest, verification logs | Gate W: Live health and WebSocket smoke test pass |
 
+### 4.1 Delegation Matrix for v0.5 (Stages AC, DF, DG, NN, FR, W2)
+
+Per [`v05_change_brief.md`](./v05_change_brief.md) §8:
+
+| Tier | Model | Owns in v0.5 |
+|---|---|---|
+| **Orchestrator** | current (Opus-class) | v0.5 change brief; canvas routing; NN architecture & demo scorer (D-32); recommendation contracts (TC-030/031); fact validator; reviews; git; cloud apply/deploy |
+| **Argon** (data workers) | `gemini-3.8-flash-high` via `swarm add` | DG generators (one worker per table group), their consistency tests (DONE) |
+| **Flash** | `invoke_subagent` `Model='flash'` | Doc updates, the Jinja2 report template, the SVG drawing component from the spec, the demo script, eval JSON, explanation UI card with architecture diagram, checklist ticks |
+
+**v0.5 Task Mapping:**
+
+| Stage | Task ID | Task Description | Owner | Inputs & Context | Exclusive Output Files | ⚖ Automated Gate |
+|---|---|---|---|---|---|---|
+| **AC** | **O-AC1** | Canvas routing (`pickCanvasView`), view definitions, panel integration | O | brief §3, SDD | `frontend/src/api/chat.ts`, `frontend/src/components/well/WellDeepDiveDrawer.tsx` | 10 demo phrases route correctly; no history dump |
+| | **F-AC2** | Canvas view component scaffolds & tab strip switcher | F | brief §3 | `frontend/src/components/well/canvas/*.tsx` | `npm run build && tsc --noEmit` green |
+| **DF** | **F-DF1** | 11-step demo script & Q&A crib sheet | F | brief §6 | `docs/demo_flow.md` | Orchestrator review: pinned figures aligned |
+| | **F-DF2** | Canvas routing eval dataset (+12 test cases) | F | brief §6 | `backend/eval/canvas_routing_eval.json` | `agents-cli eval` ≥ 90% routing accuracy |
+| **DG** | **A-DG1** | Tubing tally & deviation survey generator + consistency tests | Argon (`gemini-3.8-flash-high`) | brief §4, seed 20261008 | `backend/app/data/landing/*/tubing_tally.parquet`, `backend/app/data/landing/*/deviation_survey.parquet`, `backend/tests/unit/test_dg_tubing_dev.py` | `test_dg_consistency.py` green; length/TVD tests pass (DONE) |
+| | **A-DG2** | Barrier tests & wellhead rating generator + consistency tests | Argon (`gemini-3.8-flash-high`) | brief §4, seed 20261008 | `backend/app/data/landing/*/barrier_tests.parquet`, `backend/app/data/landing/*/wellhead_rating.parquet`, `backend/tests/unit/test_dg_barriers.py` | `test_dg_consistency.py` green; rating ≥ 1.5×THP (DONE) |
+| | **A-DG3** | Fluid hazards & fishing records generator + consistency tests | Argon (`gemini-3.8-flash-high`) | brief §4, seed 20261008 | `backend/app/data/landing/*/fluid_hazards.parquet`, `backend/app/data/landing/*/fishing_records.parquet`, `backend/tests/unit/test_dg_hazards.py` | `test_dg_consistency.py` green; fishing only on failure codes (DONE) |
+| | **O-DG4** | DG integration, routes & BigQuery DDL regeneration | O | brief §4, D-29 | `/tubing-tally`, `/deviation`, `/integrity`, `lakehouse/ddl/` | 100% wells covered, `is_synthetic=true` on all rows (DONE) |
+| **NN** | **O-NN1** | Deterministic demo scorer implementation (formula in brief §5, D-32) | O | brief §5, D-32 | `backend/app/analytics/tools/success_engine.py` | Gate NN: deterministic P(success) in [0.05, 0.95], stable across calls |
+| | **O-NN2** | TC-030 `recommend_interventions` & TC-031 `similar_wells` APIs | O | brief §5 | `backend/app/analytics/tools/recommendations.py`, `backend/app/analytics/tools/similar_wells.py` | Top-3 API returns p_success, analogs, drivers |
+| | **F-NN3** | NbaCard top-3 UI & explanation panel with NN architecture diagram | F | brief §5 | `frontend/src/components/well/NbaCard.tsx`, `ExplanationPanel.tsx` | UI displays top-3 with P(success), analogs, drivers, architecture diagram |
+| | **O-NN4** | Plausibility review of GK-129, LKW-019, LKM-061 outputs | O | brief §5 | review logs | Engineering plausibility verified |
+| **FR** | **F-FR1** | Jinja2 HTML field report template with ONGC branding | F | brief §7, D-30 | `backend/app/templates/field_report.html`, `backend/app/static/field_report.css` | A4 print layout green; brand wordmark fallback |
+| | **F-FR2** | Wellbore SVG drawing component from spec | F | brief §7, WH-04 | `backend/app/analytics/generator/docs_pdf/wellbore_svg.py` | Renders for all 412 wells; handles missing strings |
+| | **O-FR3** | TC-032 `field_report` route `GET /api/wells/{id}/report` & facts sidecar validator | O | brief §7 | `backend/app/api/reports.py`, `backend/app/analytics/tools/field_report_validator.py` | Fact validator 100%; p95 < 3 s locally |
+| **W2** | **O-W2** | Production Cloud Run deploy, smoke test (7/7 incl. report route) | O | brief §2 | Deployment logs, smoke script | Smoke 7/7 passes; live verification |
+
 ---
 
-## 5. The Flash Task Packet Template
+## 5. Task Packet Templates
+
+### 5.1 The Flash Task Packet Template
 
 **Every delegated task is packaged as an isolated, self-contained markdown brief containing an explicit, non-negotiable machine gate command.**
 
@@ -187,6 +220,50 @@ Technical petroleum documents (Well Completion Reports, CBLs, Daily Workover Rep
 1. List of files created or modified.
 2. Terminal output from the `<exact command>` validation check (last 30 lines).
 3. Any ambiguities or open questions identified.
+```
+
+### 5.2 The Argon Task Packet Template (Data Generation)
+
+**Argon workers (`gemini-3.8-flash-high` via `swarm add`) generate synthetic data gap tables behind strict physical rules and deterministic acceptance gates.**
+
+```markdown
+## ARGON TASK <ID> — <Title>
+**Model:** gemini-3.8-flash-high (Argon)  
+**Workspace:** branch (isolated)  
+**Time Box:** <n> minutes  
+
+**Files Owned (create/modify only these):**
+- `<path/to/generator_script>`
+- `<path/to/unit_test>`
+- `<path/to/output_parquet>`
+
+**Input Tables:**
+- `<table_name_1>` (`<path/to/landing_or_silver>`)
+- `<table_name_2>` (`<path/to/landing_or_silver>`)
+
+**Generation Rule:**
+- `<exact physical generation logic and bounds, e.g. tubing joint sum = tubing_string depth, station every 30m, rating >= 1.5 * max THP>`
+- Mandatory columns: `is_synthetic=true`, `_source_system='wellpulse_dg_v1'`, `_batch_id`
+
+**Seed:**
+- Fixed seed: `20261008` (generator must be 100% deterministic)
+
+**Acceptance Command:**
+`<exact command>` exits 0  
+*(e.g. `uv run pytest tests/unit/test_dg_consistency.py -k "<table_name>" -q`)*
+
+**Forbidden Actions:**
+- Modifying files outside declared ownership list.
+- Altering existing bronze/silver schema or baseline figures.
+- Generating rows without `is_synthetic=true`.
+- Non-deterministic random generation without fixed seed `20261008`.
+- Running `git commit` or `git push`.
+- Touching GCP resources except explicitly assigned upload/training commands.
+
+**Report Back:**
+1. List of files created or modified.
+2. Row counts and consistency verification output from `<exact command>`.
+3. Edge cases or anomalies detected across the 412 wells.
 ```
 
 ---
@@ -297,6 +374,46 @@ flowchart TD
     w5_o2["O-W2 Cloud Run Deploy & Live Smoke Test (authorised 2026-10-07)"]
   end
 ```
+
+### 8.1 v0.5 Parallel Execution Waves (Waves W-a through W-d)
+
+Per [`v05_change_brief.md`](./v05_change_brief.md) §8, the v0.5 build executes across four parallel waves:
+
+```mermaid
+flowchart TD
+  subgraph Wa["Wave W-a: Documentation Alignment"]
+    wa_f1["Flash ×4: EXECUTION_PLAN, DELEGATION, CONSISTENCY_REPORT, well_history_template"]
+  end
+  Wa --> Wb
+  
+  subgraph Wb["Wave W-b: DG Synthetic Tables ∥ DF Demo Script"]
+    direction TB
+    wb_a1["Argon-1: tubing_tally & deviation_survey"]
+    wb_a2["Argon-2: barrier_tests & wellhead_rating"]
+    wb_a3["Argon-3: fluid_hazards & fishing_records"]
+    wb_f1["Flash: DF 11-step demo script & eval JSON"]
+  end
+  Wb --> Wc
+  
+  subgraph Wc["Wave W-c: NN Demo Scorer ∥ FR Template & SVG"]
+    direction TB
+    wc_o["Orchestrator: NN architecture, demo scorer in success_engine.py (D-32), Gate NN"]
+    wc_f1["Flash: Jinja2 FR HTML template + ONGC branding"]
+    wc_f2["Flash: Wellbore SVG generator component"]
+  end
+  Wc --> Wd
+  
+  subgraph Wd["Wave W-d: Integration, Testing & Redeployment"]
+    direction TB
+    wd_o1["Orchestrator: TC-030/031/032 API integration & fact validator"]
+    wd_o2["Orchestrator: MS-19 / Gate W2 Cloud Run redeploy & 7/7 smoke"]
+  end
+```
+
+* **W-a:** Docs alignment (Flash ×4: `docs/EXECUTION_PLAN.md`, `docs/DELEGATION.md`, `docs/CONSISTENCY_REPORT.md`, `docs/well_history_template.md`).
+* **W-b:** DG synthetic data (Argon ×3: {`tubing_tally`, `deviation_survey`}, {`barrier_tests`, `wellhead_rating`}, {`fluid_hazards`, `fishing_records`}) in parallel with DF script & eval JSON (Flash).
+* **W-c:** NN demo scorer & architecture panel (orchestrator) in parallel with FR Jinja2 template + wellbore SVG (Flash).
+* **W-d:** Integration, full test suite, fact validation, and Stage W2 redeployment (orchestrator).
 
 ---
 

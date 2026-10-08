@@ -1,11 +1,11 @@
 # Behavior-Driven Development (BDD) Specifications
 ## WellPulse: Energy Well Operations & Voice AI Platform
 
-**Document Version:** 3.0.0 (v0.4 verbatim expansion) · **Date:** 2026-10-07
+**Document Version:** 4.0.0 (v0.5 answer canvas & multimodal expansion) · **Date:** 2026-10-08
 **Test frameworks:** pytest-bdd (REST + WS) · Playwright (React UI) · FakeLiveSession (WS without Vertex)
-**Primary source:** [`verbatim.md`](../verbatim.md) · **Features:** [`features.md`](./features.md) · **Design:** [`SDD.md`](./SDD.md) · **Build:** [`build.md`](./build.md) · **Checklist:** [`checklist.md`](./checklist.md) · **Delegation:** [`DELEGATION.md`](./DELEGATION.md)
+**Primary source:** [`verbatim.md`](../verbatim.md) · **v0.5 Canonical Brief:** [`v05_change_brief.md`](./v05_change_brief.md) · **Features:** [`features.md`](./features.md) · **Design:** [`SDD.md`](./SDD.md) · **Build:** [`build.md`](./build.md) · **Checklist:** [`checklist.md`](./checklist.md) · **Delegation:** [`DELEGATION.md`](./DELEGATION.md)
 
-**Bottom line:** WellPulse behaviour is specified by 8 corrected baseline features (B-01…B-08) and 19 v0.4 verbatim features (F-01…F-19) plus cross-cutting guardrails (X). Every scenario has an ID `@BDD-<feature>-Sxx`, a verbatim anchor (or a *derived* label with its reason), a Stage (M…W), and runs as pytest-bdd, Playwright, or a fake-Live WS test.
+**Bottom line:** WellPulse behaviour is specified by 8 corrected baseline features (B-01…B-08), 19 v0.4 verbatim features (F-01…F-19), cross-cutting guardrails (X), and 7 v0.5 features (F-20…F-26). Every scenario has an ID `@BDD-<feature>-Sxx`, an anchor to verbatim or change brief, a Stage (M…W2), and runs as pytest-bdd, Playwright, or a fake-Live WS test.
 
 > [!IMPORTANT]
 > Numbers written **«target ± tol»** are design targets the synthetic generator must hit; they are **pinned to exact values at Gate N** and then asserted exactly. Plain numbers are already true (e.g. Geleki 142 wells from the ADK v0.3.0 baseline) or are fixed contract thresholds. Numbers in verbatim §4–§8 (e.g. "42 wells", "₹18 Lakhs", "+180 bopd", "25 / 20 wells") are **illustrative** and are never asserted.
@@ -27,13 +27,13 @@
 | Surface | Used by steps like | Stage |
 |---|---|---|
 | Map (`WellMap.tsx`), field selector, KPI ribbon | "When I select field "Lakwa" in the field selector" | T, Y |
-| Well drawer (`WellDetails`, `TelemetryCharts`, `WorkoverTimeline`) | "Then the well drawer shows …" | T |
-| `VoiceAgentPanel.tsx` (Hinglish / English / Hindi) | "When I say "…"" | U |
+| Well drawer (`WellDetails`, `TelemetryCharts`, `WorkoverTimeline`) / Answer Canvas (`WellDeepDiveDrawer.tsx`) | "Then the well drawer shows …" / "Then the answer canvas opens …" | T, AC |
+| `VoiceAgentPanel.tsx` (Hinglish / English / Hindi) | "When I say "…"" | U, AC |
 | `WellReportsTab.tsx` | "Then WellReportsTab opens that PDF at the cited page" | O |
 | REST `/api/...` | "When I GET /api/wells/kpis?field=Geleki" | per feature |
 | WS `/ws/live` (field/well context sent as a `context` message; legacy `WS /api/wells/{id}/live` is a deprecated text shim until Stage V, D-20) | "Then a tool_call event for "…" is emitted" | U |
 
-**v0.4 routes used below** are the final route table in [`SDD.md`](./SDD.md) §13 (authoritative): kept `GET /api/health`, `/api/wells/kpis?field=`, `/api/wells?field=&status=&search=`, `/api/wells/{id}`, `/api/wells/{id}/reports`, `/api/wells/{id}/reports/{type}`, `/api/wells/{id}/history?range=30d|6m|1y|2y|3y|5y`, `/api/wells/{id}/workovers`, `/api/field/infrastructure?field=`, `/api/wells/{id}/export` (JSON; `?format=pdf` → dossier PDF); `POST /api/wells/{id}/chat`, `/api/wells/{id}/audio`, `/api/wells/{id}/recommendations`; new `GET /api/healthz`, `/api/me/capabilities`, `/api/fields`, `/api/fields/history?fields=`, `/api/fields/{field}/history`, `/api/fields/compare?period=`, `/api/fields/{field}/health?cluster_id=`, `/api/fields/{field}/attribution?window_days=`, `/api/fields/{field}/priority`, `/api/wells/{id}/profile`, `/api/wells/{id}/production`, `/api/wells/{id}/attribution?window_days=`, `/api/wells/{id}/classification`, `/api/wells/{id}/nba`, `/api/wells/{id}/compare?recommended=&alternative=`, `/api/wells/{id}/documents`, `/api/docs/search`, `/api/docs/{doc_id}.pdf`; `POST /api/wells/{id}/dossier`, `POST /api/chat`; `WS /ws/live`. Header `X-Persona`; analytics responses use the envelope `{status, data, message, missing_fields, provenance}`.
+**v0.4 & v0.5 routes used below** are the final route table in [`SDD.md`](./SDD.md) §13 and [`v05_change_brief.md`](./v05_change_brief.md) §9: kept `GET /api/health`, `/api/wells/kpis?field=`, `/api/wells?field=&status=&search=`, `/api/wells/{id}`, `/api/wells/{id}/reports`, `/api/wells/{id}/reports/{type}`, `/api/wells/{id}/history?range=30d|6m|1y|2y|3y|5y`, `/api/wells/{id}/workovers`, `/api/field/infrastructure?field=`, `/api/wells/{id}/export` (JSON; `?format=pdf` → dossier PDF); `POST /api/wells/{id}/chat`, `/api/wells/{id}/audio`, `/api/wells/{id}/recommendations`; new `GET /api/healthz`, `/api/me/capabilities`, `/api/fields`, `/api/fields/history?fields=`, `/api/fields/{field}/history`, `/api/fields/compare?period=`, `/api/fields/{field}/health?cluster_id=`, `/api/fields/{field}/attribution?window_days=`, `/api/fields/{field}/priority`, `/api/wells/{id}/profile`, `/api/wells/{id}/production`, `/api/wells/{id}/attribution?window_days=`, `/api/wells/{id}/classification`, `/api/wells/{id}/nba`, `/api/wells/{id}/compare?recommended=&alternative=`, `/api/wells/{id}/documents`, `/api/docs/search`, `/api/docs/{doc_id}.pdf`; `POST /api/wells/{id}/dossier`, `POST /api/chat`; `WS /ws/live`; new in v0.5: `GET /api/wells/{id}/recommendations?k=3`, `GET /api/wells/{id}/similar?class=`, `GET /api/wells/{id}/report`, `GET /api/wells/{id}/tubing-tally`, `GET /api/wells/{id}/deviation`, `GET /api/wells/{id}/integrity`. Header `X-Persona`; analytics responses use the envelope `{status, data, message, missing_fields, provenance}`.
 
 **Tags:** `@api` pytest-bdd over HTTP · `@ws` pytest-bdd over WebSocket with FakeLiveSession · `@ui` Playwright · `@voice` spoken prompt (WS audio or transcript injection) · `@data` generator/validator tests · `@gate` stage gate · `@demo` used in the ED demo · `@L1`…`@L5` five-level flow · `@regression` must stay green once its stage gate has passed.
 
@@ -1099,9 +1099,271 @@ Feature: Integrity guardrails (all features)
 
 ---
 
+## Part D · v0.5 features (F-20 … F-26)
+
+*Authoritative source: [`v05_change_brief.md`](./v05_change_brief.md). User feedback U-1…U-7; Stages AC, DF, DG, NN, FR, W2; Decisions D-25…D-32; Tool contracts TC-030…TC-033.*
+
+### F-20 · Answer canvas
+
+*Anchor: U-1 — "The moment I ask the first question I get the whole well history at once"; U-2 — "Every time a user asks a specific question, the relevant data should be shown." Decision D-25. Replaces all-in-one Deep Dive with question-routed canvas views. Stage AC · Tool contract pickCanvasView.*
+
+```gherkin
+Feature: Question-driven answer canvas
+  As the ED or Production Engineer
+  I want specific questions to open only the matching view in the middle panel
+  So that I am not overwhelmed with an all-in-one well history dump
+
+  @BDD-F20-S01 @ui @demo
+  Scenario: Production question opens production view
+    Given the dashboard is open for well "LKW-019"
+    When I ask in chat "show production history"
+    Then the answer canvas opens in the middle panel with view "production"
+    And the panel displays oil, gas, water cut and GOR time series with intervention markers
+    And the all-in-one deep dive drawer remains closed
+
+  @BDD-F20-S02 @ui @demo
+  Scenario: Interventions question opens interventions view
+    Given the dashboard is open for well "LKW-019"
+    When I ask in chat "past interventions"
+    Then the answer canvas opens in the middle panel with view "interventions"
+    And the panel displays a job table with columns for date, job type, rig-days, uplift, outcome and document link
+    And views for wellbore, pressures and diagnosis are not rendered in this view
+
+  @BDD-F20-S03 @api @ui @demo
+  Scenario: Chat answer is concise without multi-section history
+    When I POST /api/chat "Tell me about LKW-019"
+    Then the chat response text contains at most 3 sentences
+    And the response contains an optional collapsed card
+    And the response contains no multi-section well history dump
+
+  @BDD-F20-S04 @ui @api
+  Scenario: Full history is reached only via report
+    Given the answer canvas is open on well "LKW-019"
+    When I request the complete well history
+    Then the chat does not dump the full well history into the conversation
+    And the full history is accessible only via the "report" view or field report route
+```
+
+### F-21 · Expandable middle panel / command centre
+
+*Anchor: U-3 — "Expand the middle screen like the map; the agent is the command centre on the right." Stage AC.*
+
+```gherkin
+Feature: Expandable middle panel with persistent command centre
+  As the user
+  I want to expand the middle answer canvas while keeping the agent on the right
+  So that I can examine detailed well data without losing conversational context
+
+  @BDD-F21-S01 @ui @demo
+  Scenario: Expand middle panel hides map and ESC restores
+    Given the answer canvas is open in the middle panel
+    When I click the expand button on the middle panel
+    Then the middle panel expands across the map area
+    And the map is hidden
+    When I press the "Escape" key or click the restore button
+    Then the map is restored to its original layout and the middle panel returns to standard width
+
+  @BDD-F21-S02 @ui @demo
+  Scenario: Agent panel stays on the right during expansion
+    Given VoiceAgentPanel is open on the right side of the screen
+    When the middle panel transitions between standard and expanded states
+    Then the agent panel remains docked on the right side as the command centre
+    And voice and chat interactions remain active without interruption
+```
+
+### F-22 · Synthetic data-gap tables
+
+*Anchor: Brief §4 — 6 new tables for 100% of wells in well_master (412 wells), written to landing then bronze → silver in BigQuery. Decision D-29. Stage DG · Tool contract TC-033.*
+
+```gherkin
+Feature: Synthetic data-gap tables and consistency
+  As the analytics engine and field engineer
+  I want realistic wellbore, integrity, hazard, and survey tables for all wells
+  So that engineering decisions and field reports have complete data coverage
+
+  @BDD-F22-S01 @data @gate
+  Scenario: Data-gap tables cover 100% of wells
+    When the Stage DG data generator executes
+    Then each of the 6 tables "tubing_tally", "deviation_survey", "barrier_tests", "wellhead_rating", "fluid_hazards", and "fishing_records" contains rows for all 412 wells in well_master
+    And no well in well_master is missing from tubing_tally, deviation_survey, barrier_tests, wellhead_rating, or fluid_hazards
+
+  @BDD-F22-S02 @data @regression
+  Scenario: Every synthetic row carries provenance metadata
+    When the Stage DG tables are inspected in landing or BigQuery silver
+    Then 100% of rows have is_synthetic set to true
+    And 100% of rows have _source_system set to "wellpulse_dg_v1"
+    And 100% of rows contain a non-empty _batch_id
+    And generation with fixed seed 20261008 reproduces identical datasets deterministically
+
+  @BDD-F22-S03 @data
+  Scenario: Synthetic data adheres to physical and relational consistency rules
+    When backend/tests/unit/test_dg_consistency.py runs against the DG tables
+    Then tubing tally total length matches tubing_string depth within ±1 joint
+    And deviation survey TVD is monotonic and TVD is less than or equal to MD for all stations
+    And barrier test dates fall after the well's last workover end date and on or before AS_OF
+    And barrier test FAIL rate is at most 5% and occurs only on wells with annulus-pressure flags
+    And wellhead rating class is at least 1.5 times the field maximum THP
+    And fluid hazard flags for wax, sand, and scale align with historical failure codes
+    And fishing records exist only for wells with fishing or stuck pipe failure codes within their workover window
+```
+
+### F-23 · Multimodal success engine (demo scorer)
+
+*Anchor: U-5 — "A multimodal neural network trained on history, geology, casing, production." Decision D-32 (no model training in v0.5; demo scorer formula in brief §5; production Vertex training path described in architecture panel). Stage NN · Tool contracts TC-030, success_engine.py.*
+
+```gherkin
+Feature: Multimodal intervention success engine (demo scorer)
+  As the Production Engineer or Asset Manager
+  I want intervention recommendations backed by stable, believable success probabilities
+  So that I understand the ranking, analog evidence, and drivers consistent with well history
+
+  @BDD-F23-S01 @data @gate
+  Scenario: Deterministic success probability in valid range
+    Given the demo success engine in success_engine.py
+    When P(success) is evaluated for candidate interventions across producing wells
+    Then p_success is strictly in the range [0.05, 0.95]
+    And repeated evaluations for the same well and candidate yield identical, deterministic results
+    And ranking is determined by deferred barrels recovered times p_success divided by rig-days
+
+  @BDD-F23-S02 @data @gate
+  Scenario: Analog well counts recompute exactly from data
+    Given the candidate intervention class and target well
+    When the success engine identifies the k = 5 most similar analog wells via cosine similarity on standardized features
+    Then the analog counts n and n_success recompute exactly from workover_history
+    And the analog success rate is blended 50/50 with the Bayesian-shrunk field base rate
+
+  @BDD-F23-S03 @api @gate
+  Scenario: Explanation panel presents evidence chain, analogs, drivers, and architecture
+    When I request recommendations and explanation for well "LKW-019"
+    Then the response includes the evidence chain linking signals to mechanism to candidate
+    And the response includes the 5 analog look-alike wells with their prior outcomes
+    And the response includes the top 3 drivers from SHAP on ic-hgb-v1
+    And the explanation panel renders the multimodal neural network architecture diagram representing the production path
+```
+
+### F-24 · Top-3 recommendation with analogs and drivers
+
+*Anchor: U-4 — "Recommendation can't be one; 2–3 interventions, and show how it arrived at it." Stage NN · Tool contracts TC-030, TC-031 · Route GET /api/wells/{id}/recommendations?k=3.*
+
+```gherkin
+Feature: Top-3 intervention recommendations with evidence
+  As the ED or Asset Manager
+  I want to see ranked intervention options with success probabilities, analog wells, and drivers
+  So that I understand the rationale, trade-offs, and alternatives before committing rig resources
+
+  @BDD-F24-S01 @api @demo
+  Scenario: Recommendations return top 3 candidates and handle low expected value
+    When I GET /api/wells/LKW-019/recommendations?k=3
+    Then the response status is 200
+    And the recommendations list contains at most 3 ranked candidates ordered by deferred barrels recovered times p_success divided by rig-days
+    And when the best candidate's expected value is below the threshold in pinned_values.md, the recommendation status is NO_JOB_JUSTIFIED
+
+  @BDD-F24-S02 @api @demo
+  Scenario: Each candidate discloses probability, rig-days, cost band, and risks
+    When I inspect each candidate returned by recommend_interventions for "LKW-019"
+    Then each candidate object specifies class, sop_id, p_success, expected_uplift_bopd, rig_days, cost_band, risks, and why
+    And cost_band is categorical without currency figures or NPV
+
+  @BDD-F24-S03 @api @demo
+  Scenario: Analog wells report look-alike success count and drivers
+    When I inspect the explanation fields for a recommended candidate via TC-030 or TC-031
+    Then the analogs field reports 5 nearest look-alikes on the NN embedding space of the same class
+    And the explanation states "n look-alikes, m succeeded" where m is the count of successful prior jobs among those 5 wells
+    And the top_drivers list contains exactly 3 feature attributions for that candidate
+
+  @BDD-F24-S04 @ui @demo
+  Scenario: Asking why not an alternative opens the compare view
+    Given the recommendation view is active for well "LKW-019"
+    When I ask "why not sand cleanout"
+    Then the answer canvas automatically switches to view "compare"
+    And the middle panel renders a side-by-side counterfactual comparison between the primary recommendation and sand cleanout
+```
+
+### F-25 · HTML field report with job program
+
+*Anchor: U-6 — "A final report the workover crew takes to the field, with completion diagrams." Decision D-30. Stage FR · Tool contract TC-032 · Route GET /api/wells/{id}/report.*
+
+```gherkin
+Feature: Server-rendered HTML field report
+  As a Field Engineer or Workover Crew Lead
+  I want a printable, branded field report with a complete job program and wellbore diagram
+  So that I can execute the workover safely and accurately on the well pad
+
+  @BDD-F25-S01 @api @gate
+  Scenario: Field report renders server-side HTML for all wells
+    When I GET /api/wells/LKW-019/report?intervention=WATER_SHUTOFF_SQUEEZE
+    Then the response status is 200
+    And the response Content-Type is "text/html"
+    And the report renders server-side from tool data without client-side hydration
+    And local response latency p95 is under 3 seconds across all 412 wells
+
+  @BDD-F25-S02 @ui @demo
+  Scenario: ONGC branding with fallback and synthetic banner
+    When the field report HTML is rendered
+    Then the header and print footer display the ONGC logo SVG from frontend/public/brand/ongc_logo.svg
+    And if the SVG logo file is absent, the header displays the fallback text wordmark "ONGC"
+    And every printed and viewed page displays a prominent "SYNTHETIC DATA — DEMO" banner
+
+  @BDD-F25-S03 @api @ui
+  Scenario: Job program specifies kill fluid weight and barriers
+    When I inspect the job program section in the field report for "LKW-019"
+    Then the program specifies required rig or equipment class and step-by-step procedural steps
+    And the program specifies kill fluid weight calculated directly from current reservoir pressure
+    And the program specifies primary and secondary well barriers, operational risks, and contingency procedures
+    And every numeric value validates against the facts.json sidecar
+
+  @BDD-F25-S04 @ui @ws @demo
+  Scenario: Chat provides one-line report link and report supports A4 printing
+    When I say or type "Prepare me for the field"
+    Then the chat response provides a single-line link "Field report for LKW-019 is ready → open"
+    And clicking the link opens the field report in the expanded middle panel iframe
+    And the view includes a Print button formatted for standard A4 page layout
+```
+
+### F-26 · Eleven-step demo flow (end-to-end acceptance)
+
+*Anchor: Brief §6 · Lakwa to LKW-019 11-step script; eval cases in backend/eval/. Stage DF.*
+
+```gherkin
+Feature: Eleven-step demo flow in chat and voice
+  As the Executive Director or Asset Manager
+  I want to progress smoothly through the 11-step operational inquiry from field to wellpad
+  So that I get immediate visual answers without chat clutter or conversational delay
+
+  @BDD-F26-S01 @api @demo
+  Scenario: 11-step demo flow passes via chat
+    When I run the 11-step sequence in one session for field "Lakwa" and well "LKW-019":
+      | step | prompt                                                 | expected view    |
+      | 1    | Compare field performance                              | overview         |
+      | 2    | Which wells in Lakwa are sick?                         | overview         |
+      | 3    | Show priority list of wells needing intervention       | overview         |
+      | 4    | Tell me about LKW-019                                  | overview         |
+      | 5    | Show production history                                | production       |
+      | 6    | Past interventions and workovers                       | interventions    |
+      | 7    | Show wellbore diagram and completion details           | wellbore         |
+      | 8    | Why is production declining?                           | diagnosis        |
+      | 9    | What are the recommended interventions?                | recommendation   |
+      | 10   | Why not sand cleanout?                                 | compare          |
+      | 11   | Prepare me for the field                               | report           |
+    Then each turn sets the corresponding answer canvas view in the middle panel
+    And every chat answer is 3 sentences or fewer
+    And no turn outputs a multi-section well history dump into chat
+
+  @BDD-F26-S02 @ws @voice @demo
+  Scenario: 11-step demo flow passes via Gemini Live voice
+    Given VoiceAgentPanel is connected over WS /ws/live
+    When I speak the 11 demo prompts in sequence for "LKW-019"
+    Then the spoken responses remain under 3 sentences per turn
+    And the middle panel synchronously switches to each matching canvas view
+    And step 10 opens the compare view and step 11 provides the field report link
+    And the conversation maintains low latency without dropped turns
+```
+
+---
+
 ## Traceability
 
-**Answer:** 104 scenarios across 28 features; every F-xx maps to one stage gate. Summary first, full scenario list below.
+**Answer:** 126 scenarios across 35 features; every F-xx maps to one stage gate. Summary first, full scenario list below.
 
 ### Summary per feature
 | Feature | Scenarios | Stage | Tool / surface |
@@ -1133,8 +1395,15 @@ Feature: Integrity guardrails (all features)
 | F-17 | 3 | T, Y | WellMap multi-field |
 | F-18 | 3 | V | all |
 | F-19 | 2 | all | DELEGATION.md |
+| F-20 | 4 | AC | pickCanvasView, WellDeepDiveDrawer |
+| F-21 | 2 | AC | WellDeepDiveDrawer, VoiceAgentPanel |
+| F-22 | 3 | DG | TC-033, test_dg_consistency.py |
+| F-23 | 3 | NN | success_engine.py, demo scorer |
+| F-24 | 4 | NN | TC-030, TC-031 |
+| F-25 | 4 | FR | TC-032, /api/wells/{id}/report |
+| F-26 | 2 | DF | /api/chat, WS /ws/live |
 | X | 5 | V | all |
-| **Total** | **104** | | |
+| **Total** | **126** | | |
 
 ### Scenario → feature → stage
 | Scenario | Feature | Baseline FEAT | Stage | Runner | Tags |
@@ -1243,6 +1512,28 @@ Feature: Integrity guardrails (all features)
 | BDD-X-S03 | X | NEW | V | pytest-bdd | `@api @regression` |
 | BDD-X-S04 | X | NEW | V | pytest-bdd | `@api @regression` |
 | BDD-X-S05 | X | NEW | V | pytest-bdd | `@api` |
+| BDD-F20-S01 | F-20 | NEW | AC | Playwright | `@ui @demo` |
+| BDD-F20-S02 | F-20 | NEW | AC | Playwright | `@ui @demo` |
+| BDD-F20-S03 | F-20 | NEW | AC | pytest-bdd + Playwright | `@api @ui @demo` |
+| BDD-F20-S04 | F-20 | NEW | AC | Playwright + pytest-bdd | `@ui @api` |
+| BDD-F21-S01 | F-21 | NEW | AC | Playwright | `@ui @demo` |
+| BDD-F21-S02 | F-21 | NEW | AC | Playwright | `@ui @demo` |
+| BDD-F22-S01 | F-22 | NEW | DG (Gate DG) | pytest-bdd | `@data @gate` |
+| BDD-F22-S02 | F-22 | NEW | DG | pytest-bdd | `@data @regression` |
+| BDD-F22-S03 | F-22 | NEW | DG | pytest-bdd | `@data` |
+| BDD-F23-S01 | F-23 | NEW | NN (Gate NN) | pytest-bdd | `@data @gate` |
+| BDD-F23-S02 | F-23 | NEW | NN (Gate NN) | pytest-bdd | `@data @gate` |
+| BDD-F23-S03 | F-23 | NEW | NN | pytest-bdd | `@api @gate` |
+| BDD-F24-S01 | F-24 | NEW | NN | pytest-bdd | `@api @demo` |
+| BDD-F24-S02 | F-24 | NEW | NN | pytest-bdd | `@api @demo` |
+| BDD-F24-S03 | F-24 | NEW | NN | pytest-bdd | `@api @demo` |
+| BDD-F24-S04 | F-24 | NEW | NN | Playwright | `@ui @demo` |
+| BDD-F25-S01 | F-25 | NEW | FR (Gate FR) | pytest-bdd | `@api @gate` |
+| BDD-F25-S02 | F-25 | NEW | FR | Playwright | `@ui @demo` |
+| BDD-F25-S03 | F-25 | NEW | FR | pytest-bdd + Playwright | `@api @ui` |
+| BDD-F25-S04 | F-25 | NEW | FR | Playwright + pytest-bdd + FakeLiveSession | `@ui @ws @demo` |
+| BDD-F26-S01 | F-26 | NEW | DF (Gate DF) | pytest-bdd | `@api @demo` |
+| BDD-F26-S02 | F-26 | NEW | DF | pytest-bdd + FakeLiveSession | `@ws @voice @demo` |
 
 ---
 

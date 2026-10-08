@@ -20,8 +20,11 @@ from . import adapters
 DAILY_COLS = ["well_id", "production_date", "oil_rate_bopd", "water_rate_bwpd", "gas_rate_mscfd", "liquid_rate_blpd",
               "water_cut_pct", "gor_scf_bbl", "thp_kgcm2", "chp_kgcm2", "choke_size_64th", "spm", "runtime_fraction",
               "is_producing", "downtime_reason", "wht_degc", "gl_inj_rate_mscfd", "gl_inj_pressure_kgcm2"]
-PER_WELL_TABLES = ["workover_history", "well_status_history", "casing_tally", "tubing_string", "perforation_intervals",
-                   "pressure_surveys", "formation_tops", "well_tests", "operations_events", "document_index"]
+PER_WELL_TABLES = [
+    "workover_history", "well_status_history", "casing_tally", "tubing_string", "perforation_intervals",
+    "pressure_surveys", "formation_tops", "well_tests", "operations_events", "document_index",
+    "tubing_tally", "deviation_survey", "barrier_tests", "wellhead_rating", "fluid_hazards", "fishing_records",
+]
 
 
 class RetiredWellId(LookupError):
@@ -38,7 +41,10 @@ class ParquetRepository:
 
     # -- raw frames -------------------------------------------------------------------------------
     def _read(self, folder: str, table: str, columns: list[str] | None = None) -> pd.DataFrame:
-        return pd.read_parquet(self.landing / folder / f"{table}.parquet", columns=columns)
+        path = self.landing / folder / f"{table}.parquet"
+        if not path.exists():
+            return pd.DataFrame()
+        return pd.read_parquet(path, columns=columns)
 
     @cached_property
     def wells(self) -> pd.DataFrame:
@@ -58,10 +64,20 @@ class ParquetRepository:
     def per_well(self) -> dict[str, dict[str, pd.DataFrame]]:
         out: dict[str, dict[str, pd.DataFrame]] = {}
         for t in PER_WELL_TABLES:
-            df = pd.concat([self._read(f.lower(), t) for f in FIELD_CONFIGS], ignore_index=True)
-            df = df[df["well_id"].notna()]
-            for wid, g in df.groupby("well_id", sort=False):
-                out.setdefault(wid, {})[t] = g.reset_index(drop=True)
+            frames = []
+            for f in FIELD_CONFIGS:
+                path = self.landing / f.lower() / f"{t}.parquet"
+                if path.exists():
+                    df_f = self._read(f.lower(), t)
+                    if not df_f.empty:
+                        frames.append(df_f)
+            if not frames:
+                continue
+            df = pd.concat(frames, ignore_index=True)
+            if "well_id" in df.columns:
+                df = df[df["well_id"].notna()]
+                for wid, g in df.groupby("well_id", sort=False):
+                    out.setdefault(wid, {})[t] = g.reset_index(drop=True)
         return out
 
     @cached_property

@@ -2,14 +2,14 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { Header } from './components/common/Header';
 import { WellMap } from './components/map/WellMap';
 import { WellDetails } from './components/telemetry/WellDetails';
-import { VoiceAgentPanel } from './components/agent/VoiceAgentPanel';
+import { FloatingAgent, AGENT_DOCK_WIDTH } from './components/agent/FloatingAgent';
 import { FleetKPIs, WellDetail, WellSummary } from './types/well';
 import { AlertCircle, Layers, MapPin, Maximize2, Minimize2, Search } from 'lucide-react';
 import { assetApi, FieldFilter, Hierarchy } from './api/asset';
 import { FieldSelector } from './components/fields/FieldSelector';
 import { FieldHistoryChart } from './components/fields/FieldHistoryChart';
 import { FieldComparison } from './components/fields/FieldComparison';
-import { WellDeepDiveDrawer } from './components/well/WellDeepDiveDrawer';
+import { WellDeepDiveDrawer, CanvasView } from './components/well/WellDeepDiveDrawer';
 import { usePersona } from './state/persona'; // Stage Y: tabs hidden per persona (UI hint; server enforces)
 // Stage R (additive): field health buckets (TC-020) + priority queue (TC-010)
 import { HealthBucketsCard } from './components/decision/HealthBucketsCard';
@@ -46,8 +46,13 @@ export function App() {
     if (!canAggregate && screenTab !== 'map' && screenTab !== 'field_health') setScreenTab('map');
   }, [canAggregate, screenTab]);
   const [drawerWellId, setDrawerWellId] = useState<string | null>(null);
+  const [canvasView, setCanvasView] = useState<CanvasView>('overview');
+  const [canvasCompareRec, setCanvasCompareRec] = useState<string | undefined>(undefined);
   // Middle (well telemetry) panel expanded: map hidden, agent stays on the right as command centre.
   const [middleExpanded, setMiddleExpanded] = useState<boolean>(false);
+  // Map full-screen (reported by WellMap) and whether the agent is docked as the right-hand column.
+  const [mapFullscreen, setMapFullscreen] = useState<boolean>(false);
+  const [agentDocked, setAgentDocked] = useState<boolean>(false);
   useEffect(() => {
     if (!middleExpanded) return;
     const onKey = (e: KeyboardEvent) => {
@@ -56,6 +61,11 @@ export function App() {
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
   }, [middleExpanded, drawerWellId]);
+  // While the full detail is open, picking another well on the map/list shows that well's detail.
+  useEffect(() => {
+    if (drawerWellId && selectedWellId && selectedWellId !== drawerWellId) setDrawerWellId(selectedWellId);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedWellId]);
 
   const handleAgentAction = (a: ChatAction) => {
     if (a.kind === 'navigate') {
@@ -67,10 +77,14 @@ export function App() {
       }
       if (a.well_id) {
         setSelectedWellId(a.well_id);
-        // UI rule (2026-10-08): the full Deep Dive opens only when the user explicitly asked for it
-        // (history / deep dive / report). Normal answers just highlight the well.
-        if (a.screen === 'well' && a.explicit) {
+        // Answer canvas (2026-10-08): each well answer shows only its focused view in the middle
+        // panel (production, interventions, wellbore, recommendation, ...). The chat keeps the short answer.
+        if (a.screen === 'well') {
+          setCanvasView((a.view as CanvasView) ?? 'overview');
+          setCanvasCompareRec(a.compare_recommended);
           setDrawerWellId(a.well_id);
+          // The agent now floats over every tab; well answers always land in the map + panel view.
+          setScreenTab('map');
         }
       }
       if (a.screen === 'map') {
@@ -170,6 +184,23 @@ export function App() {
   }, [fieldFilter, wells]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const mapTitle = fieldFilter === 'ALL' ? 'Assam Asset — all fields' : `${fieldFilter} Field Assets`;
+
+  // "What the agent sees": Field · Well · View (shown in the agent header, sent with each turn via props).
+  const SCREEN_LABEL: Record<ScreenTab, string> = {
+    map: 'Map',
+    field_history: 'Field history',
+    field_compare: 'Field comparison',
+    field_health: 'Health & priority',
+  };
+  const agentContextLabel = [
+    fieldFilter === 'ALL' ? 'Assam Asset' : fieldFilter,
+    screenTab === 'map' ? selectedWellId : null,
+    screenTab === 'map' && drawerWellId
+      ? canvasView.charAt(0).toUpperCase() + canvasView.slice(1).replace(/_/g, ' ')
+      : SCREEN_LABEL[screenTab],
+  ]
+    .filter(Boolean)
+    .join(' · ');
   const tabBtn = (t: ScreenTab, label: string) => (
     <button
       key={t}
@@ -183,7 +214,10 @@ export function App() {
   );
 
   return (
-    <div className="flex flex-col h-screen w-screen bg-background overflow-hidden text-textMain">
+    <div
+      className="flex flex-col h-screen w-screen bg-background overflow-hidden text-textMain"
+      style={agentDocked ? { paddingRight: AGENT_DOCK_WIDTH } : undefined}
+    >
       {/* Top Header */}
       <Header
         kpis={kpis}
@@ -262,9 +296,9 @@ export function App() {
         </div>
       ) : (
         <div className="flex-1 flex overflow-hidden">
-          {/* Left Column: Interactive Map & Well Selection (34% width); hidden while the middle panel is expanded */}
+          {/* Left Column: Interactive Map (50% width); hidden while the middle panel is expanded */}
           <section
-            className={`w-[34%] min-w-[340px] flex flex-col border-r border-border relative bg-surface ${
+            className={`w-1/2 min-w-[360px] flex flex-col border-r border-border relative bg-surface ${
               middleExpanded ? 'hidden' : ''
             }`}
           >
@@ -276,11 +310,14 @@ export function App() {
               </span>
               {selectedWellId ? (
                 <button
-                  onClick={() => setDrawerWellId(selectedWellId)}
+                  onClick={() => {
+                    setCanvasView('overview');
+                    setDrawerWellId(selectedWellId);
+                  }}
                   className="text-[10px] px-2 py-0.5 rounded border border-accent text-accent hover:bg-accent hover:text-white"
-                  title="Open well deep dive: history, interventions, construction, nearby wells"
+                  title="Open well details in the middle panel (overview, production, interventions, wellbore, ...)"
                 >
-                  Deep dive {selectedWellId}
+                  Details {selectedWellId}
                 </button>
               ) : (
                 <span className="text-[10px]">Click pin to inspect</span>
@@ -294,57 +331,19 @@ export function App() {
                 selectedWellId={selectedWellId}
                 onSelectWell={setSelectedWellId}
                 field={fieldFilter}
-                onOpenWell={setDrawerWellId}
+                onOpenWell={(id) => {
+                  setCanvasView('overview');
+                  setDrawerWellId(id);
+                }}
+                onFullscreenChange={setMapFullscreen}
+                fullscreenRightInset={agentDocked ? AGENT_DOCK_WIDTH : undefined}
               />
             </div>
 
-            {/* Compact Well Selector Drawer at bottom of Map */}
-            <div className="h-44 border-t border-border bg-[#0d1117] flex flex-col shrink-0">
-              <div className="px-3 py-1.5 border-b border-border text-[10px] font-mono text-textMuted flex items-center justify-between">
-                <span>QUICK SELECTOR</span>
-                <span>{filteredWells.length} WELLS FILTERED</span>
-              </div>
-              <div className="flex-1 overflow-y-auto divide-y divide-border/40 text-xs">
-                {filteredWells.map((w) => {
-                  const isSelected = w.id === selectedWellId;
-                  const statusColor =
-                    w.status === 'healthy'
-                      ? 'text-healthy'
-                      : w.status === 'warning'
-                      ? 'text-warning'
-                      : 'text-critical';
-
-                  return (
-                    <div
-                      key={w.id}
-                      onClick={() => setSelectedWellId(w.id)}
-                      className={`px-3 py-2 flex items-center justify-between cursor-pointer transition-colors ${
-                        isSelected
-                          ? 'bg-surface border-l-4 border-accent text-white font-semibold'
-                          : 'hover:bg-surface/50 text-textMuted hover:text-white'
-                      }`}
-                    >
-                      <div>
-                        <div className="font-sans text-xs">{w.name}</div>
-                        <div className="font-mono text-[10px] text-textMuted">
-                          {w.id} • {w.formation}
-                        </div>
-                      </div>
-                      <div className="text-right font-mono">
-                        <div className="text-xs text-white">{w.current_metrics.oil_bopd} BOPD</div>
-                        <div className={`text-[10px] font-bold uppercase ${statusColor}`}>
-                          {w.status}
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
           </section>
 
           {/* Middle Column: Well Telemetry, 24-Month History & Workovers; expandable over the map */}
-          <section className="flex-1 min-w-[400px] flex flex-col border-r border-border overflow-hidden relative">
+          <section className="flex-1 basis-1/2 min-w-[400px] flex flex-col overflow-hidden relative">
             <button
               onClick={() => setMiddleExpanded((v) => !v)}
               className="absolute top-2 right-2 z-20 p-1.5 rounded border border-border bg-[#12161c]/90 text-textMuted hover:text-white hover:border-accent"
@@ -353,7 +352,21 @@ export function App() {
             >
               {middleExpanded ? <Minimize2 className="w-3.5 h-3.5" /> : <Maximize2 className="w-3.5 h-3.5" />}
             </button>
-            {selectedWellDetail ? (
+            {drawerWellId ? (
+              // Full well detail lives in the middle panel (never over the agent / chat pane).
+              <WellDeepDiveDrawer
+                embedded
+                wellId={drawerWellId}
+                view={canvasView}
+                onViewChange={setCanvasView}
+                compareRecommended={canvasCompareRec}
+                onClose={() => setDrawerWellId(null)}
+                onSelectWell={(id) => {
+                  setDrawerWellId(id);
+                  setSelectedWellId(id);
+                }}
+              />
+            ) : selectedWellDetail ? (
               <WellDetails well={selectedWellDetail} />
             ) : (
               <div className="flex-1 flex items-center justify-center font-mono text-xs text-textMuted">
@@ -361,21 +374,11 @@ export function App() {
               </div>
             )}
           </section>
-
-          {/* Right Column: Voice-Enabled AI Copilot (28% width, ~380px) */}
-          <section className="w-[28%] min-w-[340px] max-w-[420px] flex flex-col overflow-hidden">
-            <VoiceAgentPanel
-              well={selectedWellDetail}
-              field={fieldFilter === 'ALL' ? null : fieldFilter}
-              screen={screenTab}
-              onAgentAction={handleAgentAction}
-            />
-          </section>
         </div>
       )}
 
-      {/* Stage T: well deep-dive drawer */}
-      {drawerWellId && (
+      {/* Stage T: well deep-dive drawer — overlay only on tabs without a middle panel */}
+      {drawerWellId && screenTab !== 'map' && (
         <WellDeepDiveDrawer
           wellId={drawerWellId}
           onClose={() => setDrawerWellId(null)}
@@ -385,6 +388,18 @@ export function App() {
           }}
         />
       )}
+
+      {/* WellPulse AI Agent — floating command centre, mounted once so it is on every screen
+          and keeps its voice session + conversation when minimised or when screens change. */}
+      <FloatingAgent
+        well={selectedWellDetail}
+        field={fieldFilter === 'ALL' ? null : fieldFilter}
+        screen={screenTab}
+        contextLabel={agentContextLabel}
+        onAgentAction={handleAgentAction}
+        autoDock={(middleExpanded && screenTab === 'map') || mapFullscreen}
+        onDockedChange={setAgentDocked}
+      />
     </div>
   );
 }

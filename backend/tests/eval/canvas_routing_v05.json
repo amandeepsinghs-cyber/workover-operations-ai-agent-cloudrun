@@ -1,0 +1,480 @@
+{
+  "name": "canvas_routing_v05",
+  "version": 1,
+  "eval_cases": [
+    {
+      "eval_case_id": "df_v05_01_field_compare",
+      "bdd": [
+        "BDD-F26-S01",
+        "BDD-F09-S01"
+      ],
+      "level": "L1",
+      "persona": "ED",
+      "language": "english",
+      "context": {
+        "field": "ALL",
+        "well_id": null,
+        "screen": "map"
+      },
+      "history": [],
+      "prompt": {
+        "role": "user",
+        "parts": [
+          {
+            "text": "Compare field performance"
+          }
+        ]
+      },
+      "expected_tools": [
+        "compare_fields"
+      ],
+      "expected_any_of": [],
+      "forbidden_tools": [],
+      "expect_refusal": false,
+      "expected_canvas_view": "compare",
+      "tags": [
+        "demo",
+        "canvas_routing",
+        "v05",
+        "DF",
+        "step1"
+      ]
+    },
+    {
+      "eval_case_id": "df_v05_02_sick_wells",
+      "bdd": [
+        "BDD-F26-S01",
+        "BDD-F02-S01"
+      ],
+      "level": "L2",
+      "persona": "ASSET_MANAGER",
+      "language": "english",
+      "context": {
+        "field": "Lakwa",
+        "well_id": null,
+        "screen": "map"
+      },
+      "history": [],
+      "prompt": {
+        "role": "user",
+        "parts": [
+          {
+            "text": "Which wells in Lakwa are sick?"
+          }
+        ]
+      },
+      "expected_tools": [
+        "classify_well_health"
+      ],
+      "expected_any_of": [],
+      "forbidden_tools": [],
+      "expect_refusal": false,
+      "expected_canvas_view": "overview",
+      "tags": [
+        "demo",
+        "canvas_routing",
+        "v05",
+        "DF",
+        "step2"
+      ]
+    },
+    {
+      "eval_case_id": "df_v05_03_priority_list",
+      "bdd": [
+        "BDD-F26-S01",
+        "BDD-F04-S01"
+      ],
+      "level": "L3",
+      "persona": "ASSET_MANAGER",
+      "language": "english",
+      "context": {
+        "field": "Lakwa",
+        "well_id": null,
+        "screen": "map"
+      },
+      "history": [],
+      "prompt": {
+        "role": "user",
+        "parts": [
+          {
+            "text": "Show priority list of wells needing intervention"
+          }
+        ]
+      },
+      "expected_tools": [
+        "rank_candidates"
+      ],
+      "expected_any_of": [],
+      "forbidden_tools": [],
+      "expect_refusal": false,
+      "expected_canvas_view": "interventions",
+      "tags": [
+        "demo",
+        "canvas_routing",
+        "v05",
+        "DF",
+        "step3"
+      ]
+    },
+    {
+      "eval_case_id": "df_v05_04_overview",
+      "bdd": [
+        "BDD-F26-S01",
+        "BDD-F20-S03"
+      ],
+      "level": "L4",
+      "persona": "ED",
+      "language": "english",
+      "context": {
+        "field": "Lakwa",
+        "well_id": "LKW-019",
+        "screen": "well"
+      },
+      "history": [],
+      "prompt": {
+        "role": "user",
+        "parts": [
+          {
+            "text": "Tell me about LKW-019"
+          }
+        ]
+      },
+      "expected_tools": [
+        "well_profile"
+      ],
+      "expected_any_of": [],
+      "forbidden_tools": [
+        "build_well_dossier"
+      ],
+      "expect_refusal": false,
+      "expected_canvas_view": "overview",
+      "tags": [
+        "demo",
+        "canvas_routing",
+        "v05",
+        "DF",
+        "step4"
+      ]
+    },
+    {
+      "eval_case_id": "df_v05_05_production",
+      "bdd": [
+        "BDD-F26-S01",
+        "BDD-F20-S01"
+      ],
+      "level": "L4",
+      "persona": "ED",
+      "language": "english",
+      "context": {
+        "field": "Lakwa",
+        "well_id": "LKW-019",
+        "screen": "well"
+      },
+      "history": [
+        "Tell me about LKW-019"
+      ],
+      "prompt": {
+        "role": "user",
+        "parts": [
+          {
+            "text": "Show production history for LKW-019"
+          }
+        ]
+      },
+      "expected_tools": [
+        "plot_production"
+      ],
+      "expected_any_of": [],
+      "forbidden_tools": [],
+      "expect_refusal": false,
+      "expected_canvas_view": "production",
+      "tags": [
+        "demo",
+        "canvas_routing",
+        "v05",
+        "DF",
+        "step5"
+      ]
+    },
+    {
+      "eval_case_id": "df_v05_06_interventions",
+      "bdd": [
+        "BDD-F26-S01",
+        "BDD-F20-S02"
+      ],
+      "level": "L4",
+      "persona": "ASSET_MANAGER",
+      "language": "english",
+      "context": {
+        "field": "Lakwa",
+        "well_id": "LKW-019",
+        "screen": "well"
+      },
+      "history": [
+        "Show production history for LKW-019"
+      ],
+      "prompt": {
+        "role": "user",
+        "parts": [
+          {
+            "text": "Show past interventions for LKW-019"
+          }
+        ]
+      },
+      "expected_tools": [
+        "well_profile"
+      ],
+      "expected_any_of": [],
+      "forbidden_tools": [],
+      "expect_refusal": false,
+      "expected_canvas_view": "interventions",
+      "tags": [
+        "demo",
+        "canvas_routing",
+        "v05",
+        "DF",
+        "step6"
+      ]
+    },
+    {
+      "eval_case_id": "df_v05_07_wellbore",
+      "bdd": [
+        "BDD-F26-S01",
+        "BDD-F20-S01"
+      ],
+      "level": "L4",
+      "persona": "ASSET_MANAGER",
+      "language": "english",
+      "context": {
+        "field": "Lakwa",
+        "well_id": "LKW-019",
+        "screen": "well"
+      },
+      "history": [
+        "Show past interventions for LKW-019"
+      ],
+      "prompt": {
+        "role": "user",
+        "parts": [
+          {
+            "text": "Show wellbore diagram and completion details for LKW-019"
+          }
+        ]
+      },
+      "expected_tools": [
+        "well_profile"
+      ],
+      "expected_any_of": [],
+      "forbidden_tools": [],
+      "expect_refusal": false,
+      "expected_canvas_view": "wellbore",
+      "tags": [
+        "demo",
+        "canvas_routing",
+        "v05",
+        "DF",
+        "step7"
+      ]
+    },
+    {
+      "eval_case_id": "df_v05_08_diagnosis",
+      "bdd": [
+        "BDD-F26-S01",
+        "BDD-F01-S01"
+      ],
+      "level": "L4",
+      "persona": "ED",
+      "language": "english",
+      "context": {
+        "field": "Lakwa",
+        "well_id": "LKW-019",
+        "screen": "well"
+      },
+      "history": [],
+      "prompt": {
+        "role": "user",
+        "parts": [
+          {
+            "text": "Why is production declining on LKW-019?"
+          }
+        ]
+      },
+      "expected_tools": [
+        "attribute_decline"
+      ],
+      "expected_any_of": [],
+      "forbidden_tools": [],
+      "expect_refusal": false,
+      "expected_canvas_view": "diagnosis",
+      "tags": [
+        "demo",
+        "canvas_routing",
+        "v05",
+        "DF",
+        "step8"
+      ]
+    },
+    {
+      "eval_case_id": "df_v05_09_recommendation",
+      "bdd": [
+        "BDD-F26-S01",
+        "BDD-F24-S01",
+        "BDD-F04-S01"
+      ],
+      "level": "L5",
+      "persona": "ED",
+      "language": "english",
+      "context": {
+        "field": "Lakwa",
+        "well_id": "LKW-019",
+        "screen": "well"
+      },
+      "history": [
+        "Why is production declining on LKW-019?"
+      ],
+      "prompt": {
+        "role": "user",
+        "parts": [
+          {
+            "text": "What should we do for LKW-019?"
+          }
+        ]
+      },
+      "expected_tools": [
+        "recommend_next_best_action"
+      ],
+      "expected_any_of": [],
+      "forbidden_tools": [],
+      "expect_refusal": false,
+      "expected_canvas_view": "recommendation",
+      "tags": [
+        "demo",
+        "canvas_routing",
+        "v05",
+        "DF",
+        "step9"
+      ]
+    },
+    {
+      "eval_case_id": "df_v05_10_compare_counterfactual",
+      "bdd": [
+        "BDD-F26-S01",
+        "BDD-F13-S01"
+      ],
+      "level": "L5",
+      "persona": "ED",
+      "language": "english",
+      "context": {
+        "field": "Lakwa",
+        "well_id": "LKW-019",
+        "screen": "well"
+      },
+      "history": [
+        "What should we do for LKW-019?"
+      ],
+      "prompt": {
+        "role": "user",
+        "parts": [
+          {
+            "text": "Why not sand cleanout for LKW-019?"
+          }
+        ]
+      },
+      "expected_tools": [
+        "compare_interventions"
+      ],
+      "expected_any_of": [],
+      "forbidden_tools": [],
+      "expect_refusal": false,
+      "expected_canvas_view": "compare",
+      "tags": [
+        "demo",
+        "canvas_routing",
+        "v05",
+        "DF",
+        "step10"
+      ]
+    },
+    {
+      "eval_case_id": "df_v05_11_field_report_link",
+      "bdd": [
+        "BDD-F26-S01",
+        "BDD-F25-S04"
+      ],
+      "level": "L5",
+      "persona": "FIELD_ENGINEER",
+      "language": "english",
+      "context": {
+        "field": "Lakwa",
+        "well_id": "LKW-019",
+        "screen": "well"
+      },
+      "history": [
+        "What should we do for LKW-019?"
+      ],
+      "prompt": {
+        "role": "user",
+        "parts": [
+          {
+            "text": "Prepare me for the field"
+          }
+        ]
+      },
+      "expected_tools": [
+        "build_well_dossier"
+      ],
+      "expected_any_of": [],
+      "forbidden_tools": [],
+      "expect_refusal": false,
+      "expected_canvas_view": "overview",
+      "tags": [
+        "demo",
+        "canvas_routing",
+        "v05",
+        "DF",
+        "step11"
+      ]
+    },
+    {
+      "eval_case_id": "df_v05_12_negative_no_history_dump",
+      "bdd": [
+        "BDD-F20-S03",
+        "BDD-F20-S04",
+        "BDD-F26-S01"
+      ],
+      "level": "L4",
+      "persona": "ED",
+      "language": "english",
+      "context": {
+        "field": "Lakwa",
+        "well_id": "LKW-019",
+        "screen": "well"
+      },
+      "history": [],
+      "prompt": {
+        "role": "user",
+        "parts": [
+          {
+            "text": "Tell me about LKW-019 and dump full history"
+          }
+        ]
+      },
+      "expected_tools": [
+        "well_profile"
+      ],
+      "expected_any_of": [],
+      "forbidden_tools": [
+        "build_well_dossier"
+      ],
+      "expect_refusal": false,
+      "expected_canvas_view": "overview",
+      "tags": [
+        "negative",
+        "canvas_routing",
+        "v05",
+        "DF",
+        "guardrail"
+      ]
+    }
+  ]
+}

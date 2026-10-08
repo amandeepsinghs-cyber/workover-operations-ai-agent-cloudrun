@@ -519,7 +519,9 @@ def _v_classify_intervention(well_id: str = "", top_k: int = 3) -> dict[str, Any
         "TC-022: ranked next best actions for one well (job, intervention class, diagnostic fit, uplift BOPD, "
         "deferred bbl over 12 months, p_success, rig-days, cost band, earliest rig slot, risk flags, SOP id), the "
         "physics route vs the ML suggestion, guardrail flags (coning -> choke back; reservoir decline -> no job) "
-        "and rejected candidates with reasons. Use for 'what should we do on GK-129', 'next best action', "
+        "and rejected candidates with reasons, plus data.multimodal (WellPulse multimodal NN top 3 with p_success_pct, "
+        "look-alike wells, drivers by modality, methodology). Use for 'what should we do on GK-129', 'next best "
+        "action', 'how did you decide', 'methodology', "
         "'kya karein', 'kaunsa job'."
     ),
     action_kind="nba",
@@ -533,6 +535,11 @@ def _v_next_best_action(well_id: str, top_k: int = 3) -> dict[str, Any]:
         data.pop("job_menu", None)  # UI picker only; keep the voice payload small
         for a in data.get("actions") or []:
             a["sop_phases"] = [p.get("phase") for p in a.pop("sop_steps", None) or [] if p.get("phase")]
+        try:  # v0.5 (D-32): multimodal success engine ranking, analogs and drivers
+            from app.analytics.tools.success_engine import compact_summary
+            data["multimodal"] = compact_summary(well_id.strip().upper())
+        except Exception:  # noqa: BLE001
+            pass
     return env
 
 

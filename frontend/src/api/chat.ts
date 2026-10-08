@@ -54,6 +54,10 @@ export interface ChatAction {
   source_tool: string;
   /** True only when the user explicitly asked for the full well view / history / report. */
   explicit?: boolean;
+  /** Focused middle-panel view for this answer (answer canvas). */
+  view?: CanvasViewKey;
+  /** For the 'compare' view: the recommended job code to compare against. */
+  compare_recommended?: string;
 }
 
 /**
@@ -66,6 +70,60 @@ const EXPLICIT_DETAIL_RE =
 
 export function isExplicitDetailRequest(text: string | null | undefined): boolean {
   return !!text && EXPLICIT_DETAIL_RE.test(text);
+}
+
+/** Focused middle-panel view (mirrors CanvasView in WellDeepDiveDrawer). */
+export type CanvasViewKey =
+  | 'overview'
+  | 'production'
+  | 'interventions'
+  | 'wellbore'
+  | 'pressures'
+  | 'diagnosis'
+  | 'recommendation'
+  | 'compare'
+  | 'nearby';
+
+const KW: [CanvasViewKey, RegExp][] = [
+  ['compare', /\bwhy\s+not\b|\binstead\s+of\b|\bcompare\b|\balternative/i],
+  ['recommendation', /\b(next\s+best|recommend\w*|what\s+should\s+we\s+do|suggest\w*|intervention\s+options?|best\s+(intervention|option|action))\b|kya\s+karna/i],
+  ['interventions', /\b(interventions?|workovers?|jobs?|job\s+history|past\s+work|well\s+service)\b/i],
+  ['wellbore', /\b(casing|tubing|completion|wellbore|schematic|perforations?|perfs?|lithology|formation|construction|diagram|packer)\b/i],
+  ['pressures', /\b(pressure|well\s+test|test|survey|temperature|thp|chp|bhp)\b/i],
+  ['nearby', /\b(nearby|offset|neighbou?rs?|around)\b|aas\s*paas/i],
+  ['diagnosis', /\b(why\s+(did|is)|declin\w*|diagnos\w*|root\s+cause|attribution|human\s+factor|controllable|what'?s\s+wrong)\b/i],
+  ['production', /\b(production|rate|bopd|oil|water\s*cut|gor|plot|chart|graph|trend)\b/i],
+];
+
+/**
+ * Which single view answers this turn. Tool kind decides when it is specific (production chart, NBA,
+ * counterfactual, attribution); for broad tools (well_profile / well_summary) the user's words decide.
+ */
+const TOOL_TO_KIND: Record<string, string> = {
+  plot_production: 'well_production_chart',
+  recommend_next_best_action: 'nba',
+  compare_interventions: 'counterfactual',
+  attribute_decline: 'attribution_waterfall',
+  classify_intervention: 'intervention_classification',
+  well_summary: 'well_profile',
+};
+
+export function pickCanvasView(toolKind: string, userText: string | null | undefined): CanvasViewKey {
+  const t = userText || '';
+  const byWords = KW.find(([, re]) => re.test(t))?.[0];
+  switch (TOOL_TO_KIND[toolKind] ?? toolKind) {
+    case 'counterfactual':
+      return 'compare';
+    case 'nba':
+    case 'intervention_classification':
+      return byWords === 'compare' ? 'compare' : 'recommendation';
+    case 'attribution_waterfall':
+      return 'diagnosis';
+    case 'well_production_chart':
+      return byWords === 'interventions' ? 'interventions' : 'production';
+    default:
+      return byWords ?? 'overview';
+  }
 }
 
 export interface ChatReply {
