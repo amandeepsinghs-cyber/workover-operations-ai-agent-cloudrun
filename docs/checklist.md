@@ -384,7 +384,7 @@
 
 #### Gate W
 - [x] https://wellpulse-app-bowxi5445q-uc.a.run.app serves v0.4: `/api/healthz`, `/api/fields`, a dossier PDF, `/api/docs/{id}.pdf`
-  - `/api/health` 200 (`/api/healthz` alias added after deploy; ships in the next revision), `/api/fields` 3 fields, dossier GK-129 PDF 200 (27 KB, 4 pages), `/api/docs/SOP-IC-04.pdf` 200.
+  - `/api/health` 200, `/api/fields` 3 fields, dossier GK-129 PDF 200 (27 KB, 4 pages), `/api/docs/SOP-IC-04.pdf` 200. Polish revision `wellpulse-app-00006-mhb` (image `v04-04c648b`): `/api/healthz` 200, smoke 6/6, remote L1–L5 7/7 again.
 - [~] Text L1–L5 and Live (*"Which field is underperforming?"*) work end to end on the URL; forced reconnect and fallback both work
   - Text L1–L5: PASS on the URL. Live: `/ws/live` reaches `connected`; spoken audio, forced reconnect and fallback need an in-browser check by the user.
 - [x] No `GEMINI_API_KEY` on the service; the revision runs on Vertex ADC
