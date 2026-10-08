@@ -213,7 +213,7 @@ export const WellDeepDiveDrawer: React.FC<WellDeepDiveDrawerProps> = ({
       {/* Sticky Header */}
       <div
         className={`sticky top-0 bg-[#0d1117]/95 backdrop-blur border-b border-border p-4 z-20 flex items-start justify-between gap-3 ${
-          embedded ? 'pr-12' : ''
+          embedded ? 'pr-20' : ''
         }`}
       >
         <div className="flex-1 min-w-0">

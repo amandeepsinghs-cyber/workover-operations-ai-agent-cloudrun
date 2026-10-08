@@ -5,17 +5,24 @@ export interface FieldSelectorProps {
   value: FieldFilter;
   onChange: (f: FieldFilter) => void;
   hierarchy: Hierarchy | null;
+  /** 'overlay' = see-through styling for use on top of the map. */
+  variant?: 'default' | 'overlay';
 }
 
 export const FieldSelector: React.FC<FieldSelectorProps> = ({
   value,
   onChange,
   hierarchy,
+  variant = 'default',
 }) => {
   const isAllSelected = value === 'ALL';
 
   return (
-    <div className="inline-flex items-center gap-1 p-1 bg-[#0d1117] border border-border rounded-lg text-xs font-sans">
+    <div
+      className={`inline-flex items-center gap-1 p-1 rounded-lg text-xs font-sans flex-wrap ${
+        variant === 'overlay' ? 'text-white' : 'bg-[#0d1117] border border-border'
+      }`}
+    >
       {/* 'All fields' button */}
       <button
         type="button"
