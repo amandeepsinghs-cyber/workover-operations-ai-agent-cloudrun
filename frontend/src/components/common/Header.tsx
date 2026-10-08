@@ -81,7 +81,7 @@ export const Header: React.FC<HeaderProps> = ({
             }`}
           >
             <XCircle className="w-3.5 h-3.5 text-critical animate-pulse" />
-            <span>Failed:</span>
+            <span className="whitespace-nowrap">Not producing:</span>
             <strong className="text-critical">{kpis.failed_count}</strong>
           </button>
         </div>

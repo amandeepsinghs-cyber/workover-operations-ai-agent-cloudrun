@@ -54,6 +54,8 @@ def _get_minimal_args(fn: Any, context: types.SimpleNamespace) -> dict[str, Any]
         return {"job_code": "WAX_REMOVAL", "tool_context": context}
     if name == "get_document":
         return {"doc_id": "SOP-IC-01", "tool_context": context}
+    if name == "ui_control":  # v0.6 ED-11
+        return {"action": "open_well", "view": "wellbore", "tool_context": context}
     return {"tool_context": context}
 
 
@@ -108,7 +110,7 @@ def test_ed_classify_intervention() -> None:
 
 def test_all_tools_count_and_unique_names() -> None:
     """from app.agent.adk_tools import ALL has len 30 and unique __name__s."""
-    assert len(ALL) == 33, f"Expected 33 tools in ALL, found {len(ALL)}"
+    assert len(ALL) == 34, f"Expected 34 tools in ALL, found {len(ALL)}"
     names = [t.__name__ for t in ALL]
-    assert len(set(names)) == 33, f"Duplicate tool names in ALL: {names}"
-    assert len(EXT_TOOLS) == 22, f"Expected 22 tools in EXT_TOOLS, found {len(EXT_TOOLS)}"
+    assert len(set(names)) == 34, f"Duplicate tool names in ALL: {names}"
+    assert len(EXT_TOOLS) == 23, f"Expected 23 tools in EXT_TOOLS, found {len(EXT_TOOLS)}"

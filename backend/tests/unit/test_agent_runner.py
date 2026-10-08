@@ -24,7 +24,7 @@ def test_no_gemini_api_key_anywhere_in_app():
 
 def test_tool_registry_is_30_unique_typed_wrappers():
     names = [t.__name__ for t in adk_tools.ALL]
-    assert len(names) == 33 and len(set(names)) == 33
+    assert len(names) == 34 and len(set(names)) == 34  # v0.6 ED-11: + ui_control
     for t in adk_tools.ALL:
         assert (t.__doc__ or "").strip(), t.__name__
         assert "tool_context" in t.__code__.co_varnames[: t.__code__.co_argcount], t.__name__

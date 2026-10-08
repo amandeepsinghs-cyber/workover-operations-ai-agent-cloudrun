@@ -413,6 +413,18 @@ Orchestrator (Opus/Pro-class): contracts, numeric logic, guardrails, ML gates, c
 **What it does:** The Wellbore view shows a completion diagram drawn from data: casing strings and shoes, cement tops, tubing with packer/pump, **perforations coloured by status**, formation tops, TD. It reuses the field-report schematic so the screen and the print match. Served as `GET /api/wells/{id}/schematic.svg`.
 **Acceptance (Stage ED-2):** renders for GK-129, LKW-019, LKM-061 + 10 random wells; every perforation interval in `perforation_intervals` appears; missing data shows a labelled placeholder.
 
+**Revision (Stage ED-8, D-37, user 2026-10-08):** the `<img>` of the server SVG did not render (an unescaped `&` made the SVG invalid XML). The dashboard diagram is now drawn **natively** in React (`CompletionDiagram.tsx`) from the structured construction data returned by `GET /api/wells/{id}/profile`:
+- depth scale (m MD) and formation bands with tops;
+- nested casing strings (OD, grade, shoe) with cement shading to the cement top;
+- tubing to end of tubing, plus pump / anchor / packer at their landed depths;
+- perforations: open = red, squeezed / closed = grey dashed;
+- PBTD and TD markers;
+- hover details on every element, a legend, and labels laid out so they do not overlap;
+- a **perforation table** beside it: zone, top–bottom, length, SPF, date, status.
+
+The server SVG stays only for the printable field report; it is escaped and checked as valid XML in tests.
+**Acceptance (ED-8):** diagram + table render for GK-129, LKW-019 (3 intervals, 1 squeezed), LKM-061 and random wells; no image request; every interval in the data is drawn and listed.
+
 ### F-29 · Decline vs. nearby wells → "what is wrong" — `NEW` (upgrades F-12)
 > User: *"Compare production decline with nearby wells; this will give what is wrong."*
 
@@ -461,6 +473,41 @@ They appear as a dated timeline in the well panel's **History & Wax/Sand** view,
 ### F-33 · ED agent answers + rehearsal script — `NEW`
 **What it does:** "What's wrong with GK-129?" answers with F-29…F-31 in ≤ 4 sentences and opens the Offsets view. Tools are wired into the ADK agent (`compare_offset_decline`, `well_anomalies`, `wax_sand_behaviour`). Live has a 12-tool cap (SDD §11.3), so its `well_profile` tool carries the same three answers in `data.checks`. `docs/demo_flow.md` gains an ED script of 8–10 technical questions.
 **Acceptance (Stage ED-7):** the script passes in text chat on GK-129, LKW-019, LKM-061; numbers trace to tools.
+
+### F-41 · Hands-off control: the agent drives the whole screen — `NEW` (D-39, D-40)
+> User (2026-10-08): *"I should be able to control the entire interface with the help of the AI agent. I may not need to click anywhere."*
+
+**Problem:** the agent could only send `navigate` (field / well / field views). Every other control needed a click. Since ED-6 the map also opens on India, and an agent-picked well did not zoom in, because the pan only worked when a single well marker was on screen.
+
+**What it does:**
+- **ED-10 · Map follows the agent.** When the agent picks a well, the map leaves the India view, zooms to the well (zoom 14) and highlights it, even from cluster or India zoom. When the agent names a field (even the one already selected), the map drills into that field.
+- **ED-11 · `ui_control` command.** One command with a fixed list of allowed actions. Each one matches a button:
+
+  | Group | Actions |
+  |---|---|
+  | Map | `map_view` india / assam · `fullscreen` on / off · `basemap` satellite / scada · `flowlines` on / off · `legend` on / off · `zoom` in / out · `focus_field` · `focus_cluster` (GGS / cluster) · `focus_well` |
+  | Panel | `open_well` + view (summary, overview, production, interventions, wellbore, pressures, diagnosis, offsets, history, recommendation) · `open_screen` field_history / field_compare / field_health · `panel` expand / restore / close |
+  | App | `language` english / hinglish / hindi · `report` open / print / close · `agent` dock / undock |
+
+  - **Browser first.** Short commands ("full screen", "satellite dikhao", "India view", "go to Geleki", "open GK-129 wellbore", "close panel") are recognised in the browser and run instantly, with no model call. This works for typed text and hold-to-talk.
+  - **Agent tool.** The same command is a tool for the ADK text agent and for Live voice, so the agent can answer and drive the screen in one turn (e.g. "show me the worst well in Lakwa on the map").
+  - **Feedback.** Every executed command leaves a chip in the chat (e.g. "↗ Full screen on").
+- **ED-12 · Agent stays in view.** Entering map full screen or expanding the panel opens the agent docked on the right. Leaving restores the previous state (minimised or floating).
+- **ED-13 · GGS well buttons (user 2026-10-08).** The GGS popup's "Serviced production wells" tags become buttons coloured by health tag (green / amber / red). A click opens that well's detail in the panel and zooms the map to it. By voice: "show GGS-01" (`focus_cluster`) zooms to the station's wells and opens its popup; then "open LKW-019" opens a well.
+- **ED-14 · Health filter + voice-first (user 2026-10-08: *"only display non producing wells … I need to operate with voice"*).**
+  - New `ui_control` action `health_filter` all / healthy / attention / not_producing (D-41). The map shows only wells with that tag. Cluster pies and the legend bar count only what is shown, and a chip on the map reads "Showing: Not producing (79)" with a ✕ to clear. Field / well focus still work with a filter on.
+  - Browser phrases (no model call): "only show non producing wells", "sirf band wells dikhao", "केवल बंद कुएँ दिखाओ", "show only healthy wells", "needs attention wells", "show all wells".
+  - Clicking Healthy / Needs attention / Not producing in the map legend or the header KPIs applies the same filter (click again to clear).
+  - Display requests do not open the Health & priority screen: the agent uses `health_filter`, and the runner drops field-health / priority navigation in a turn that already issued a `ui_control` command (D-41). Questions ("which wells need attention and why?") still open it.
+  - Voice: the Live prompt lists spoken phrasings (EN / Hinglish / Hindi) and says "act first, then one short sentence". `ui_control` accepts spoken numbers ("GGS three" → GGS-03, "GK one two nine" → GK-129).
+  - Verified against the real Live model by sending text turns over the Live socket (audio itself needs a real-browser mic check).
+
+**Acceptance (ED-10…12):**
+- A hands-off script runs with no clicks, in text and in Live: India → Geleki → GK-129 wellbore → full screen → satellite / SCADA → flowlines off → Hindi → close panel → India.
+- Browser commands respond in under 200 ms; unknown phrases still go to the agent.
+- Agent-picked wells zoom from the India view.
+- Every GGS well button opens its well; "report print" opens the print dialog for the current well.
+- Unit tests cover the browser parser, the backend tool's allowed list, runner actions and the voice registration.
 
 ### CMD backlog (logged 2026-10-08, not built in v0.6)
 | ID | Feature | Notes |
@@ -577,4 +624,9 @@ They appear as a dated timeline in the well panel's **History & Wax/Sand** view,
 | D-34 | India map: 13 ONGC assets at approximate public locations with position-only, non-interactive well tags; no synthetic data for other assets; Assam is the only live asset | Accepted (v0.6, user 2026-10-08) |
 | D-35 | Service cost (tangible / intangible) deferred | Accepted (v0.6, user 2026-10-08) |
 | D-36 | Personas: CMD = all India; ED = one asset, technical; FE = execution documents. v0.6 builds the ED set; CMD set logged as backlog F-34…F-40 | Accepted (v0.6, user 2026-10-08) |
-| MS-20 | Stage ED: ED meeting pack (ED-1…ED-7: showcase mode, completion diagram, offset decline verdict, anomalies, wax/sand, India map, agent + script) | Milestone (v0.6) |
+| D-37 | Completion diagram drawn natively in the dashboard from structured casing / tubing / tools / perforation / formation data (no server image); server SVG kept for the printable report only | Accepted (v0.6, user 2026-10-08) |
+| D-38 | Health tags simplified to three: **Healthy** (green) = PRODUCING_OK; **Needs attention** (amber) = AT_RISK + UNDERPERFORMING; **Not producing** (red) = NOT_PRODUCING. Display-only: the backend keeps four buckets | Accepted (v0.6, user 2026-10-08) |
+| D-39 | Live voice tool cap raised from 12 to 13 (SDD §11.3) to add `ui_control`; the cap is our own rule, not a Gemini limit | Accepted (v0.6, user 2026-10-08) |
+| D-40 | Hands-off control: plain UI commands run in the browser with no model call (deterministic, < 200 ms); anything else goes to the agent, which can call `ui_control`. Only allow-listed actions run | Accepted (v0.6, user 2026-10-08) |
+| D-41 | Health filter is a display action (`ui_control health_filter`): "show / only / filter" requests change the map, never open the Health & priority screen; the runner drops field-health / priority navigation in a turn that issued a `ui_control` command | Accepted (v0.6, user 2026-10-08) |
+| MS-20 | Stage ED: ED meeting pack (ED-1…ED-14: showcase mode, completion diagram, offset decline verdict, anomalies, wax/sand, India map, agent + script, native completion diagram, three health tags, map follows agent, `ui_control` hands-off, agent docks in full screen, GGS well buttons, health filter + voice-first) | Milestone (v0.6) |

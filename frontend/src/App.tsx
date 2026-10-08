@@ -16,6 +16,7 @@ import { HealthBucketsCard } from './components/decision/HealthBucketsCard';
 import { PriorityQueueTable } from './components/decision/PriorityQueueTable';
 import type { FieldName } from './api/asset';
 import type { ChatAction } from './api/chat';
+import { dispatchUi, useUiCommands } from './agent/uiCommands';
 
 type ScreenTab = 'map' | 'field_history' | 'field_compare' | 'field_health';
 
@@ -55,6 +56,7 @@ export function App() {
   const [agentDocked, setAgentDocked] = useState<boolean>(false);
   // Step 5: well whose printable field report is open in the full-screen overlay.
   const [reportWellId, setReportWellId] = useState<string | null>(null);
+  const [reportPrint, setReportPrint] = useState<boolean>(false);
   useEffect(() => {
     if (!middleExpanded) return;
     const onKey = (e: KeyboardEvent) => {
@@ -70,6 +72,10 @@ export function App() {
   }, [selectedWellId]);
 
   const handleAgentAction = (a: ChatAction) => {
+    if (a.kind === 'ui') {
+      if (a.command) dispatchUi(a.command);
+      return;
+    }
     if (a.kind === 'navigate') {
       if (a.field) {
         setFieldFilter(a.field as FieldFilter);
@@ -98,6 +104,9 @@ export function App() {
       } else if ((a.screen === 'field_health' || a.screen === 'priority') && canHealth) {
         setScreenTab('field_health');
       }
+      // Stage ED-10 (F-41): the map follows the agent — zoom to the well, or drill into the field.
+      if (a.well_id && a.screen === 'well') dispatchUi({ action: 'focus_well', well_id: a.well_id });
+      else if (a.field && (a.screen === 'map' || !a.well_id)) dispatchUi({ action: 'focus_field', value: a.field });
     }
   };
 
@@ -156,16 +165,14 @@ export function App() {
     return wells.filter((well) => {
       const matchesField =
         fieldFilter === 'ALL' || (well.field || '').toLowerCase() === fieldFilter.toLowerCase();
-      const matchesStatus =
-        selectedStatus === 'all' || well.status.toLowerCase() === selectedStatus.toLowerCase();
       const matchesSearch =
         !searchQuery.trim() ||
         well.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         well.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
         well.formation.toLowerCase().includes(searchQuery.toLowerCase());
-      return matchesField && matchesStatus && matchesSearch;
+      return matchesField && matchesSearch;
     });
-  }, [wells, fieldFilter, selectedStatus, searchQuery]);
+  }, [wells, fieldFilter, searchQuery]);
 
   // Stage T: keep the selection inside the chosen field. Step 2: if the selected well is outside the
   // new field, clear it (the map zooms to the field) instead of auto-opening another well.
@@ -212,6 +219,71 @@ export function App() {
     setCanvasView(view);
     setScreenTab('map');
   };
+
+  // Stage ED-10 / ED-11 (F-41): hands-off commands that change app state (the map handles its own).
+  useUiCommands((cmd) => {
+    // Panel-bound commands: leave map full screen first so the panel is visible.
+    if (
+      mapFullscreen &&
+      (cmd.action === 'open_well' || cmd.action === 'open_screen' || (cmd.action === 'panel' && cmd.value === 'expand'))
+    ) {
+      dispatchUi({ action: 'fullscreen', value: 'off' });
+    }
+    switch (cmd.action) {
+      case 'focus_field':
+        if (cmd.value) setFieldFilter(cmd.value as FieldFilter);
+        if (cmd.value && cmd.value !== 'ALL' && healthField !== cmd.value) setHealthField(cmd.value as FieldName);
+        return;
+      case 'focus_well':
+      case 'open_well': {
+        const id = cmd.well_id || selectedWellId || drawerWellId;
+        if (!id) return;
+        const w = wells.find((x) => x.id === id);
+        // Keep the well visible: switch the field filter if it hides this well.
+        if (w && fieldFilter !== 'ALL' && w.field !== fieldFilter) setFieldFilter(w.field as FieldFilter);
+        if (cmd.action === 'open_well') openWellInPanel(id, (cmd.view as CanvasView) || 'overview');
+        else {
+          setSelectedWellId(id);
+          setScreenTab('map');
+        }
+        return;
+      }
+      case 'open_screen': {
+        const s = cmd.value as ScreenTab;
+        if ((s === 'field_history' || s === 'field_compare') && !canAggregate) return;
+        if (s === 'field_health' && !canHealth) return;
+        setScreenTab(s);
+        return;
+      }
+      case 'panel':
+        if (cmd.value === 'close') closePanel();
+        else if (cmd.value === 'expand') setMiddleExpanded(true);
+        else setMiddleExpanded(false);
+        return;
+      case 'health_filter':
+        setSelectedStatus(
+          cmd.value === 'healthy' ? 'healthy' : cmd.value === 'attention' ? 'warning' : cmd.value === 'not_producing' ? 'failed' : 'all',
+        );
+        return;
+      case 'report': {
+        if (cmd.value === 'close') {
+          setReportWellId(null);
+          setReportPrint(false);
+        }
+        else if (cmd.value === 'print' && reportWellId) return; // the open overlay prints itself
+        else {
+          const id = cmd.well_id || drawerWellId || selectedWellId;
+          if (id) {
+            setReportPrint(cmd.value === 'print');
+            setReportWellId(id);
+          }
+        }
+        return;
+      }
+      default:
+        return;
+    }
+  });
   // Esc / panel close: leave expanded mode first, otherwise return to the full map.
   const handlePanelBack = () => {
     if (mapFullscreen) return; // Esc belongs to the full-screen map
@@ -240,7 +312,13 @@ export function App() {
       <Header
         kpis={kpis}
         selectedStatus={selectedStatus}
-        onSelectStatus={setSelectedStatus}
+        onSelectStatus={(s) =>
+          // ED-14 (D-41): header KPIs drive the same health filter as the agent / voice / map legend.
+          dispatchUi({
+            action: 'health_filter',
+            value: s === selectedStatus || s === 'all' ? 'all' : s === 'healthy' ? 'healthy' : s === 'warning' ? 'attention' : 'not_producing',
+          })
+        }
         searchQuery={searchQuery}
         onSearchChange={setSearchQuery}
       />
@@ -378,7 +456,17 @@ export function App() {
       />
 
       {/* Step 5: printable field report — full-screen overlay (Print / Close / Esc). */}
-      {reportWellId && <FieldReportOverlay wellId={reportWellId} onClose={() => setReportWellId(null)} />}
+      {reportWellId && (
+        <FieldReportOverlay
+          key={reportWellId}
+          wellId={reportWellId}
+          printOnLoad={reportPrint}
+          onClose={() => {
+            setReportWellId(null);
+            setReportPrint(false);
+          }}
+        />
+      )}
     </div>
   );
 }

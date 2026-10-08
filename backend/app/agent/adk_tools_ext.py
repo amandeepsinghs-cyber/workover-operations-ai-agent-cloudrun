@@ -702,6 +702,31 @@ def _series_post(env: dict) -> dict:
     return env
 
 
+def ui_control(
+    action: str,
+    value: str = "",
+    well_id: str = "",
+    view: str = "",
+    tool_context: ToolContext = None,
+) -> dict:
+    """Drive the dashboard screen (v0.6 ED-11, hands-off). Call it whenever the user asks to show, open, move,
+    switch or close something on screen; call it once per change. Actions and values:
+    map_view india|assam · fullscreen on|off · basemap satellite|scada · flowlines on|off · legend on|off ·
+    zoom in|out · focus_field Geleki|Lakwa|Lakhmani|ALL · focus_cluster (GGS / cluster id, e.g. GGS-01) · focus_well (well_id) · open_well (well_id, view =
+    summary|overview|production|interventions|wellbore|pressures|diagnosis|recommendation|offsets|history|nearby)
+    · open_screen field_history|field_compare|field_health · panel expand|restore|close ·
+    language english|hinglish|hindi · report open|print|close (well_id) · agent dock|undock ·
+    health_filter all|healthy|attention|not_producing (show only wells with that health tag on the map).
+    'Only show / display / filter non producing (healthy, needs attention) wells' -> health_filter, NOT a health
+    analysis tool; 'show all wells' -> health_filter all. Returns the executed command; say it in a few words (e.g. 'Full screen on')."""
+    from app.agent import ui_control as ui
+
+    wid = well_id or ""
+    if not wid and (action or "").strip().lower() in {"open_well", "report"}:
+        wid = ctx_well(tool_context, "")
+    return ui.run(action, value, wid, view)
+
+
 # --------------------------------------------------------------------------------------------------
 # EXT_TOOLS registry (19 wrappers in exact spec order + 3 v0.6 ED tools)
 # --------------------------------------------------------------------------------------------------
@@ -729,6 +754,7 @@ EXT_TOOLS: list[Callable[..., dict]] = [
     compare_offset_decline,      # TC-033 (v0.6 ED-7)
     well_anomalies,              # TC-034 (v0.6 ED-7)
     wax_sand_behaviour,          # TC-035 (v0.6 ED-7)
+    ui_control,                  # UI (v0.6 ED-11, hands-off screen control)
 ]
 
 # If adk_tools was imported during our module initialization before EXT_TOOLS was bound,

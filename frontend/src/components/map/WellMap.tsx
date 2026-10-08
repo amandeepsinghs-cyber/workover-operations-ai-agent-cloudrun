@@ -8,14 +8,20 @@ import {
   WellMapData,
   GeoJSONFeature,
   HealthBucket,
+  HealthGroup,
   MapPoint,
   BUCKET_COLORS,
+  BUCKET_GROUP,
+  GROUP_COLORS,
+  GROUP_LABEL_KEY,
+  HEALTH_GROUPS,
+  groupCounts,
 } from '../../api/asset';
 import { t } from '../../i18n/strings';
+import { dispatchUi, useUiCommands } from '../../agent/uiCommands';
 
 /** Stage Y: at or below this zoom the map shows one marker per GGS cluster (BDD-F17-S03). */
 const CLUSTER_MAX_ZOOM = 11;
-const HEALTH_BUCKETS: HealthBucket[] = ['PRODUCING_OK', 'AT_RISK', 'UNDERPERFORMING', 'NOT_PRODUCING'];
 
 /** Stage ED-6: GET /api/geo/ongc-assets — 13 assets; non-Assam tags are names + positions only (D-34). */
 interface OngcAsset {
@@ -35,6 +41,12 @@ interface OngcAssets {
 }
 /** At or above this zoom the India tags show their well names. */
 const TAG_NAME_MIN_ZOOM = 9;
+/** Stage ED-10: zoom used when the agent shows one well (above CLUSTER_MAX_ZOOM so the marker is drawn). */
+const WELL_FOCUS_ZOOM = 14;
+/** Stage ED-14 (D-41): health_filter values ↔ display groups (D-38). */
+type HealthFilter = 'all' | 'healthy' | 'attention' | 'not_producing';
+const GROUP_FILTER: Record<HealthGroup, HealthFilter> = { HEALTHY: 'healthy', ATTENTION: 'attention', NOT_PRODUCING: 'not_producing' };
+const FILTER_GROUP: Record<Exclude<HealthFilter, 'all'>, HealthGroup> = { healthy: 'HEALTHY', attention: 'ATTENTION', not_producing: 'NOT_PRODUCING' };
 const ASSAM_DRILL_BOUNDS: L.LatLngBoundsExpression = [
   [26.55, 94.3],
   [27.25, 95.15],
@@ -74,6 +86,8 @@ export const WellMap: React.FC<WellMapProps> = ({
   const boundaryLayerGroupRef = useRef<L.LayerGroup | null>(null);
   const markersRef = useRef<{ [id: string]: L.Marker }>({});
   const clusterMarkersRef = useRef<L.Marker[]>([]);
+  // Stage ED-13 (F-41): GGS / CDP markers by station id, so "show GGS-03" can open the station popup.
+  const stationMarkersRef = useRef<{ id: string; name: string; marker: L.Marker }[]>([]);
   const lastPannedRef = useRef<string | null>(null);
   const [mapStyle, setMapStyle] = useState<'satellite' | 'dark'>('satellite');
   const [showFlowlines, setShowFlowlines] = useState<boolean>(true);
@@ -87,7 +101,16 @@ export const WellMap: React.FC<WellMapProps> = ({
   const [viewNonce, setViewNonce] = useState<number>(0);
   const [ongc, setOngc] = useState<OngcAssets | null>(null);
   const indiaLayerGroupRef = useRef<L.LayerGroup | null>(null);
-  const firstFieldRef = useRef<boolean>(true);
+  // Stage ED-10 (F-41): the well the agent asked to show; fitField() zooms here instead of the field bbox.
+  const focusedWellRef = useRef<string | null>(null);
+  const wellsRef = useRef<WellSummary[]>(wells);
+  wellsRef.current = wells;
+  const infraRef = useRef<FieldInfrastructure | null>(null);
+  infraRef.current = infrastructure;
+  const mapDataRef = useRef<WellMapData | null>(null);
+  mapDataRef.current = mapData;
+  const fieldRef = useRef<FieldFilter>(field);
+  fieldRef.current = field;
   const fieldLabel = field === 'ALL' ? 'Assam Asset' : field;
   // Stage Y: TC-020 bucket + cluster per well from /api/fields/map (same source as the KPI header counts)
   const bucketById = useMemo(() => {
@@ -98,13 +121,20 @@ export const WellMap: React.FC<WellMapProps> = ({
     return m;
   }, [mapData]);
   const clusterMode = zoom <= CLUSTER_MAX_ZOOM && wells.length > 1;
-  const healthCounts = useMemo(() => {
-    const c: Record<HealthBucket, number> = { PRODUCING_OK: 0, AT_RISK: 0, UNDERPERFORMING: 0, NOT_PRODUCING: 0 };
-    HEALTH_BUCKETS.forEach((b) => {
-      c[b] = Number(mapData?.counts_by_color?.[b] ?? 0);
+  // Stage ED-9 (D-38): three display tags — Healthy / Needs attention / Not producing.
+  const healthCounts = useMemo(() => groupCounts(mapData?.counts_by_color), [mapData]);
+  // Stage ED-14 (D-41): show only wells with one health tag (agent / voice / legend / header). The selected well
+  // always stays visible.
+  const [healthFilter, setHealthFilter] = useState<HealthFilter>('all');
+  const shownWells = useMemo(() => {
+    if (healthFilter === 'all') return wells;
+    const g = FILTER_GROUP[healthFilter];
+    return wells.filter((w) => {
+      if (w.id === selectedWellId) return true;
+      const b = bucketById[w.id]?.bucket as HealthBucket | undefined;
+      return !!b && BUCKET_GROUP[b] === g;
     });
-    return c;
-  }, [mapData]);
+  }, [wells, healthFilter, bucketById, selectedWellId]);
   const isSynthetic = (mapData?.boundaries || []).some((b) => b.is_synthetic_geometry !== false);
 
   // Resize Leaflet Map when toggling Fullscreen
@@ -259,6 +289,7 @@ export const WellMap: React.FC<WellMapProps> = ({
   function fitField() {
     const map = mapInstanceRef.current;
     if (!map) return;
+    if (focusedWellRef.current && focusWell(focusedWellRef.current)) return; // ED-10: agent-picked well wins
     const bb = mapData?.bbox;
     if (bb && bb.min_lat != null && bb.max_lat != null && bb.min_lng != null && bb.max_lng != null) {
       map.fitBounds(
@@ -292,14 +323,132 @@ export const WellMap: React.FC<WellMapProps> = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [indiaView, ongc, viewNonce]);
 
-  // Choosing a field (selector / agent) drills into the Assam Asset.
+  // Choosing a field (selector / agent) drills into the Assam Asset. Compare with the previous value so the
+  // React StrictMode double effect on mount does not leave the India view.
+  const prevFieldRef = useRef<FieldFilter>(field);
   useEffect(() => {
-    if (firstFieldRef.current) {
-      firstFieldRef.current = false;
-      return;
-    }
+    if (prevFieldRef.current === field) return;
+    prevFieldRef.current = field;
     setIndiaView(false);
   }, [field]);
+
+  // ED-10: once the selection moves to another well (or is cleared), stop pinning the old one.
+  useEffect(() => {
+    if (focusedWellRef.current && selectedWellId !== focusedWellRef.current) focusedWellRef.current = null;
+  }, [selectedWellId]);
+
+  /** Stage ED-10: zoom to one well (works from India / cluster zoom). Returns false if the well is unknown. */
+  function focusWell(id: string): boolean {
+    const map = mapInstanceRef.current;
+    if (!map) return false;
+    const w = wellsRef.current.find((x) => x.id === id);
+    const p = (mapData?.points || []).find((x) => x.well_id === id) as (MapPoint & { lat?: number; lng?: number; lon?: number }) | undefined;
+    const lat = w?.coordinates.lat ?? p?.lat;
+    const lng = w?.coordinates.lng ?? p?.lng ?? p?.lon;
+    if (lat == null || lng == null) return false;
+    lastPannedRef.current = id;
+    map.setView([lat, lng], Math.max(map.getZoom(), WELL_FOCUS_ZOOM), { animate: true });
+    return true;
+  }
+
+  // Stage ED-10 / ED-11 (F-41): map commands from the agent or the browser parser.
+  useUiCommands((cmd) => {
+    const map = mapInstanceRef.current;
+    switch (cmd.action) {
+      case 'focus_well':
+      case 'open_well': {
+        if (!cmd.well_id) return;
+        focusedWellRef.current = cmd.well_id;
+        if (indiaViewRef.current) setIndiaView(false); // the view effect calls fitField → focusWell
+        // Give App a tick to switch the field filter / selection, then zoom (and again once data settles).
+        setTimeout(() => focusWell(cmd.well_id as string), 60);
+        setTimeout(() => focusedWellRef.current === cmd.well_id && focusWell(cmd.well_id as string), 900);
+        return;
+      }
+      case 'focus_field':
+        focusedWellRef.current = null;
+        setIndiaView(false);
+        setViewNonce((n) => n + 1);
+        return;
+      case 'map_view':
+        focusedWellRef.current = null;
+        setIndiaView(cmd.value === 'india');
+        setViewNonce((n) => n + 1);
+        return;
+      case 'fullscreen':
+        setIsFullscreen(cmd.value === 'on');
+        return;
+      case 'basemap':
+        setMapStyle(cmd.value === 'scada' ? 'dark' : 'satellite');
+        return;
+      case 'flowlines':
+        setShowFlowlines(cmd.value !== 'off');
+        return;
+      case 'legend':
+        setLegendOpen(cmd.value !== 'off');
+        return;
+      case 'zoom':
+        if (cmd.value === 'out') map?.zoomOut();
+        else map?.zoomIn();
+        return;
+      case 'focus_cluster':
+        if (cmd.value) focusCluster(cmd.value, true);
+        return;
+      case 'health_filter': {
+        const v = (cmd.value as HealthFilter) || 'all';
+        setHealthFilter(v);
+        // Leave the India view so the filtered Assam wells are visible.
+        if (v !== 'all' && indiaViewRef.current) setIndiaView(false);
+        return;
+      }
+      default:
+        return;
+    }
+  });
+
+  /** Stage ED-13: zoom to a GGS station / cluster's wells and open the station popup. */
+  function focusCluster(value: string, allowWiden: boolean): void {
+    const map = mapInstanceRef.current;
+    if (!map) return;
+    const norm = (s: string) => s.toUpperCase().replace(/[^A-Z0-9]/g, '');
+    const v = norm(value);
+    if (!v) return;
+    const stations = infraRef.current?.gathering_stations || [];
+    const st =
+      stations.find((s) => norm(s.id) === v) ||
+      stations.find((s) => norm(s.id).endsWith(v) || norm(s.name).includes(v));
+    const points = (mapDataRef.current?.points || []) as (MapPoint & { lat?: number; lng?: number; lon?: number })[];
+    const ids = st?.serviced_wells?.length
+      ? st.serviced_wells
+      : points.filter((p) => p.cluster_id && norm(p.cluster_id) === v).map((p) => p.well_id);
+    const latlngs: L.LatLngTuple[] = [];
+    ids.forEach((id) => {
+      const w = wellsRef.current.find((x) => x.id === id);
+      const p = points.find((x) => x.well_id === id);
+      const lat = w?.coordinates.lat ?? p?.lat;
+      const lng = w?.coordinates.lng ?? p?.lng ?? p?.lon;
+      if (lat != null && lng != null) latlngs.push([lat, lng]);
+    });
+    if (st) latlngs.push([st.coordinates.lat, st.coordinates.lng]);
+    if (!latlngs.length) {
+      // The station may sit in a field hidden by the filter: widen to the whole asset once and retry.
+      if (allowWiden && fieldRef.current !== 'ALL') {
+        dispatchUi({ action: 'focus_field', value: 'ALL' });
+        setTimeout(() => focusCluster(value, false), 1500);
+      }
+      return;
+    }
+    focusedWellRef.current = null;
+    if (indiaViewRef.current) setIndiaView(false);
+    if (st) setShowFlowlines(true); // station markers live on the flowlines layer
+    setTimeout(() => {
+      map.fitBounds(L.latLngBounds(latlngs), { padding: [60, 60], maxZoom: 15 });
+      if (st) {
+        // Open the popup once the fly-to settles (the marker exists only while flowlines are on).
+        setTimeout(() => stationMarkersRef.current.find((m) => m.id === st.id)?.marker.openPopup(), 700);
+      }
+    }, 80);
+  }
 
   // Stage ED-6: fetch the 13-asset India overview once.
   useEffect(() => {
@@ -430,7 +579,7 @@ export const WellMap: React.FC<WellMapProps> = ({
     // Stage Y (BDD-F17-S03): zoomed out → one marker per GGS cluster with counts; expands on zoom / click.
     if (clusterMode) {
       const groups = new Map<string, WellSummary[]>();
-      wells.forEach((w) => {
+      shownWells.forEach((w) => {
         const cid = bucketById[w.id]?.cluster_id || (w as WellSummary & { cluster_id?: string }).cluster_id || w.field || 'UNASSIGNED';
         if (!groups.has(cid)) groups.set(cid, []);
         groups.get(cid)!.push(w);
@@ -438,19 +587,19 @@ export const WellMap: React.FC<WellMapProps> = ({
       groups.forEach((members, cid) => {
         const lat = members.reduce((s, w) => s + w.coordinates.lat, 0) / members.length;
         const lng = members.reduce((s, w) => s + w.coordinates.lng, 0) / members.length;
-        const counts: Record<string, number> = { PRODUCING_OK: 0, AT_RISK: 0, UNDERPERFORMING: 0, NOT_PRODUCING: 0 };
+        const counts: Record<HealthGroup, number> = { HEALTHY: 0, ATTENTION: 0, NOT_PRODUCING: 0 };
         members.forEach((w) => {
-          const b = bucketById[w.id]?.bucket;
-          if (b && b in counts) counts[b] += 1;
+          const b = bucketById[w.id]?.bucket as HealthBucket | undefined;
+          if (b && BUCKET_GROUP[b]) counts[BUCKET_GROUP[b]] += 1;
         });
         let acc = 0;
-        const stops = (Object.keys(counts) as HealthBucket[])
-          .filter((b) => counts[b] > 0)
-          .map((b) => {
+        const stops = HEALTH_GROUPS
+          .filter((g) => counts[g] > 0)
+          .map((g) => {
             const from = (acc / members.length) * 360;
-            acc += counts[b];
+            acc += counts[g];
             const to = (acc / members.length) * 360;
-            return `${BUCKET_COLORS[b]} ${from}deg ${to}deg`;
+            return `${GROUP_COLORS[g]} ${from}deg ${to}deg`;
           });
         const bg = stops.length ? `conic-gradient(${stops.join(', ')})` : '#8b949e';
         const size = Math.min(56, 28 + Math.round(Math.sqrt(members.length) * 2.5));
@@ -468,8 +617,8 @@ export const WellMap: React.FC<WellMapProps> = ({
         const field0 = members[0]?.field || '';
         m.bindTooltip(
           `<b>${cid}</b> (${field0}) — ${members.length} ${t('map.wells')}<br/>` +
-            (Object.keys(counts) as HealthBucket[])
-              .map((b) => `<span style="color:${BUCKET_COLORS[b]}">●</span> ${t(`map.health.${b}`)}: ${counts[b]}`)
+            HEALTH_GROUPS
+              .map((g) => `<span style="color:${GROUP_COLORS[g]}">●</span> ${t(GROUP_LABEL_KEY[g])}: ${counts[g]}`)
               .join('<br/>') +
             `<br/><i>${t('map.cluster_hint')}</i>`,
           { sticky: true },
@@ -483,7 +632,7 @@ export const WellMap: React.FC<WellMapProps> = ({
       return;
     }
 
-    wells.forEach((well) => {
+    shownWells.forEach((well) => {
       const isSelected = well.id === selectedWellId;
 
       // Color mapping — Stage Y: TC-020 health bucket from /api/fields/map (same source as the KPI header);
@@ -633,7 +782,7 @@ export const WellMap: React.FC<WellMapProps> = ({
         });
       }
     }
-  }, [wells, selectedWellId, onSelectWell, onOpenWell, clusterMode, bucketById]);
+  }, [shownWells, selectedWellId, onSelectWell, onOpenWell, clusterMode, bucketById]);
 
   // Update Infrastructure and Flowlines Layer
   useEffect(() => {
@@ -641,6 +790,8 @@ export const WellMap: React.FC<WellMapProps> = ({
     if (!infraGroup) return;
 
     infraGroup.clearLayers();
+    stationMarkersRef.current = [];
+    const stations: { id: string; name: string; marker: L.Marker }[] = [];
 
     if (!infrastructure || !showFlowlines) return;
 
@@ -682,7 +833,7 @@ export const WellMap: React.FC<WellMapProps> = ({
 
     // 2. Render Field Flowlines from Wells to their Servicing GGS
     const wellMapById: { [id: string]: WellSummary } = {};
-    wells.forEach((w) => {
+    shownWells.forEach((w) => {
       wellMapById[w.id] = w;
     });
 
@@ -824,11 +975,17 @@ export const WellMap: React.FC<WellMapProps> = ({
           </div>
           ${station.serviced_wells ? `
             <div style="margin-top: 8px; border-top: 1px solid #30363d; padding-top: 6px;">
-              <span style="color: #8b949e; font-size: 10px;">Serviced Production Wells:</span><br/>
+              <span style="color: #8b949e; font-size: 10px;">Serviced Production Wells (click to open):</span><br/>
               <div style="display: flex; flex-wrap: wrap; gap: 4px; margin-top: 4px;">
-                ${station.serviced_wells.map((wId) => `
-                  <span style="font-family: monospace; font-size: 9px; padding: 1px 4px; background: rgba(56, 189, 248, 0.15); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.4); border-radius: 3px;">${wId}</span>
-                `).join('')}
+                ${station.serviced_wells.map((wId) => {
+                  const b = bucketById[wId]?.bucket as HealthBucket | undefined;
+                  const g = b ? BUCKET_GROUP[b] : undefined;
+                  const c = g ? GROUP_COLORS[g] : '#38bdf8';
+                  const tip = g ? t(GROUP_LABEL_KEY[g]) : 'No health tag';
+                  return `
+                  <button type="button" data-ggs-well="${wId}" title="${wId} · ${tip}" style="cursor: pointer; font-family: monospace; font-size: 9px; font-weight: 700; padding: 1px 5px; background: ${c}26; color: ${c}; border: 1px solid ${c}99; border-radius: 3px;">${wId}</button>
+                `;
+                }).join('')}
               </div>
             </div>
           ` : ''}
@@ -836,9 +993,23 @@ export const WellMap: React.FC<WellMapProps> = ({
       `;
 
       facilityMarker.bindPopup(stationPopup);
+      // Stage ED-13: a well button opens that well (panel + map zoom) through the same command bus as the agent.
+      facilityMarker.on('popupopen', (e: L.PopupEvent) => {
+        const el = e.popup.getElement();
+        el?.querySelectorAll<HTMLButtonElement>('button[data-ggs-well]').forEach((btn) => {
+          btn.onclick = (ev) => {
+            ev.preventDefault();
+            ev.stopPropagation();
+            const id = btn.dataset.ggsWell;
+            if (id) dispatchUi({ action: 'open_well', well_id: id });
+          };
+        });
+      });
+      stations.push({ id: station.id, name: station.name, marker: facilityMarker });
       infraGroup.addLayer(facilityMarker);
     });
-  }, [infrastructure, showFlowlines, wells, selectedWellId]);
+    stationMarkersRef.current = stations;
+  }, [infrastructure, showFlowlines, shownWells, selectedWellId, bucketById]);
 
   const selectedWell = wells.find((w) => w.id === selectedWellId);
 
@@ -879,6 +1050,7 @@ export const WellMap: React.FC<WellMapProps> = ({
         <button
           type="button"
           onClick={() => {
+            focusedWellRef.current = null;
             setIndiaView(true);
             setViewNonce((n) => n + 1);
           }}
@@ -892,6 +1064,7 @@ export const WellMap: React.FC<WellMapProps> = ({
         <button
           type="button"
           onClick={() => {
+            focusedWellRef.current = null;
             setIndiaView(false);
             setViewNonce((n) => n + 1);
           }}
@@ -987,6 +1160,27 @@ export const WellMap: React.FC<WellMapProps> = ({
       )}
 
       {/* Map legend — slim, see-through strip along the bottom; collapsible so it never hides wells */}
+      {/* Stage ED-14 (D-41): active health filter chip */}
+      {healthFilter !== 'all' && (
+        <div
+          data-testid="health-filter-chip"
+          className="absolute bottom-12 left-14 z-[400] flex items-center gap-2 rounded-full bg-black/70 backdrop-blur-sm border px-3 py-1 text-[11px] font-mono text-white shadow-lg"
+          style={{ borderColor: GROUP_COLORS[FILTER_GROUP[healthFilter]] }}
+        >
+          <span className="w-2 h-2 rounded-full" style={{ backgroundColor: GROUP_COLORS[FILTER_GROUP[healthFilter]] }}></span>
+          Showing: {t(GROUP_LABEL_KEY[FILTER_GROUP[healthFilter]])}
+          {mapData ? ` (${healthCounts[FILTER_GROUP[healthFilter]]})` : ''}
+          <button
+            type="button"
+            onClick={() => dispatchUi({ action: 'health_filter', value: 'all' })}
+            className="ml-1 text-white/60 hover:text-white"
+            aria-label="Show all wells"
+            title="Show all wells"
+          >
+            ✕
+          </button>
+        </div>
+      )}
       <div
         className={`absolute bottom-3 left-14 z-[400] flex items-center gap-3 flex-wrap rounded-md bg-black/35 backdrop-blur-sm border border-white/10 px-2.5 py-1 text-[10px] font-mono text-white/85 ${
           isSynthetic ? 'max-w-[calc(100%-16rem)]' : 'max-w-[calc(100%-4.5rem)]'
@@ -1002,15 +1196,28 @@ export const WellMap: React.FC<WellMapProps> = ({
         </button>
         {legendOpen && (
           <>
-            {/* Stage Y: TC-020 health buckets with counts (same numbers as the KPI header / GET /api/wells/kpis) */}
+            {/* Stage Y: TC-020 health buckets with counts (same numbers as the KPI header / GET /api/wells/kpis).
+                ED-14: each item is a filter button (click again to clear). */}
             <div data-testid="map-health-counts" className="flex items-center gap-2.5">
-              {HEALTH_BUCKETS.map((b) => (
-                <span key={b} className="flex items-center gap-1" data-bucket={b} title={t(`map.health.${b}`)}>
-                  <span className="w-2 h-2 rounded-full" style={{ backgroundColor: BUCKET_COLORS[b] }}></span>
-                  <span className="text-white/70">{t(`map.health.${b}`)}</span>
-                  <strong className="text-white">{mapData ? healthCounts[b] : '–'}</strong>
-                </span>
-              ))}
+              {HEALTH_GROUPS.map((g) => {
+                const active = healthFilter === GROUP_FILTER[g];
+                const dim = healthFilter !== 'all' && !active;
+                return (
+                  <button
+                    type="button"
+                    key={g}
+                    onClick={() => dispatchUi({ action: 'health_filter', value: active ? 'all' : GROUP_FILTER[g] })}
+                    className={`flex items-center gap-1 rounded px-1 ${active ? 'bg-white/15 ring-1 ring-white/40' : 'hover:bg-white/10'} ${dim ? 'opacity-40' : ''}`}
+                    data-bucket={g}
+                    aria-pressed={active}
+                    title={`${t(GROUP_LABEL_KEY[g])} — ${active ? 'show all wells' : 'show only these wells'}`}
+                  >
+                    <span className="w-2 h-2 rounded-full" style={{ backgroundColor: GROUP_COLORS[g] }}></span>
+                    <span className="text-white/70">{t(GROUP_LABEL_KEY[g])}</span>
+                    <strong className="text-white">{mapData ? healthCounts[g] : '–'}</strong>
+                  </button>
+                );
+              })}
             </div>
             <span className="text-white/20">|</span>
             <span className="flex items-center gap-1" title="Gas Gathering Station">

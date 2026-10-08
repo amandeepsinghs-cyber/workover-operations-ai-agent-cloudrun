@@ -32,6 +32,7 @@ import {
   pickCanvasView,
 } from '../../api/chat';
 import { ChatArtifact } from './ChatArtifact';
+import { dispatchUi, parseUiCommands, useUiCommands, labelOf, UiCommand } from '../../agent/uiCommands';
 
 interface VoiceAgentPanelProps {
   well?: WellDetail | null;
@@ -115,6 +116,8 @@ export type LiveChatMessage = Omit<ChatMessage, 'recommendation'> & {
   status?: 'ok' | 'degraded';
   /** Step 5: this message is a "↗ Field report · WELL" chip. */
   fieldReportWell?: string;
+  /** v0.6 ED-11: screen commands the agent / browser just ran ("↗ Full screen on"). */
+  uiChips?: string[];
 };
 
 export const VoiceAgentPanel: React.FC<VoiceAgentPanelProps> = ({
@@ -161,6 +164,7 @@ export const VoiceAgentPanel: React.FC<VoiceAgentPanelProps> = ({
   // Latest user utterance (typed or spoken). Agent actions open the full well view only when this
   // explicitly asks for history / deep dive / report (isExplicitDetailRequest).
   const lastUserTextRef = useRef<string>('');
+  const lastUiAtRef = useRef<number>(0); // ED-14: when Live last drove the screen (D-41 safety net)
 
   // Step 5: an explicit "field report / crew pack" request opens the printable report overlay for the
   // well named in the message (or the selected well) and leaves a re-open chip in the chat. Held in a
@@ -184,6 +188,48 @@ export const VoiceAgentPanel: React.FC<VoiceAgentPanelProps> = ({
   };
   const fieldReportRef = useRef(maybeOpenFieldReport);
   fieldReportRef.current = maybeOpenFieldReport;
+
+  // ---- v0.6 ED-11 (F-41, D-40): hands-off screen control ----
+  const pushUiChips = (labels: string[]) => {
+    if (!labels.length) return;
+    setMessages((prev) => [
+      ...prev,
+      {
+        id: `ui-${Date.now()}-${prev.length}`,
+        sender: 'agent',
+        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        text: '',
+        uiChips: labels,
+      },
+    ]);
+  };
+  /** A plain screen command runs in the browser with no model call. Returns true when handled. */
+  const runLocalUi = (text: string, live = false): boolean => {
+    const cmds = parseUiCommands(text, well?.id ?? null);
+    if (!cmds) return false;
+    setMessages((prev) => [
+      ...prev,
+      {
+        id: `user-${Date.now()}`,
+        sender: 'user',
+        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        text,
+        live,
+      },
+    ]);
+    setInputPrompt('');
+    cmds.forEach((c) => dispatchUi(c));
+    pushUiChips(cmds.map((c) => c.label ?? labelOf(c)));
+    return true;
+  };
+  const uiLabelsOf = (acts: ChatAction[] | undefined): string[] =>
+    (acts ?? [])
+      .filter((a) => a.kind === 'ui' && a.command)
+      .map((a) => (a.command as UiCommand).label ?? labelOf(a.command as UiCommand));
+  // "Hindi mein baat karo" / ui_control language → the agent's language selector.
+  useUiCommands((cmd) => {
+    if (cmd.action === 'language' && cmd.value) setLanguage(cmd.value as AgentLanguage);
+  });
 
   // 1. LiveClient instance per panel in useRef
   const clientRef = useRef<LiveClient | null>(null);
@@ -368,6 +414,7 @@ export const VoiceAgentPanel: React.FC<VoiceAgentPanelProps> = ({
           for (const act of (msg.actions ?? []) as ChatAction[]) {
             onAgentAction({ ...act, explicit, view: pickCanvasView(act.source_tool, lastUserTextRef.current) });
           }
+          pushUiChips(uiLabelsOf(msg.actions as ChatAction[] | undefined));
         }
       },
 
@@ -387,6 +434,16 @@ export const VoiceAgentPanel: React.FC<VoiceAgentPanelProps> = ({
       },
 
       onAction: (kind, payload: any) => {
+        if (kind === 'ui_control') {
+          // v0.6 ED-11: Live voice drove the screen.
+          const cmd = payload?.data?.command as UiCommand | undefined;
+          if (cmd && cmd.action) {
+            lastUiAtRef.current = Date.now();
+            dispatchUi(cmd);
+            pushUiChips([cmd.label ?? labelOf(cmd)]);
+          }
+          return;
+        }
         if (!onAgentAction) return;
         const actionWellId: string | null =
           payload?.well_id ?? payload?.data?.well_id ?? payload?.data?.identity?.well_id ?? null;
@@ -403,7 +460,7 @@ export const VoiceAgentPanel: React.FC<VoiceAgentPanelProps> = ({
         }
 
         if (targetScreen) {
-          onAgentAction({
+          const nav: ChatAction = {
             kind: 'navigate',
             screen: targetScreen,
             field: payload?.field ?? payload?.data?.field ?? field ?? null,
@@ -411,7 +468,18 @@ export const VoiceAgentPanel: React.FC<VoiceAgentPanelProps> = ({
             source_tool: kind,
             explicit: isExplicitDetailRequest(lastUserTextRef.current),
             view: pickCanvasView(kind, lastUserTextRef.current),
-          });
+          };
+          if (targetScreen === 'field_health' || targetScreen === 'priority') {
+            // ED-14 (D-41): a display request ("only show non producing wells") may consult health tools, but if
+            // the agent drove the screen in the same turn it must not also jump to the Health & priority screen.
+            const t0 = Date.now();
+            setTimeout(() => {
+              if (lastUiAtRef.current >= t0 - 3000) return;
+              onAgentAction(nav);
+            }, 1500);
+          } else {
+            onAgentAction(nav);
+          }
         }
       },
 
@@ -544,7 +612,12 @@ export const VoiceAgentPanel: React.FC<VoiceAgentPanelProps> = ({
       text: greetingText,
     };
 
-    setMessages([greeting]);
+    // v0.6 ED-11: keep the conversation when the context changes (the agent now changes it itself);
+    // replace a trailing context line instead of stacking them.
+    setMessages((prev) => {
+      const base = prev.length && prev[prev.length - 1].id.startsWith('init-') ? prev.slice(0, -1) : prev;
+      return [...base, greeting].slice(-80);
+    });
     setCurrentRecommendation(null);
   }, [well?.id, field, language]);
 
@@ -766,6 +839,7 @@ export const VoiceAgentPanel: React.FC<VoiceAgentPanelProps> = ({
   // Text message send path: uses POST /api/chat (ADK tool-grounded agent)
   const handleSendMessage = async (textToSend: string, fromVoice: boolean = false) => {
     if (!textToSend.trim() || isProcessing) return;
+    if (runLocalUi(textToSend)) return; // ED-11: plain screen command, no model call
     lastUserTextRef.current = textToSend;
 
     const userMessage: LiveChatMessage = {
@@ -816,6 +890,7 @@ export const VoiceAgentPanel: React.FC<VoiceAgentPanelProps> = ({
         for (const act of reply.actions) {
           onAgentAction({ ...act, explicit, view: pickCanvasView(act.source_tool, textToSend) });
         }
+        pushUiChips(uiLabelsOf(reply.actions));
       }
 
       if (fromVoice && reply.response) {
@@ -842,6 +917,7 @@ export const VoiceAgentPanel: React.FC<VoiceAgentPanelProps> = ({
 
     const isLiveReady =
       isLiveMode && (liveStatus === 'connected' || liveStatus === 'resumed');
+    if (runLocalUi(textToSend, isLiveReady)) return; // ED-11: plain screen command, no model call
 
     if (isLiveReady) {
       const userMessage: LiveChatMessage = {
@@ -1074,7 +1150,19 @@ export const VoiceAgentPanel: React.FC<VoiceAgentPanelProps> = ({
 
       {/* Chat Messages Stream */}
       <div className="flex-1 overflow-y-auto p-4 space-y-4 font-sans text-xs">
-        {messages.map((msg) => msg.fieldReportWell ? (
+        {messages.map((msg) => msg.uiChips ? (
+          <div key={msg.id} className="flex flex-wrap gap-1.5 pl-9" data-testid="ui-chips">
+            {msg.uiChips.map((c, i) => (
+              <span
+                key={i}
+                className="flex items-center gap-1.5 text-[11px] font-mono text-emerald-300 bg-emerald-500/10 border border-emerald-500/40 rounded-full px-2.5 py-1"
+              >
+                <span aria-hidden>↗</span>
+                <span>{c}</span>
+              </span>
+            ))}
+          </div>
+        ) : msg.fieldReportWell ? (
           <div key={msg.id} className="flex pl-9">
             <button
               type="button"

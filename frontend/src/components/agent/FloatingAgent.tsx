@@ -3,6 +3,7 @@ import { Bot, Maximize2, Minimize2, Minus, PanelRightClose, PanelRightOpen } fro
 import { VoiceAgentPanel, AgentVoiceStatus } from './VoiceAgentPanel';
 import type { WellDetail } from '../../types/well';
 import type { ChatAction } from '../../api/chat';
+import { useUiCommands } from '../../agent/uiCommands';
 
 interface FloatingAgentProps {
   well?: WellDetail | null;
@@ -50,13 +51,14 @@ export const FloatingAgent: React.FC<FloatingAgentProps> = ({
   const launcherRef = useRef<HTMLButtonElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
 
-  // ---- Docked command-centre mode (auto in full-screen, or pinned by the user) ----
-  const DOCK_KEY = 'wellpulse.agent.docked';
+  // ---- Docked command-centre mode (default; auto in full-screen; the user may undock) ----
+  // v2 key: opening the agent docks it on the right unless the user explicitly undocked it.
+  const DOCK_KEY = 'wellpulse.agent.docked.v2';
   const [manualDock, setManualDock] = useState<boolean>(() => {
     try {
-      return localStorage.getItem(DOCK_KEY) === '1';
+      return localStorage.getItem(DOCK_KEY) !== '0';
     } catch {
-      return false;
+      return true;
     }
   });
   useEffect(() => {
@@ -155,6 +157,27 @@ export const FloatingAgent: React.FC<FloatingAgentProps> = ({
   useEffect(() => {
     if (suspended) setOpen(false);
   }, [suspended]);
+
+  // Stage ED-12 (F-41): map full screen / expanded panel → open the agent docked on the right;
+  // leaving restores what the user had (minimised or open).
+  const openBeforeAutoRef = useRef<boolean | null>(null);
+  useEffect(() => {
+    if (autoDock) {
+      if (openBeforeAutoRef.current === null) openBeforeAutoRef.current = openRef.current;
+      if (!suspended) setOpen(true);
+    } else if (openBeforeAutoRef.current !== null) {
+      const was = openBeforeAutoRef.current;
+      openBeforeAutoRef.current = null;
+      setOpen(was);
+    }
+  }, [autoDock, suspended]);
+
+  // Stage ED-11: "dock / undock the agent".
+  useUiCommands((cmd) => {
+    if (cmd.action !== 'agent') return;
+    setManualDock(cmd.value === 'dock');
+    setOpen(true);
+  });
 
   // Keyboard: Ctrl/Cmd+K toggles, "/" opens, Esc minimises (handled before other Esc listeners).
   useEffect(() => {

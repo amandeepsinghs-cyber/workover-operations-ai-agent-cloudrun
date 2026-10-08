@@ -978,6 +978,13 @@ git add -A && git commit -m "v0.5(FR): field report HTML — Gate FR passed" && 
 | ED-5 | F-31 Wax & sand behaviour | `backend/app/analytics/tools/wax_sand.py` (TC-035), route `/wax-sand`, `WellHistoryView.tsx` (wax / sand panels) | Counts, own cycle vs. field norm, next-due only from own cycle, downtime; "no sand-rate data" stated; unit tests |
 | ED-6 | F-32 India map | `backend/app/analytics/tools/ongc_assets.py` (seeded), `/api/geo/ongc-assets` (`api/asset.py`), `WellMap.tsx` (India / Assam toggle) | India view on login with non-interactive tags for 13 assets; Assam drill-down unchanged |
 | ED-7 | F-33 Agent + script | `backend/app/agent/adk_tools_ext.py` (+3 tools → 33), `runner.py` (artifacts → well view), `rbac.py`, `prompt.py`, `live/voice_tools.py` (`well_profile.data.checks`, 12-tool cap kept), `frontend/src/api/chat.ts` + `VoiceAgentPanel.tsx` (offsets / history views), `docs/demo_flow.md` | "What's wrong with GK-129?" uses TC-033…035 and opens Offsets; ED script rehearsed |
+| ED-8 | F-28 rev. Native completion diagram (D-37) | `frontend/src/components/well/CompletionDiagram.tsx` (new), `WellDeepDiveDrawer.tsx` (Wellbore view), `field_report.py` (escape `&` in SVG text), `test_ed2_schematic.py` (valid-XML check) | Diagram + perforation table render from profile data for hero + random wells; no image request; server SVG parses as XML |
+| ED-9 | Three health tags (D-38) | `frontend/src/api/asset.ts` (display groups + colours), `i18n/strings.ts`, `WellMap.tsx` (markers, cluster pies, legend), `HealthBucketsCard.tsx`, `FieldComparison.tsx`, `FieldSelector.tsx`, `NearbyWellsList.tsx`, `WellDeepDiveDrawer.tsx` | Every screen shows Healthy / Needs attention / Not producing in green / amber / red; counts = backend buckets merged |
+| ED-10 | F-41 Map follows the agent | `WellMap.tsx` (well focus zooms to 14 from India / cluster zoom; field request always drills in via a nonce), `App.tsx` | Agent-picked well zooms in from India view; same-field request leaves India |
+| ED-11 | F-41 `ui_control` hands-off (D-39, D-40) | `frontend/src/agent/uiCommands.ts` (new: allowed list, browser parser EN / Hinglish / Hindi, event bus), `WellMap.tsx`, `App.tsx`, `FloatingAgent.tsx`, `VoiceAgentPanel.tsx` (local commands + chips, `kind: 'ui'` actions, Live `ui_control` action), `api/chat.ts`; backend `adk_tools_ext.py` (`ui_control`), `runner.py` (`kind: "ui"` actions), `rbac.py`, `prompt.py`, `live/voice_tools.py` (13th tool), `live/live_prompt.md`; tests `test_ed11_ui_control.py`, `test_ws_live.py` (cap 13) | Hands-off script runs with no clicks; only allow-listed actions run; unknown text still reaches the agent |
+| ED-13 | F-41 GGS well buttons + `focus_cluster` + report print | `WellMap.tsx` (GGS popup well buttons by health tag → `open_well`; `focus_cluster` fits the station's wells and opens its popup), `FieldReportOverlay.tsx` (`report print`), `uiCommands.ts` / `ui_control.py` (allow-list) | Each GGS well button opens its well; "show GGS-01" zooms + opens the popup; "print report" prints |
+| ED-14 | F-41 Health filter + voice-first (D-41) | `uiCommands.ts` / `ui_control.py` (`health_filter`, spoken numbers), `WellMap.tsx` (filter markers / pies / legend counts, filter chip, clickable legend), `App.tsx` (header KPI click), `runner.py` (drop health navigation when `ui_control` ran), `prompt.py`, `live/live_prompt.md`, `adk_tools_ext.py` docstring; tests `test_ed11_ui_control.py`, `test_ed11_ui_parser.py`; scratch Live check over `/ws/live` | "Only show non producing wells" by text and Live voice → only red wells, no middle screen; "show all wells" clears |
+| ED-12 | F-41 Agent docks in full screen | `FloatingAgent.tsx` (auto-open while full screen / panel expanded, restore on exit) | Full screen or expand → agent docked on the right; exit restores the previous state |
 
 ```bash
 # per step
@@ -986,7 +993,7 @@ cd ../frontend && npx tsc --noEmit -p . && npx vite build
 ```
 
 ### ✅ Gate ED
-- [ ] ED-1 … ED-7 done and each approved by the user
+- [ ] ED-1 … ED-14 done and each approved by the user
 - [ ] Unit tests green (current baseline 527 + new TC-033…035 / schematic tests)
 - [ ] `tsc` + `vite build` green
 - [ ] Every new number traces to a tool return (X-1/X-2); no currency (X-3)

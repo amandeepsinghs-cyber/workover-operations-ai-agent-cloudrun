@@ -503,6 +503,14 @@
 - [x] [O] ED-5 TC-035 wax/sand behaviour (job count, interval, next due, field norm; no sand rate stated); route; card in well panel
 - [x] [O] ED-6 India map: `ongc_assets.py` (13 assets, public approximate locations, position-only well tags); map opens on India; Assam drill-down unchanged
 - [x] [O] ED-7 Agent: TC-033…035 wired into ADK + Live; "What's wrong with GK-129?" opens Offsets; ED rehearsal script in `demo_flow.md`
+- [x] [O] ED-8 Native completion diagram (D-37): `CompletionDiagram.tsx` from profile data (casing + cement, tubing, pump / anchor / packer, perforations by status, formation tops, PBTD / TD, hover, non-overlapping labels) + perforation table; fix `&` in server SVG; valid-XML test
+- [x] [O] ED-9 Three health tags (D-38): Healthy (green) / Needs attention (amber = at risk + underperforming) / Not producing (red) on map markers, cluster pies, legend, health card, field comparison, selector, nearby list, well badge; EN / Hinglish / Hindi labels
+- [x] [O] ED-10 Map follows the agent (F-41): agent-picked well zooms to 14 from India / cluster zoom; field request always drills into Assam
+- [x] [O] ED-11 `ui_control` hands-off (F-41, D-39, D-40): allow-listed map / panel / app actions; browser parser (EN / Hinglish / Hindi) runs plain commands with no model call + chat chip; ADK tool + runner `kind: "ui"`; Live 13th tool; tests
+- [x] [O] ED-12 Agent docks in full screen (F-41): full screen / expanded panel opens the agent docked; exit restores; the agent opens docked on the right by default (undock is remembered)
+- [x] [O] ED-13 GGS well buttons (F-41): popup well tags are health-coloured buttons that open the well + zoom; `focus_cluster` ("show GGS-01"); `report print`
+- [x] [O] ED-14 Health filter + voice-first (F-41, D-41): `health_filter` all / healthy / attention / not_producing; browser phrases EN / Hinglish / Hindi; clickable legend + header KPIs; no Health & priority screen for display requests; Live prompt phrasings + spoken numbers; Live check over the socket; tests
+- [x] [O] Hands-off script (India → Geleki → GK-129 wellbore → full screen → satellite / SCADA → flowlines off → Hindi → close panel → India) passes with no clicks (headless check)
 
 #### Gate ED
 - [ ] Each step approved by the user, then committed + pushed (`v0.6(ED-n): …`)
@@ -599,3 +607,8 @@
 | **D-34** | India map tags | Accepted (user, 2026-10-08) | 13 ONGC assets at approximate public locations; position-only, non-interactive well tags; no data for other assets; Assam is live |
 | **D-35** | Service cost deferred | Accepted (user, 2026-10-08) | Tangible / intangible cost not built in v0.6 |
 | **D-36** | Persona model | Accepted (user, 2026-10-08) | CMD = all India; ED = one asset, technical; FE = execution documents; v0.6 builds the ED set, CMD backlog F-34…F-40 |
+| **D-37** | Native completion diagram | Accepted (user, 2026-10-08) | Drawn in React from structured construction data; server SVG only for the printable report |
+| **D-38** | Three health tags | Accepted (user, 2026-10-08) | Healthy (green) = PRODUCING_OK; Needs attention (amber) = AT_RISK + UNDERPERFORMING; Not producing (red) = NOT_PRODUCING; display-only |
+| **D-39** | Live voice cap 12 → 13 | Accepted (user, 2026-10-08) | Adds `ui_control` to Live voice; SDD §11.3 cap is our own rule |
+| **D-41** | Health filter is a display action | Accepted (user, 2026-10-08) | `ui_control health_filter`; display requests never open Health & priority; runner drops health navigation when `ui_control` ran |
+| **D-40** | Hands-off control | Accepted (user, 2026-10-08) | Plain UI commands run in the browser (no model call); everything else goes to the agent, which can call `ui_control`; allow-listed actions only |

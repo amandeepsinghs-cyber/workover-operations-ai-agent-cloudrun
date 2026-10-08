@@ -165,6 +165,11 @@ def build_artifacts(calls: list[dict], user_text: str) -> tuple[list[dict], list
         status = resp.get("status")
         if status not in ("OK", "LOW_CONFIDENCE"):
             continue
+        if name == "ui_control":  # v0.6 ED-11: the browser executes the allow-listed command
+            cmd = (resp.get("data") or {}).get("command") if isinstance(resp.get("data"), dict) else None
+            if isinstance(cmd, dict) and cmd.get("action"):
+                actions.append({"kind": "ui", "command": cmd, "source_tool": name})
+            continue
         kind = ARTIFACT_KIND.get(name)
         if name == "field_production_history" and not (args.get("plot") or wants_plot):
             kind = None  # BDD-F11-S01 "no chart is shown yet" (tell first)
@@ -182,9 +187,13 @@ def build_artifacts(calls: list[dict], user_text: str) -> tuple[list[dict], list
             field = args.get("field") or data.get("field")
             act = {"kind": "navigate", "screen": screen, "field": field or None,
                    "well_id": adk_tools.norm_well_id(well) or None if screen == "well" else None, "source_tool": name}
-            if not any((a["screen"], a["field"], a["well_id"]) == (act["screen"], act["field"], act["well_id"])
+            if not any((a.get("screen"), a.get("field"), a.get("well_id")) == (act["screen"], act["field"], act["well_id"])
                        for a in actions):
                 actions.append(act)
+    # ED-14 (D-41): when the agent already drove the screen this turn (e.g. health_filter), do not also open the
+    # Health & priority screen just because a health / ranking tool was consulted.
+    if any(a.get("kind") == "ui" for a in actions):
+        actions = [a for a in actions if not (a.get("kind") == "navigate" and a.get("screen") in ("field_health", "priority"))]
     return artifacts, actions
 
 

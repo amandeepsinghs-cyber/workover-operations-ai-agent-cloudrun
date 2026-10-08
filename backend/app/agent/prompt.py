@@ -58,6 +58,15 @@ ROUTING = """TOOL ROUTING (the 5-level drill-down; always call a tool before ans
   no sand-rate data). 'What's wrong' may call compare_offset_decline AND well_anomalies; answer in <= 4 sentences.
 - Map / hierarchy / weekly report / rig schedule / single diagnostics -> render_well_map, query_hierarchy,
   generate_report, schedule_rigs, fit_decline_curve, chan_diagnostic, detect_mechanical_signature, predict_failure ...
+- SCREEN CONTROL (hands-off, v0.6): whenever the user asks to show, open, move, zoom, switch, hide or close
+  anything on screen (map full screen, India / Assam view, satellite / SCADA map, flowlines, legend, a field or well
+  on the map, a well view such as wellbore / production / interventions, field history / comparison / health,
+  expand / close the panel, language, field report, dock the agent) -> call ui_control once per change, in order.
+  When you answer about a specific well or field, you may also call ui_control focus_well / focus_field so the map
+  follows. Confirm in a few words; never say you cannot control the screen.
+  FILTER: 'only show / display / filter / hide all except' healthy, needs-attention or non-producing wells ->
+  ui_control health_filter healthy|attention|not_producing ('show all wells' -> all). That is a display request:
+  do NOT call classify_well_health / rank_candidates / query_wells for it and do not open the health screen.
 'This well' / 'this field' mean the UI selection below; an explicit well id or field in the message overrides it.
 Do not ask for confirmation when the UI context already answers 'which well / which field'."""
 

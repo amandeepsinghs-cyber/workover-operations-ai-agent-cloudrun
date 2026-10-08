@@ -3,6 +3,7 @@
  */
 
 import { getPersona } from '../state/persona';
+import type { UiCommand } from '../agent/uiCommands';
 
 export type ChatLanguage = 'english' | 'hinglish' | 'hindi';
 export type ChatField = 'Geleki' | 'Lakwa' | 'Lakhmani';
@@ -50,11 +51,14 @@ export interface ChatToolCall {
 }
 
 export interface ChatAction {
-  kind: 'navigate';
+  /** 'navigate' (screen / field / well) or 'ui' (v0.6 ED-11: allow-listed ui_control command). */
+  kind: 'navigate' | 'ui';
   screen: 'map' | 'field_history' | 'field_compare' | 'field_health' | 'priority' | 'well';
   field: string | null;
   well_id: string | null;
   source_tool: string;
+  /** kind === 'ui': the command to run (see src/agent/uiCommands.ts). */
+  command?: UiCommand;
   /** True only when the user explicitly asked for the full well view / history / report. */
   explicit?: boolean;
   /** Focused middle-panel view for this answer (answer canvas). */

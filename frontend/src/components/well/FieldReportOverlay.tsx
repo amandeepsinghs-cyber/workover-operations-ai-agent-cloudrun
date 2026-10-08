@@ -1,12 +1,15 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { FileText, Loader2, Printer, X, AlertTriangle } from 'lucide-react';
 import { getPersona } from '../../state/persona';
+import { useUiCommands } from '../../agent/uiCommands';
 
 interface FieldReportOverlayProps {
   wellId: string;
   /** Optional job code; the backend defaults to the top-ranked recommendation. */
   intervention?: string | null;
   onClose: () => void;
+  /** Stage ED-13: print as soon as the report has loaded (agent said "print the report" while it was closed). */
+  printOnLoad?: boolean;
 }
 
 /**
@@ -15,10 +18,11 @@ interface FieldReportOverlayProps {
  * which keeps relative asset paths (/brand/ongc_logo.svg) resolving against the app origin.
  * Esc closes it — also when focus is inside the report.
  */
-export const FieldReportOverlay: React.FC<FieldReportOverlayProps> = ({ wellId, intervention, onClose }) => {
+export const FieldReportOverlay: React.FC<FieldReportOverlayProps> = ({ wellId, intervention, onClose, printOnLoad }) => {
   const [html, setHtml] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const frameRef = useRef<HTMLIFrameElement>(null);
+  const pendingPrintRef = useRef<boolean>(!!printOnLoad);
   const closeRef = useRef(onClose);
   closeRef.current = onClose;
 
@@ -55,7 +59,19 @@ export const FieldReportOverlay: React.FC<FieldReportOverlayProps> = ({ wellId, 
     w?.addEventListener('keydown', (e: KeyboardEvent) => {
       if (e.key === 'Escape') closeRef.current();
     });
+    if (pendingPrintRef.current) {
+      pendingPrintRef.current = false;
+      setTimeout(() => w?.print(), 300);
+    }
   };
+
+  // Stage ED-13 (F-41): "print the report" from the agent / browser parser.
+  useUiCommands((cmd) => {
+    if (cmd.action !== 'report' || cmd.value !== 'print') return;
+    const w = frameRef.current?.contentWindow;
+    if (html && w) w.print();
+    else pendingPrintRef.current = true;
+  });
 
   return (
     <div

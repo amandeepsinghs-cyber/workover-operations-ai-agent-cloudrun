@@ -380,7 +380,8 @@ def test_registry_declarations_and_seams():
     assert not {"well_workovers", "well_recommendation"} & names
     ws = next(d for d in voice_tools.declarations_data() if d["name"] == "well_summary")
     assert ws["parameters"]["required"] == ["well_id"]
-    assert len(names) <= 12  # SDD §11.3 voice subset (<= 12)
+    assert len(names) <= 13  # SDD §11.3 voice subset (<= 13 since v0.6 D-39: + ui_control)
+    assert "ui_control" in names
     assert voice_tools.execute_voice_tool("nope", {})["status"] == "ERROR"
     assert voice_tools.execute_voice_tool("well_summary", {"well_id": "ZZ-999"})["status"] == "NOT_FOUND"
     kpis = voice_tools.execute_voice_tool("fleet_kpis", {})

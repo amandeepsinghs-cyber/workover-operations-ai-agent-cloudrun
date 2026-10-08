@@ -44,10 +44,11 @@ class ToolCallTrace(BaseModel):
 
 
 class AgentAction(BaseModel):
-    kind: str
-    screen: str
+    kind: str  # "navigate" | "ui" (v0.6 ED-11)
+    screen: str | None = None
     field: str | None = None
     well_id: str | None = None
+    command: dict | None = None  # kind == "ui": allow-listed ui_control command
     source_tool: str
 
 

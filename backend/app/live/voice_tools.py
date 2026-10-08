@@ -616,3 +616,28 @@ def _v_dossier(well_id: str) -> dict[str, Any]:
         keep = ("doc_id", "well_id", "as_of", "pdf_url", "pages", "highlights", "n_facts")
         env["data"] = {k: data[k] for k in keep if k in data} | {"n_sources": len(data.get("sources") or [])}
     return env
+
+
+# ---------------------------------------------------------------------------
+# v0.6 ED-11 (F-41, D-39): hands-off screen control — the 13th voice tool (cap raised 12 → 13). No data work:
+# validates an allow-listed command; session.py forwards it as {"type": "action", "kind": "ui_control"}.
+# ---------------------------------------------------------------------------
+@register_voice_tool(
+    name="ui_control",
+    description=(
+        "Drive the dashboard screen. Call whenever the user asks to show, open, move, zoom, switch, hide or close "
+        "anything on screen; once per change. action / value: map_view india|assam, fullscreen on|off, basemap "
+        "satellite|scada, flowlines on|off, legend on|off, zoom in|out, focus_field Geleki|Lakwa|Lakhmani|ALL, "
+        "focus_cluster (GGS id e.g. GGS-01), focus_well (well_id), open_well (well_id + view: summary|overview|production|interventions|wellbore|"
+        "pressures|diagnosis|recommendation|offsets|history|nearby), open_screen field_history|field_compare|"
+        "field_health, panel expand|restore|close, language english|hinglish|hindi, report open|print|close, agent "
+        "dock|undock, health_filter all|healthy|attention|not_producing (map shows only that health tag; "
+        "'only show non producing / band wells' -> not_producing, 'show all wells' -> all). Act first, then "
+        "confirm in a few words, e.g. 'Full screen on'."
+    ),
+    action_kind="ui_control",
+)
+def _v_ui_control(action: str, value: str = "", well_id: str = "", view: str = "") -> dict[str, Any]:
+    from app.agent import ui_control as ui
+
+    return ui.run(action, value, well_id, view)
