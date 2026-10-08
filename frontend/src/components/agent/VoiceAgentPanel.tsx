@@ -55,6 +55,34 @@ export interface AgentVoiceStatus {
 
 type AgentLanguage = 'hinglish' | 'english' | 'hindi';
 
+/**
+ * Step 4 (UI redesign): data-heavy answers are shown in the right-hand panel, not as cards in the chat.
+ * The chat keeps the short spoken/typed answer plus a "↗ Showing in panel" chip that re-opens the view.
+ */
+const PANEL_ARTIFACTS: Record<string, { screen: ChatAction['screen']; label: string }> = {
+  well_profile: { screen: 'well', label: 'Well' },
+  well_production_chart: { screen: 'well', label: 'Production' },
+  nba: { screen: 'well', label: 'Recommendation' },
+  counterfactual: { screen: 'well', label: 'Compare' },
+  attribution_waterfall: { screen: 'well', label: 'Diagnosis' },
+  intervention_classification: { screen: 'well', label: 'Recommendation' },
+  field_history_chart: { screen: 'field_history', label: 'Field history' },
+  field_comparison: { screen: 'field_compare', label: 'Field comparison' },
+  health_buckets: { screen: 'field_health', label: 'Health & priority' },
+  priority_queue: { screen: 'priority', label: 'Priority list' },
+};
+const VIEW_LABEL: Record<string, string> = {
+  overview: 'Overview',
+  production: 'Production',
+  interventions: 'Interventions',
+  wellbore: 'Wellbore',
+  pressures: 'Tests & Pressure',
+  diagnosis: 'Diagnosis',
+  recommendation: 'Recommendation',
+  compare: 'Compare',
+  nearby: 'Nearby',
+};
+
 export interface ToolCallInfo {
   name: string;
   status: string;
@@ -857,110 +885,56 @@ export const VoiceAgentPanel: React.FC<VoiceAgentPanelProps> = ({
     });
   }, [isLiveReady, activeListening, isTalking, activeSpeaking, activeThinking, onStatusChange]);
 
-  const renderStatusBadge = () => {
-    if (!isLiveMode) {
-      return (
-        <span className="text-[9px] font-mono text-textMuted bg-[#0d1117] px-1.5 py-0.5 rounded border border-border font-semibold">
-          TEXT
-        </span>
-      );
-    }
-
-    switch (liveStatus) {
-      case 'connecting':
-        return (
-          <span className="flex items-center gap-1 text-[9px] font-mono text-amber-400 bg-amber-950/60 px-1.5 py-0.5 rounded border border-amber-700/60 font-semibold animate-pulse">
-            CONNECTING
-          </span>
-        );
-      case 'connected':
-      case 'resumed':
-        return (
-          <span
-            title={statusInfo.model ? `Model: ${statusInfo.model}` : 'Live voice connected'}
-            className="flex items-center gap-1 text-[9px] font-mono text-emerald-400 bg-emerald-950/60 px-1.5 py-0.5 rounded border border-emerald-700/60 font-semibold cursor-help"
-          >
-            <Zap className="w-2.5 h-2.5 text-emerald-400" /> LIVE
-          </span>
-        );
-      case 'reconnecting':
-        return (
-          <span className="flex items-center gap-1 text-[9px] font-mono text-amber-400 bg-amber-950/60 px-1.5 py-0.5 rounded border border-amber-700/60 font-semibold animate-pulse">
-            RECONNECTING
-          </span>
-        );
-      case 'fallback':
-        return (
-          <span className="flex items-center gap-1">
-            <span className="text-[9px] font-mono text-rose-300 bg-rose-950/60 px-1.5 py-0.5 rounded border border-rose-700/60 font-semibold">
-              TEXT MODE
-            </span>
-            <button
-              type="button"
-              onClick={() => client.retry()}
-              className="text-[9px] font-mono text-accent hover:underline bg-[#0d1117] px-1.5 py-0.5 rounded border border-border transition-colors hover:text-white"
-            >
-              Retry Live
-            </button>
-          </span>
-        );
-      case 'disconnected':
-      default:
-        return (
-          <span className="text-[9px] font-mono text-textMuted bg-[#0d1117] px-1.5 py-0.5 rounded border border-border font-semibold">
-            TEXT
-          </span>
-        );
-    }
-  };
-
   return (
     <div className="flex flex-col h-full bg-surface">
-      {/* Header — row 1: identity + controls */}
+      {/* Header — row 1: identity + controls (one state-aware Live button; no duplicate badges) */}
       <div className="border-b border-border px-3 pt-2 pb-1.5 shrink-0 bg-[#12161c]">
         <div className="flex items-center justify-between gap-2">
           <div className="flex items-center gap-2 min-w-0">
             <div className="w-7 h-7 rounded-md bg-accent/20 border border-accent/40 flex items-center justify-center shrink-0">
               <Bot className="w-4 h-4 text-accent" />
             </div>
-            <div className="min-w-0">
-              <h3 className="text-xs font-bold text-white font-sans flex items-center gap-1.5">
-                WellPulse AI Agent
-                {renderStatusBadge()}
-              </h3>
-              <div className="flex items-center gap-1.5">
-                <span className="text-[10px] font-mono text-textMuted">
-                  {isLiveMode ? 'Live voice + text' : 'Text mode'}
-                </span>
-                {isLiveMode && firstAudioLatency !== null && (
-                  <span className="text-[9px] font-mono text-emerald-400 bg-[#0d1117] px-1 py-0.2 rounded border border-border/50">
-                    1st audio {Math.round(firstAudioLatency)} ms
-                  </span>
-                )}
-              </div>
-            </div>
+            <h3 className="text-xs font-bold text-white font-sans truncate">WellPulse AI Agent</h3>
           </div>
 
           <div className="flex items-center gap-1 shrink-0">
-            <button
-              type="button"
-              onClick={() => setIsLiveMode((prev) => !prev)}
-              title={
-                !isLiveSupported()
-                  ? 'Live voice not supported in this browser'
-                  : isLiveMode
-                  ? 'Switch to text mode'
-                  : 'Switch to live voice'
-              }
-              className={`flex items-center gap-1 px-2 py-1 rounded text-[11px] font-sans transition-colors ${
-                isLiveMode
-                  ? 'bg-emerald-950/70 text-emerald-300 border border-emerald-700/60 font-semibold'
-                  : 'bg-[#0d1117] text-textMuted border border-border hover:text-white'
-              }`}
-            >
-              <Radio className={`w-3.5 h-3.5 ${isLiveMode ? 'text-emerald-400 animate-pulse' : 'text-textMuted'}`} />
-              <span>Live</span>
-            </button>
+            {(() => {
+              const st = !isLiveMode
+                ? { label: 'Live off', cls: 'bg-[#0d1117] text-textMuted border-border hover:text-white', pulse: false }
+                : liveStatus === 'connected' || liveStatus === 'resumed'
+                ? { label: 'Live', cls: 'bg-emerald-950/70 text-emerald-300 border-emerald-700/60 font-semibold', pulse: true }
+                : liveStatus === 'connecting' || liveStatus === 'reconnecting'
+                ? { label: 'Connecting…', cls: 'bg-amber-950/60 text-amber-300 border-amber-700/60 animate-pulse', pulse: false }
+                : { label: 'Text only', cls: 'bg-rose-950/60 text-rose-300 border-rose-700/60', pulse: false };
+              const tip = !isLiveSupported()
+                ? 'Live voice not supported in this browser'
+                : isLiveMode
+                ? `Live voice ${liveStatus}${statusInfo.model ? ` · ${statusInfo.model}` : ''}${
+                    firstAudioLatency !== null ? ` · first audio ${Math.round(firstAudioLatency)} ms` : ''
+                  } — click to switch to text`
+                : 'Switch to live voice';
+              return (
+                <button
+                  type="button"
+                  onClick={() => setIsLiveMode((prev) => !prev)}
+                  title={tip}
+                  className={`flex items-center gap-1 px-2 py-1 rounded border text-[11px] font-sans transition-colors ${st.cls}`}
+                >
+                  <Radio className={`w-3.5 h-3.5 ${st.pulse ? 'animate-pulse' : ''}`} />
+                  <span>{st.label}</span>
+                </button>
+              );
+            })()}
+            {isLiveMode && liveStatus === 'fallback' && (
+              <button
+                type="button"
+                onClick={() => client.retry()}
+                className="text-[10px] font-mono text-accent hover:text-white px-1"
+                title="Retry live voice"
+              >
+                Retry
+              </button>
+            )}
             <button
               type="button"
               onClick={handleToggleMute}
@@ -980,11 +954,6 @@ export const VoiceAgentPanel: React.FC<VoiceAgentPanelProps> = ({
             <span className="text-white truncate" data-testid="agent-context-chip">
               {contextLabel || 'Assam Asset'}
             </span>
-            {activeSpeaking && (
-              <span className="flex items-center gap-1 text-accent animate-pulse ml-1">
-                <span className="w-1.5 h-1.5 rounded-full bg-accent"></span> Speaking
-              </span>
-            )}
           </div>
           <select
             value={language}
@@ -1126,7 +1095,46 @@ export const VoiceAgentPanel: React.FC<VoiceAgentPanelProps> = ({
                 {/* Artifacts rendered via ChatArtifact */}
                 {msg.artifacts && msg.artifacts.length > 0 && (
                   <div className="mt-2 space-y-2">
-                    {msg.artifacts.map((art, idx) => (
+                    {msg.artifacts.map((art, idx) => {
+                      const target = PANEL_ARTIFACTS[art.kind];
+                      if (target && onAgentAction) {
+                        const d = art.data as Record<string, any> | null | undefined;
+                        const artWell: string | null =
+                          target.screen === 'well'
+                            ? d?.well_id ?? (art.kind === 'well_profile' ? d?.id : null) ?? well?.id ?? null
+                            : null;
+                        if (target.screen !== 'well' || artWell) {
+                          const prevUser = messages.slice(0, messages.indexOf(msg)).reverse().find((m) => m.sender === 'user')?.text;
+                          const view = target.screen === 'well' ? pickCanvasView(art.kind, prevUser ?? '') : undefined;
+                          const label = view ? VIEW_LABEL[view] ?? target.label : target.label;
+                          return (
+                            <button
+                              key={idx}
+                              type="button"
+                              onClick={() =>
+                                onAgentAction({
+                                  kind: 'navigate',
+                                  screen: target.screen,
+                                  field: (d?.field as string | undefined) ?? field ?? null,
+                                  well_id: artWell,
+                                  source_tool: art.kind,
+                                  explicit: true,
+                                  view,
+                                })
+                              }
+                              title="Open this view in the panel"
+                              className="flex items-center gap-1.5 text-[11px] font-mono text-accent hover:text-white bg-accent/10 hover:bg-accent/25 border border-accent/40 rounded-full px-2.5 py-1 transition-colors"
+                            >
+                              <span aria-hidden>↗</span>
+                              <span>
+                                Showing in panel · {label}
+                                {artWell ? ` · ${artWell}` : ''}
+                              </span>
+                            </button>
+                          );
+                        }
+                      }
+                      return (
                       <ChatArtifact
                         key={idx}
                         artifact={art}
@@ -1145,75 +1153,48 @@ export const VoiceAgentPanel: React.FC<VoiceAgentPanelProps> = ({
                             : undefined
                         }
                       />
-                    ))}
+                      );
+                    })}
                   </div>
                 )}
 
-                {/* Structured Recommendation in-line card */}
+                {/* Recommendation: compact line; full card, evidence and steps are in the panel */}
                 {msg.recommendation && (
-                  <div className="mt-3 pt-3 border-t border-border/80 space-y-2">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-1.5 text-accent font-bold font-mono text-[11px]">
-                        <Wrench className="w-3.5 h-3.5" />
-                        {msg.recommendation.title}
-                      </div>
-                      <span
-                        className={`text-[9px] font-mono px-2 py-0.5 rounded font-semibold uppercase border ${
-                          msg.recommendation.urgency_badge === 'critical'
-                            ? 'bg-rose-950/60 text-rose-300 border-rose-700/60'
-                            : msg.recommendation.urgency_badge === 'warning'
-                            ? 'bg-amber-950/60 text-amber-300 border-amber-700/60'
-                            : 'bg-emerald-950/60 text-emerald-300 border-emerald-700/60'
-                        }`}
+                  <div className="mt-2 pt-2 border-t border-border/60 flex items-center gap-2 flex-wrap">
+                    <Wrench className="w-3.5 h-3.5 text-accent shrink-0" />
+                    <span className="text-accent font-bold font-mono text-[11px]">{msg.recommendation.title}</span>
+                    <span className="text-emerald-400 font-mono text-[10px]">
+                      +{msg.recommendation.projected_flow_uplift_bopd} BOPD
+                    </span>
+                    <span
+                      className={`text-[9px] font-mono px-1.5 py-0.5 rounded font-semibold uppercase border ${
+                        msg.recommendation.urgency_badge === 'critical'
+                          ? 'bg-rose-950/60 text-rose-300 border-rose-700/60'
+                          : msg.recommendation.urgency_badge === 'warning'
+                          ? 'bg-amber-950/60 text-amber-300 border-amber-700/60'
+                          : 'bg-emerald-950/60 text-emerald-300 border-emerald-700/60'
+                      }`}
+                    >
+                      {msg.recommendation.urgency}
+                    </span>
+                    {onAgentAction && well?.id && (
+                      <button
+                        type="button"
+                        onClick={() =>
+                          onAgentAction({
+                            kind: 'navigate',
+                            screen: 'well',
+                            field: field ?? null,
+                            well_id: well.id,
+                            source_tool: 'nba',
+                            explicit: true,
+                            view: 'recommendation',
+                          })
+                        }
+                        className="ml-auto text-[10px] font-mono text-accent hover:text-white"
                       >
-                        {msg.recommendation.urgency}
-                      </span>
-                    </div>
-
-                    <div className="grid grid-cols-3 gap-2 bg-surface/60 p-2 rounded border border-border/60 font-mono text-[10px]">
-                      {msg.recommendation.cost_band && (
-                        <div>
-                          <span className="text-textMuted">Cost band:</span>
-                          <div
-                            className={`font-bold ${
-                              msg.recommendation.cost_band === 'HIGH'
-                                ? 'text-rose-400'
-                                : msg.recommendation.cost_band === 'MED'
-                                ? 'text-amber-400'
-                                : 'text-emerald-400'
-                            }`}
-                          >
-                            {msg.recommendation.cost_band}
-                          </div>
-                        </div>
-                      )}
-                      <div>
-                        <span className="text-textMuted">Uplift:</span>
-                        <div className="font-bold text-emerald-400">
-                          +{msg.recommendation.projected_flow_uplift_bopd} BOPD
-                        </div>
-                      </div>
-                      {typeof msg.recommendation.rig_days === 'number' && (
-                        <div>
-                          <span className="text-textMuted">Rig-days:</span>
-                          <div className="font-bold text-sky-400">
-                            {msg.recommendation.rig_days.toFixed(1)}
-                          </div>
-                        </div>
-                      )}
-                    </div>
-
-                    {msg.recommendation.action_items && msg.recommendation.action_items.length > 0 && (
-                      <div className="space-y-1 text-[11px]">
-                        <span className="text-textMuted font-mono text-[10px] uppercase font-bold">
-                          Action Items:
-                        </span>
-                        <ul className="list-disc pl-4 space-y-0.5 text-textMain/90">
-                          {msg.recommendation.action_items.map((item, i) => (
-                            <li key={i}>{item}</li>
-                          ))}
-                        </ul>
-                      </div>
+                        ↗ Open in panel
+                      </button>
                     )}
                   </div>
                 )}
@@ -1391,17 +1372,7 @@ export const VoiceAgentPanel: React.FC<VoiceAgentPanelProps> = ({
                 <span>{liveStatus === 'connecting' ? 'Connecting...' : 'Hold to talk'}</span>
               </button>
             )
-          ) : (
-            <button
-              type="button"
-              onClick={() => setIsLiveMode(true)}
-              title="Switch to live voice"
-              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-[#0d1117] text-emerald-400 hover:text-white hover:bg-emerald-600/30 border border-emerald-500/50 hover:border-emerald-400 font-mono text-xs font-medium transition-all shrink-0"
-            >
-              <Mic className="w-4 h-4 text-emerald-400" />
-              <span>Live Voice</span>
-            </button>
-          )}
+          ) : null}
             <span className="ml-auto text-[10px] font-mono text-textMuted hidden min-[380px]:inline">
               Enter to send · Shift+Enter new line
             </span>

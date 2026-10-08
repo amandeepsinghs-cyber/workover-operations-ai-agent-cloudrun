@@ -25,15 +25,7 @@ export const Header: React.FC<HeaderProps> = ({
         <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-blue-600 to-indigo-700 flex items-center justify-center shadow-lg shadow-blue-500/20">
           <Flame className="w-6 h-6 text-white" />
         </div>
-        <div>
-          <div className="flex items-center gap-2">
-            <h1 className="text-lg font-bold tracking-tight text-white font-sans">WellPulse</h1>
-            <span className="text-[10px] font-mono uppercase bg-blue-900/60 text-blue-300 border border-blue-700/50 px-2 py-0.5 rounded-full font-semibold">
-              Ops Copilot
-            </span>
-          </div>
-          <p className="text-xs text-textMuted font-mono">Geleki Brownfield Asset • Sivasagar, Assam (ONGC)</p>
-        </div>
+        <h1 className="text-lg font-bold tracking-tight text-white font-sans">WellPulse</h1>
       </div>
 
       {/* Fleet Status Metrics Ribbon */}

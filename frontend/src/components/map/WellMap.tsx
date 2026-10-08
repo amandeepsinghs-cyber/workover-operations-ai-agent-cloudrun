@@ -160,9 +160,11 @@ export const WellMap: React.FC<WellMapProps> = ({
     const map = L.map(mapContainerRef.current, {
       center: [26.9, 94.7],
       zoom: 10,
-      zoomControl: true,
+      zoomControl: false,
       attributionControl: false,
     });
+    // Zoom buttons bottom-left, clear of the field selector overlay (top-left) and layer controls (top-right).
+    L.control.zoom({ position: 'bottomleft' }).addTo(map);
 
     const tileGroup = L.layerGroup().addTo(map);
     tileLayerGroupRef.current = tileGroup;
@@ -806,8 +808,8 @@ export const WellMap: React.FC<WellMapProps> = ({
 
       {/* Map legend — slim, see-through strip along the bottom; collapsible so it never hides wells */}
       <div
-        className={`absolute bottom-3 left-3 z-[400] flex items-center gap-3 flex-wrap rounded-md bg-black/35 backdrop-blur-sm border border-white/10 px-2.5 py-1 text-[10px] font-mono text-white/85 ${
-          isSynthetic ? 'max-w-[calc(100%-13rem)]' : 'max-w-[calc(100%-1.5rem)]'
+        className={`absolute bottom-3 left-14 z-[400] flex items-center gap-3 flex-wrap rounded-md bg-black/35 backdrop-blur-sm border border-white/10 px-2.5 py-1 text-[10px] font-mono text-white/85 ${
+          isSynthetic ? 'max-w-[calc(100%-16rem)]' : 'max-w-[calc(100%-4.5rem)]'
         }`}
       >
         <button

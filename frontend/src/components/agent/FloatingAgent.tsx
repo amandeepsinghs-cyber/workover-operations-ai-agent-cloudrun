@@ -321,7 +321,7 @@ export const FloatingAgent: React.FC<FloatingAgentProps> = ({
             )}
           </span>
           <span className="text-xs font-semibold font-sans">{open ? 'Minimise' : 'WellPulse AI Agent'}</span>
-          {voiceBadge}
+          {!open && voiceBadge}
         </button>
       )}
     </>
