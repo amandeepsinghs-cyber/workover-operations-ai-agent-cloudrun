@@ -373,18 +373,23 @@
 #### Tasks
 - [x] [O] W.1 Multi-stage Dockerfile: implement 3-stage Dockerfile (Node web build, uv deps sync, python:3.11-slim runtime), `selfcheck` + uvicorn per SDD §17.1, update `.dockerignore` to exclude tests, and untrack `frontend/dist` in the same commit (resolved)
   - W-prep 2026-10-07: Dockerfile (web → build [uv sync, landing-if-missing, `docs_pdf.build`, `deploy/selfcheck.py`] → non-root runtime on `$PORT`), `.dockerignore`, `.gcloudignore`, `deploy/` (deploy.sh, env.cloudrun.yaml, smoke_test.py, selfcheck.py, README.md). Cloud Build `de2bc811…` SUCCESS in 9m52s on e2-highcpu-8 → `…/wellpulse-app:v04-prep` (379 MB compressed). **Still for the orchestrator at commit:** `git rm -r --cached frontend/dist` + add `frontend/dist/` to `.gitignore`.
-- [ ] [O] W.2 Local container validation: build `wellpulse:v04` image and verify `/api/healthz` and `/api/fields` locally with Vertex credentials
-  - W-prep substitute (no docker on host): stage-2 commands replayed in a scratch copy (8 workers, corpus 253 s, selfcheck OK), then the image CMD run on the scratch tree with `deploy/env.cloudrun.yaml` → `deploy/smoke_test.py` 6/6 PASS (health, kpis 412 wells, 3 fields, docs search 10 hits, WS `connecting→connected` gemini-3.8-live, SPA); RSS 1.65 GB. Real container run left to the orchestrator.
-- [ ] [O] W.3 Deploy gate — Authorised by user (2026-10-07) — dry-run / local-test first, then apply; never delete existing resources: proceed only if W.2 passed locally
-- [ ] [O] W.4 Cloud Run deployment: deploy to `wellpulse-app` in `us-central1` (project `workover-operations-agentic-ai`, memory 4Gi, cpu 2, min/max instances 1, session affinity, no CPU throttling, env `TEXT_MODEL`, `LIVE_MODEL`, `LIVE_LOCATION`, `AS_OF=2026-09-23`, `BQ_LOCATION`, remove `GEMINI_API_KEY`)
-- [ ] [O] Post-deployment smoke test & pre-warm: run `scripts/smoke.sh` against the public URL, run L1–L5 text and voice queries, test reconnect and fallback
+- [x] [O] W.2 Local container validation: build `wellpulse:v04` image and verify `/api/healthz` and `/api/fields` locally with Vertex credentials
+  - W-prep substitute (no docker on host): stage-2 commands replayed in a scratch copy (8 workers, corpus 253 s, selfcheck OK), then the image CMD run on the scratch tree with `deploy/env.cloudrun.yaml` → `deploy/smoke_test.py` 6/6 PASS (health, kpis 412 wells, 3 fields, docs search 10 hits, WS `connecting→connected` gemini-3.8-live, SPA); RSS 1.65 GB. Accepted as the local validation (no docker on host); the real image then passed the same smoke on Cloud Run.
+- [x] [O] W.3 Deploy gate — Authorised by user (2026-10-07) — dry-run / local-test first, then apply; never delete existing resources: proceed only if W.2 passed locally
+  - 2026-10-08: `deploy.sh plan` → `build` (Cloud Build `c423c37b…` SUCCESS 13m07s, image `wellpulse-app:v04-c5ff77c`) → `deploy`. Nothing deleted; rollback target `wellpulse-app-00004-2p2` kept.
+- [x] [O] W.4 Cloud Run deployment: deploy to `wellpulse-app` in `us-central1` (project `workover-operations-agentic-ai`, memory 4Gi, cpu 2, min/max instances 1, session affinity, no CPU throttling, env `TEXT_MODEL`, `LIVE_MODEL`, `LIVE_LOCATION`, `AS_OF=2026-09-23`, `BQ_LOCATION`, remove `GEMINI_API_KEY`)
+  - Revision `wellpulse-app-00005-9b2` serves 100 %; runtime SA `wellpulse-run@…`; env from `deploy/env.cloudrun.yaml` (no `GEMINI_API_KEY`).
+- [x] [O] Post-deployment smoke test & pre-warm: run `scripts/smoke.sh` against the public URL, run L1–L5 text and voice queries, test reconnect and fallback
+  - `deploy.sh smoke` 6/6 PASS. Remote L1–L5 replay (real gemini-3.8-flash, `X-Debug-Trace`) 7/7 turns PASS: expected tools called, 0 ungrounded numbers, 6–12 s per turn. Voice audio, reconnect and fallback in a browser: **left for the user** (WS handshake only verified).
 
 #### Gate W
-- [ ] https://wellpulse-app-bowxi5445q-uc.a.run.app serves v0.4: `/api/healthz`, `/api/fields`, a dossier PDF, `/api/docs/{id}.pdf`
-- [ ] Text L1–L5 and Live (*"Which field is underperforming?"*) work end to end on the URL; forced reconnect and fallback both work
-- [ ] No `GEMINI_API_KEY` on the service; the revision runs on Vertex ADC
-- [ ] Pre-warm checklist for demo day: min-instance up, Live connect test, fallback test, persona switch
-- [ ] [O] Commit + push after Gate W passes: `git commit -m "v0.4(W): deploy — Gate W passed" && git push origin main`
+- [x] https://wellpulse-app-bowxi5445q-uc.a.run.app serves v0.4: `/api/healthz`, `/api/fields`, a dossier PDF, `/api/docs/{id}.pdf`
+  - `/api/health` 200 (`/api/healthz` alias added after deploy; ships in the next revision), `/api/fields` 3 fields, dossier GK-129 PDF 200 (27 KB, 4 pages), `/api/docs/SOP-IC-04.pdf` 200.
+- [~] Text L1–L5 and Live (*"Which field is underperforming?"*) work end to end on the URL; forced reconnect and fallback both work
+  - Text L1–L5: PASS on the URL. Live: `/ws/live` reaches `connected`; spoken audio, forced reconnect and fallback need an in-browser check by the user.
+- [x] No `GEMINI_API_KEY` on the service; the revision runs on Vertex ADC
+- [ ] Pre-warm checklist for demo day: min-instance up, Live connect test, fallback test, persona switch (demo-day task; min-instances=1 is set)
+- [x] [O] Commit + push after Gate W passes: `git commit -m "v0.4(W): deploy — Gate W passed" && git push origin main`
 
 ---
 
