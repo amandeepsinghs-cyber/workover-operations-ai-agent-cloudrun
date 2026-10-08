@@ -163,7 +163,7 @@ def render_wellbore_svg(geom: dict, width: int = 700, height: int = 680) -> str:
     ]
 
     # Title & header in SVG
-    svg_parts.append(f'<text x="{width / 2}" y="20" text-anchor="middle" class="wb-title">Wellbore Architecture & Completion Schematic</text>')
+    svg_parts.append(f'<text x="{width / 2}" y="20" text-anchor="middle" class="wb-title">Wellbore Architecture &amp; Completion Schematic</text>')
     svg_parts.append(f'<text x="{width / 2}" y="33" text-anchor="middle" style="font-size:9px; fill:#777;">Depth axis in Measured Depth (m MD) · Not to scale laterally</text>')
 
     # 1. Depth Axis (m MD)
@@ -195,7 +195,7 @@ def render_wellbore_svg(geom: dict, width: int = 700, height: int = 680) -> str:
     else:
         # Placeholder lithology
         svg_parts.append(f'<rect x="{litho_x}" y="{top_pad}" width="{litho_w}" height="{plot_h}" fill="#f9f9f9" stroke="#ccc" stroke-dasharray="4,4" />')
-        svg_parts.append(f'<text x="{litho_x + litho_w/2}" y="{top_pad + plot_h/2}" text-anchor="middle" class="wb-text" style="fill:#888;">Lithology Tops<br/>Not Recorded</text>')
+        svg_parts.append(f'<text x="{litho_x + litho_w/2}" y="{top_pad + plot_h/2}" text-anchor="middle" class="wb-text" style="fill:#888;">Lithology Tops Not Recorded</text>')
 
     # 3. Casing Strings & Cement
     casings = geom.get("casing") or []
@@ -431,7 +431,7 @@ def render_production_svg(series_val: Any, width: int = 700, height: int = 240) 
     ]
 
     # Title & Legend
-    svg.append(f'<text x="{ml}" y="18" style="font-size:11px; font-weight:bold; fill:#123b5c;">Monthly Production & Water Cut Trends (36-Month Profile)</text>')
+    svg.append(f'<text x="{ml}" y="18" style="font-size:11px; font-weight:bold; fill:#123b5c;">Monthly Production &amp; Water Cut Trends (36-Month Profile)</text>')
     # Legend
     leg_x = width - mr - 290
     svg.append(f'<g transform="translate({leg_x}, 10)">')

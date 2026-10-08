@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
+import { t } from '../../i18n/strings';
 import {
   ResponsiveContainer,
   BarChart,
@@ -22,6 +23,10 @@ import {
   FactorClass,
   HealthBucket,
   BUCKET_COLORS,
+  GROUP_COLORS,
+  GROUP_LABEL_KEY,
+  HEALTH_GROUPS,
+  groupCounts,
 } from '../../api/asset';
 
 export interface FieldComparisonProps {
@@ -444,54 +449,16 @@ export const FieldComparison: React.FC<FieldComparisonProps> = ({ onSelectField 
                         <td className="py-2 px-2.5 whitespace-nowrap">
                           {row.health_counts ? (
                             <div className="flex items-center justify-center gap-2 text-[10px]">
-                              <span
-                                className="flex items-center gap-0.5"
-                                title={`Producing OK: ${row.health_counts.PRODUCING_OK}`}
-                              >
-                                <span
-                                  className="w-1.5 h-1.5 rounded-full"
-                                  style={{ backgroundColor: BUCKET_COLORS.PRODUCING_OK }}
-                                />
-                                <span style={{ color: BUCKET_COLORS.PRODUCING_OK }}>
-                                  {row.health_counts.PRODUCING_OK}
-                                </span>
-                              </span>
-                              <span
-                                className="flex items-center gap-0.5"
-                                title={`At Risk: ${row.health_counts.AT_RISK}`}
-                              >
-                                <span
-                                  className="w-1.5 h-1.5 rounded-full"
-                                  style={{ backgroundColor: BUCKET_COLORS.AT_RISK }}
-                                />
-                                <span style={{ color: BUCKET_COLORS.AT_RISK }}>
-                                  {row.health_counts.AT_RISK}
-                                </span>
-                              </span>
-                              <span
-                                className="flex items-center gap-0.5"
-                                title={`Underperforming: ${row.health_counts.UNDERPERFORMING}`}
-                              >
-                                <span
-                                  className="w-1.5 h-1.5 rounded-full"
-                                  style={{ backgroundColor: BUCKET_COLORS.UNDERPERFORMING }}
-                                />
-                                <span style={{ color: BUCKET_COLORS.UNDERPERFORMING }}>
-                                  {row.health_counts.UNDERPERFORMING}
-                                </span>
-                              </span>
-                              <span
-                                className="flex items-center gap-0.5"
-                                title={`Not Producing: ${row.health_counts.NOT_PRODUCING}`}
-                              >
-                                <span
-                                  className="w-1.5 h-1.5 rounded-full"
-                                  style={{ backgroundColor: BUCKET_COLORS.NOT_PRODUCING }}
-                                />
-                                <span style={{ color: BUCKET_COLORS.NOT_PRODUCING }}>
-                                  {row.health_counts.NOT_PRODUCING}
-                                </span>
-                              </span>
+                              {/* v0.6 ED-9 (D-38): Healthy / Needs attention / Not producing */}
+                              {HEALTH_GROUPS.map((g) => {
+                                const n = groupCounts(row.health_counts)[g];
+                                return (
+                                  <span key={g} className="flex items-center gap-0.5" title={`${t(GROUP_LABEL_KEY[g])}: ${n}`}>
+                                    <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: GROUP_COLORS[g] }} />
+                                    <span style={{ color: GROUP_COLORS[g] }}>{n}</span>
+                                  </span>
+                                );
+                              })}
                             </div>
                           ) : (
                             <span className="text-center block text-textMuted">—</span>

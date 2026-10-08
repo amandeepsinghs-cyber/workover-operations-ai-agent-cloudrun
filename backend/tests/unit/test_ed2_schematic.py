@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import random
+import xml.etree.ElementTree as ET
 
 import pytest
 from fastapi.testclient import TestClient
@@ -23,6 +24,7 @@ def test_diagram_draws_every_perforation(well):
     assert svg.startswith("<svg") and svg.rstrip().endswith("</svg>")
     assert 'height="auto"' not in svg and "<br/>" not in svg
     assert "TD (Total Depth)" in svg
+    ET.fromstring(svg)  # must be well-formed XML, or browsers will not render it as an image (ED-8)
     perfs = well_rows("perforation_intervals", well)
     assert svg.count("Perforations:") == len(perfs)
 

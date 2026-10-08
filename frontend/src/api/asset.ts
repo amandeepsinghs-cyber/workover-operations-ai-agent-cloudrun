@@ -379,10 +379,40 @@ export function productionRows(ps: ProductionSeries): Record<string, string | nu
 
 export const BUCKET_COLORS: Record<HealthBucket, string> = {
   PRODUCING_OK: '#2ea043',
+  // D-38: at risk + underperforming are both shown as "Needs attention" (amber)
   AT_RISK: '#d29922',
-  UNDERPERFORMING: '#fb923c',
+  UNDERPERFORMING: '#d29922',
   NOT_PRODUCING: '#f85149',
 };
+
+/** v0.6 ED-9 (D-38): three display tags over the four TC-020 buckets (display only). */
+export type HealthGroup = 'HEALTHY' | 'ATTENTION' | 'NOT_PRODUCING';
+export const HEALTH_GROUPS: HealthGroup[] = ['HEALTHY', 'ATTENTION', 'NOT_PRODUCING'];
+export const BUCKET_GROUP: Record<HealthBucket, HealthGroup> = {
+  PRODUCING_OK: 'HEALTHY',
+  AT_RISK: 'ATTENTION',
+  UNDERPERFORMING: 'ATTENTION',
+  NOT_PRODUCING: 'NOT_PRODUCING',
+};
+export const GROUP_COLORS: Record<HealthGroup, string> = {
+  HEALTHY: '#2ea043',
+  ATTENTION: '#d29922',
+  NOT_PRODUCING: '#f85149',
+};
+export const GROUP_LABEL_KEY: Record<HealthGroup, string> = {
+  HEALTHY: 'map.health.PRODUCING_OK',
+  ATTENTION: 'map.health.ATTENTION',
+  NOT_PRODUCING: 'map.health.NOT_PRODUCING',
+};
+/** Merge four-bucket counts into the three display groups. */
+export function groupCounts(counts: Partial<Record<string, number>> | null | undefined): Record<HealthGroup, number> {
+  const c = counts || {};
+  return {
+    HEALTHY: Number(c.PRODUCING_OK ?? 0),
+    ATTENTION: Number(c.AT_RISK ?? 0) + Number(c.UNDERPERFORMING ?? 0),
+    NOT_PRODUCING: Number(c.NOT_PRODUCING ?? 0),
+  };
+}
 
 export const FIELD_COLORS: Record<FieldName, string> = {
   Geleki: '#38bdf8',

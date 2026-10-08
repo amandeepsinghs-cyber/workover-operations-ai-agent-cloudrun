@@ -51,7 +51,7 @@ export const FieldSelector: React.FC<FieldSelectorProps> = ({
           const color = FIELD_COLORS[fieldNode.field] || '#8b949e';
           const counts = fieldNode.health_counts;
           const tooltip = counts
-            ? `PRODUCING_OK: ${counts.PRODUCING_OK ?? 0} · AT_RISK: ${counts.AT_RISK ?? 0} · UNDERPERFORMING: ${counts.UNDERPERFORMING ?? 0} · NOT_PRODUCING: ${counts.NOT_PRODUCING ?? 0}`
+            ? `Healthy: ${counts.PRODUCING_OK ?? 0} · Needs attention: ${(counts.AT_RISK ?? 0) + (counts.UNDERPERFORMING ?? 0)} · Not producing: ${counts.NOT_PRODUCING ?? 0}`
             : undefined;
 
           return (

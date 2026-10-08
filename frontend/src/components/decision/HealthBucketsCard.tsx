@@ -1,11 +1,11 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { AlertCircle, AlertTriangle } from 'lucide-react';
-import { BUCKET_COLORS } from '../../api/asset';
+import { BUCKET_GROUP, GROUP_COLORS, GROUP_LABEL_KEY, HEALTH_GROUPS, HealthGroup, groupCounts } from '../../api/asset';
+import { t } from '../../i18n/strings';
 import {
   decisionApi,
   Envelope,
   FieldName,
-  HealthBucket,
   HealthBuckets,
 } from '../../api/decision';
 
@@ -25,7 +25,7 @@ export const HealthBucketsCard: React.FC<HealthBucketsCardProps> = ({
   const [envelope, setEnvelope] = useState<Envelope<HealthBuckets> | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [fetchError, setFetchError] = useState<string | null>(null);
-  const [selectedBucket, setSelectedBucket] = useState<HealthBucket | null>(null);
+  const [selectedBucket, setSelectedBucket] = useState<HealthGroup | null>(null);
 
   useEffect(() => {
     let isMounted = true;
@@ -53,11 +53,13 @@ export const HealthBucketsCard: React.FC<HealthBucketsCardProps> = ({
   }, [field, clusterId]);
 
   const data = envelope?.data;
+  // v0.6 ED-9 (D-38): three display tags over the four TC-020 buckets
+  const gCounts = useMemo(() => groupCounts(data?.counts), [data]);
 
   const filteredWells = useMemo(() => {
     if (!data?.wells) return [];
     if (!selectedBucket) return data.wells;
-    return data.wells.filter((w) => w.bucket === selectedBucket);
+    return data.wells.filter((w) => BUCKET_GROUP[w.bucket] === selectedBucket);
   }, [data, selectedBucket]);
 
   return (
@@ -112,11 +114,11 @@ export const HealthBucketsCard: React.FC<HealthBucketsCardProps> = ({
 
           {/* Horizontal stacked bar (pure divs, widths = count/total) */}
           <div className="w-full h-2.5 rounded-full overflow-hidden flex bg-border/40">
-            {(Object.keys(data.counts) as HealthBucket[]).map((bucket) => {
-              const count = data.counts[bucket] ?? 0;
+            {HEALTH_GROUPS.map((bucket) => {
+              const count = gCounts[bucket];
               const pct = data.total_wells > 0 ? (count / data.total_wells) * 100 : 0;
               if (pct <= 0) return null;
-              const color = BUCKET_COLORS[bucket] || '#8b949e';
+              const color = GROUP_COLORS[bucket];
               return (
                 <div
                   key={bucket}
@@ -124,19 +126,19 @@ export const HealthBucketsCard: React.FC<HealthBucketsCardProps> = ({
                     width: `${pct}%`,
                     backgroundColor: color,
                   }}
-                  title={`${bucket.replace(/_/g, ' ')}: ${count} (${pct.toFixed(1)}%)`}
+                  title={`${t(GROUP_LABEL_KEY[bucket])}: ${count} (${pct.toFixed(1)}%)`}
                   className="h-full transition-all duration-200"
                 />
               );
             })}
           </div>
 
-          {/* Four bucket tiles in the order of Object.keys(data.counts) */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
-            {(Object.keys(data.counts) as HealthBucket[]).map((bucket) => {
-              const count = data.counts[bucket] ?? 0;
+          {/* Three tag tiles: Healthy / Needs attention / Not producing */}
+          <div className="grid grid-cols-3 gap-2.5">
+            {HEALTH_GROUPS.map((bucket) => {
+              const count = gCounts[bucket];
               const pct = data.total_wells > 0 ? (count / data.total_wells) * 100 : 0;
-              const color = BUCKET_COLORS[bucket] || '#8b949e';
+              const color = GROUP_COLORS[bucket];
               const isSelected = selectedBucket === bucket;
 
               return (
@@ -167,7 +169,7 @@ export const HealthBucketsCard: React.FC<HealthBucketsCardProps> = ({
                       style={{ backgroundColor: color }}
                     />
                     <span className="text-[10px] font-mono uppercase text-textMuted tracking-wider truncate">
-                      {bucket.replace(/_/g, ' ')}
+                      {t(GROUP_LABEL_KEY[bucket])}
                     </span>
                   </div>
                   <div className="flex items-baseline justify-between gap-1">
@@ -206,7 +208,7 @@ export const HealthBucketsCard: React.FC<HealthBucketsCardProps> = ({
               <thead className="sticky top-0 bg-[#161b22] border-b border-border text-[11px] font-mono uppercase text-textMuted font-bold z-10">
                 <tr>
                   <th className="py-2 px-3">Well</th>
-                  <th className="py-2 px-3">Bucket</th>
+                  <th className="py-2 px-3">Health</th>
                   <th className="py-2 px-3">Reason</th>
                   <th className="py-2 px-3 text-right">Since</th>
                 </tr>
@@ -221,8 +223,9 @@ export const HealthBucketsCard: React.FC<HealthBucketsCardProps> = ({
                 ) : (
                   filteredWells.map((well) => {
                     const isSelected = selectedWellId === well.well_id;
-                    const bucketColor = BUCKET_COLORS[well.bucket] || '#8b949e';
-                    const bucketText = well.bucket.replace(/_/g, ' ');
+                    const group = BUCKET_GROUP[well.bucket] ?? 'ATTENTION';
+                    const bucketColor = GROUP_COLORS[group];
+                    const bucketText = t(GROUP_LABEL_KEY[group]);
 
                     return (
                       <tr
@@ -244,7 +247,7 @@ export const HealthBucketsCard: React.FC<HealthBucketsCardProps> = ({
                               border: `1px solid ${bucketColor}40`,
                             }}
                           >
-                            {bucketText.toLowerCase()}
+                            {bucketText}
                           </span>
                         </td>
                         <td className="py-2 px-3 font-sans text-xs">

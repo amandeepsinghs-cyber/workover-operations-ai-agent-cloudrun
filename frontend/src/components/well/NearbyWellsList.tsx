@@ -1,5 +1,6 @@
 import React from 'react';
-import { NeighbourWell, BUCKET_COLORS } from '../../api/asset';
+import { NeighbourWell, BUCKET_COLORS, BUCKET_GROUP, GROUP_LABEL_KEY, HealthBucket } from '../../api/asset';
+import { t } from '../../i18n/strings';
 
 export interface NearbyWellsListProps {
   neighbours: NeighbourWell[];
@@ -45,7 +46,8 @@ export const NearbyWellsList: React.FC<NearbyWellsListProps> = ({
             {neighbours.map((well) => {
               const isSelected = selectedWellId === well.well_id;
               const bucketColor = well.bucket ? BUCKET_COLORS[well.bucket] || '#8b949e' : null;
-              const bucketText = well.bucket ? well.bucket.replace(/_/g, ' ') : null;
+              const grp = well.bucket ? BUCKET_GROUP[well.bucket as HealthBucket] : undefined;
+              const bucketText = well.bucket ? (grp ? t(GROUP_LABEL_KEY[grp]) : well.bucket.replace(/_/g, ' ')) : null;
               const statusText = well.status ? well.status.replace(/_/g, ' ') : null;
               const lastJobText = [well.last_job_code, well.last_job_date].filter(Boolean).join(' · ');
 
@@ -71,14 +73,14 @@ export const NearbyWellsList: React.FC<NearbyWellsListProps> = ({
                   <td className="py-2.5 px-3">
                     {bucketText && bucketColor ? (
                       <span
-                        className="inline-block px-1.5 py-0.5 rounded text-[10px] font-medium tracking-wide whitespace-nowrap capitalize"
+                        className="inline-block px-1.5 py-0.5 rounded text-[10px] font-medium tracking-wide whitespace-nowrap"
                         style={{
                           backgroundColor: `${bucketColor}20`,
                           color: bucketColor,
                           border: `1px solid ${bucketColor}40`,
                         }}
                       >
-                        {bucketText.toLowerCase()}
+                        {bucketText}
                       </span>
                     ) : (
                       <span className="text-textMuted font-mono">—</span>

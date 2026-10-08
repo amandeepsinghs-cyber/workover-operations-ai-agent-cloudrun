@@ -46,20 +46,26 @@ export const STRINGS: Record<string, Record<Lang, string>> = {
     hinglish: 'Saare fields',
     hindi: 'सभी फ़ील्ड',
   },
+  // v0.6 ED-9 (D-38): three display tags — Healthy / Needs attention / Not producing
   'map.health.PRODUCING_OK': {
-    english: 'Producing OK',
-    hinglish: 'Producing OK',
-    hindi: 'उत्पादन ठीक',
+    english: 'Healthy',
+    hinglish: 'Healthy',
+    hindi: 'स्वस्थ',
+  },
+  'map.health.ATTENTION': {
+    english: 'Needs attention',
+    hinglish: 'Dhyan chahiye',
+    hindi: 'ध्यान चाहिए',
   },
   'map.health.AT_RISK': {
-    english: 'At risk',
-    hinglish: 'At risk',
-    hindi: 'जोखिम में',
+    english: 'Needs attention',
+    hinglish: 'Dhyan chahiye',
+    hindi: 'ध्यान चाहिए',
   },
   'map.health.UNDERPERFORMING': {
-    english: 'Underperforming',
-    hinglish: 'Underperforming',
-    hindi: 'कम प्रदर्शन',
+    english: 'Needs attention',
+    hinglish: 'Dhyan chahiye',
+    hindi: 'ध्यान चाहिए',
   },
   'map.health.NOT_PRODUCING': {
     english: 'Not producing',

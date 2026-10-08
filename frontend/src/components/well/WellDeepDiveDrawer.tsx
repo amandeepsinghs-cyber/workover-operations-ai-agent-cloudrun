@@ -6,8 +6,12 @@ import {
   ProductionSeries,
   NeighbourWell,
   BUCKET_COLORS,
+  BUCKET_GROUP,
+  GROUP_LABEL_KEY,
+  HealthBucket,
   Envelope,
 } from '../../api/asset';
+import { t } from '../../i18n/strings';
 import { ProductionMarkersChart } from './ProductionMarkersChart';
 import { NearbyWellsList } from './NearbyWellsList';
 // Stage R (additive): TC-022 next best action, TC-027 counterfactual, TC-019 attribution
@@ -17,6 +21,7 @@ import { CounterfactualTable } from '../decision/CounterfactualTable';
 import { AttributionWaterfall } from '../decision/AttributionWaterfall';
 import { OffsetDeclineView } from './OffsetDeclineView';
 import { WellHistoryView } from './WellHistoryView';
+import { CompletionDiagram } from './CompletionDiagram';
 
 /** One focused view per question (answer canvas). Undefined = all sections (legacy overlay). */
 export type CanvasView =
@@ -184,6 +189,8 @@ export const WellDeepDiveDrawer: React.FC<WellDeepDiveDrawerProps> = ({
 
   const bucket = profile?.status.bucket;
   const bucketColor = bucket ? BUCKET_COLORS[bucket] ?? '#8b949e' : '#8b949e';
+  const bucketGroup = bucket ? BUCKET_GROUP[bucket as HealthBucket] : undefined;
+  const bucketLabel = bucket ? (bucketGroup ? t(GROUP_LABEL_KEY[bucketGroup]) : bucket.replace(/_/g, ' ')) : '—';
 
   // Lithology stacked column calculations
   const lithologyRows = profile?.lithology ?? [];
@@ -242,7 +249,7 @@ export const WellDeepDiveDrawer: React.FC<WellDeepDiveDrawerProps> = ({
                   border: `1px solid ${bucketColor}40`,
                 }}
               >
-                {bucket.replace(/_/g, ' ')}
+                {bucketLabel}
               </span>
             )}
             {onFieldReport && (
@@ -319,7 +326,7 @@ export const WellDeepDiveDrawer: React.FC<WellDeepDiveDrawerProps> = ({
             {show(['summary']) && (
               <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 text-xs font-mono">
                 {[
-                  { k: 'Status', v: (profile.status.bucket ?? '—').replace(/_/g, ' '), c: bucketColor },
+                  { k: 'Status', v: bucketLabel, c: bucketColor },
                   { k: 'Oil', v: `${formatNum(profile.current.oil_bopd)} BOPD` },
                   { k: 'Water cut', v: `${formatNum(profile.current.water_cut_pct)} %` },
                   { k: 'Gas', v: `${formatNum(profile.current.gas_mscfd)} Mscfd` },
@@ -356,7 +363,7 @@ export const WellDeepDiveDrawer: React.FC<WellDeepDiveDrawerProps> = ({
                   <div className="flex justify-between border-b border-border/40 pb-1">
                     <span className="text-textMuted">Bucket</span>
                     <span className="text-white font-semibold" style={{ color: bucketColor }}>
-                      {profile.status.bucket ?? '—'}
+                      {bucketLabel}
                     </span>
                   </div>
                   <div className="flex justify-between border-b border-border/40 pb-1">
@@ -490,31 +497,13 @@ export const WellDeepDiveDrawer: React.FC<WellDeepDiveDrawerProps> = ({
             )}
 
             {show(['wellbore']) && (
-            /* F-28 (v0.6 ED-2): completion diagram — same drawing as the printed field report */
+            /* F-28 rev. (v0.6 ED-8, D-37): completion diagram drawn natively from construction data */
             <div className="bg-[#0d1117] border border-border rounded-lg p-4 space-y-3">
-              <div className="text-xs font-mono uppercase text-textMuted font-bold flex items-center justify-between">
-                <span className="flex items-center gap-1.5">
-                  <Layers className="w-3.5 h-3.5 text-accent" />
-                  Completion diagram
-                </span>
-                <a
-                  href={`/api/wells/${encodeURIComponent(wellId)}/schematic.svg`}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="normal-case font-sans font-normal text-[11px] text-accent hover:text-white"
-                  title="Open the diagram full size in a new tab"
-                >
-                  Open full size ↗
-                </a>
+              <div className="text-xs font-mono uppercase text-textMuted font-bold flex items-center gap-1.5">
+                <Layers className="w-3.5 h-3.5 text-accent" />
+                Completion diagram
               </div>
-              <div className="rounded bg-white p-2 flex justify-center">
-                <img
-                  key={wellId}
-                  src={`/api/wells/${encodeURIComponent(wellId)}/schematic.svg`}
-                  alt={`Completion diagram for ${wellId}: casing, cement, tubing, perforations, formation tops`}
-                  className="w-full max-w-[700px] h-auto"
-                />
-              </div>
+              <CompletionDiagram key={wellId} profile={profile} />
             </div>
             )}
 
