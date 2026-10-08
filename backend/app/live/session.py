@@ -21,7 +21,7 @@ Configuration (env; ``WELLPULSE_*`` wins, ``WORKOVER_*`` accepted as alias):
   WELLPULSE_LIVE_MODEL     verified via ``python -m app.live.verify_model`` (Stage U: gemini-3.8-live)
   WELLPULSE_LIVE_LOCATION  default us-central1 (gemini-3.8-live is not served from ``global``)
   WELLPULSE_LIVE_PROJECT   default GOOGLE_CLOUD_PROJECT, then workover-operations-agentic-ai
-  WELLPULSE_LIVE_VOICE     default Aoede (DI 2.0)
+  WELLPULSE_LIVE_VOICE     default Aoede (DI 2.0; D-42 kept the female voice)
   WELLPULSE_LIVE_OFFLINE   1 => skip Gemini, go straight to text fallback
   WELLPULSE_DEBUG_RECONNECT 1 => accept {"type":"debug_reconnect"} to force a resume (tests / demo)
 """
@@ -91,7 +91,7 @@ def _read_prompt() -> str:
         return PROMPT_PATH.read_text(encoding="utf-8")
     except OSError:
         return (
-            "You are WellPulse, a voice copilot for ONGC Assam Asset. Every number you speak must come "
+            "You are Urvi AI Agent (voice) for ONGC Assam Asset. Every number you speak must come "
             "from a tool result in the same turn. Never speak rupee or dollar figures. 1-3 short sentences."
         )
 

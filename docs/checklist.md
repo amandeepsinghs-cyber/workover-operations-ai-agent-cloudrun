@@ -496,7 +496,7 @@
 **Anchor:** [`features.md`](./features.md) §3b F-27…F-33; D-33…D-36 (user, 2026-10-08)
 
 #### Tasks
-- [x] [O] ED-1 Showcase mode: `WELLPULSE_RBAC_ENFORCE` switch (default off → every persona FULL); tests force it on; persona menu note "Role-based access available (off for demo)"
+- [x] [O] ED-1 Showcase mode: `WELLPULSE_RBAC_ENFORCE` switch (default off → every persona FULL); tests force it on; persona menu note "RBAC available" (tooltip explains; was "Role-based access available", shortened 2026-10-08 so the header fits beside the docked agent)
 - [x] [O] ED-2 Completion diagram: shared SVG builder → `GET /api/wells/{id}/schematic.svg`; Wellbore view shows it (casing, cement, tubing, packer/pump, perforations by status, formation tops, TD)
 - [x] [O] ED-3 TC-033 offset decline compare + verdict (`WELL_SPECIFIC` / `RESERVOIR_WIDE` / `WATER` / `RESTORED` / `MIXED`); route; Offsets view; thresholds pinned
 - [x] [O] ED-4 TC-034 anomaly scan (rate drop, WC jump / trend, THP shift, downtime, linked workover); route; timeline in "History & Wax/Sand" view
@@ -510,6 +510,8 @@
 - [x] [O] ED-12 Agent docks in full screen (F-41): full screen / expanded panel opens the agent docked; exit restores; the agent opens docked on the right by default (undock is remembered)
 - [x] [O] ED-13 GGS well buttons (F-41): popup well tags are health-coloured buttons that open the well + zoom; `focus_cluster` ("show GGS-01"); `report print`
 - [x] [O] ED-14 Health filter + voice-first (F-41, D-41): `health_filter` all / healthy / attention / not_producing; browser phrases EN / Hinglish / Hindi; clickable legend + header KPIs; no Health & priority screen for display requests; Live prompt phrasings + spoken numbers; Live check over the socket; tests
+- [x] [O] ED-15 Polish (2026-10-08): header fits beside the docked agent (compact KPI ribbon, "RBAC available", "ONLINE", narrower search); ED rehearsal script updated with Part A hands-off + voice
+- [ ] [O] ED-16 Urvi AI Agent (D-42): full name "Urvi AI Agent" in the top-left wordmark, launcher, panel and greetings (EN / Hinglish / Hindi), Urvi mark (`UrviMark.tsx`) + favicon + tab title, personality in `prompt.py` / `live_prompt.md`, Live voice stays Aoede, greetings only greet (no screen change); mic "listening" states are green with a normal mic icon ("Listening · tap to stop"), not a red crossed-out mic that looked muted
 - [x] [O] Hands-off script (India → Geleki → GK-129 wellbore → full screen → satellite / SCADA → flowlines off → Hindi → close panel → India) passes with no clicks (headless check)
 
 #### Gate ED
@@ -611,4 +613,5 @@
 | **D-38** | Three health tags | Accepted (user, 2026-10-08) | Healthy (green) = PRODUCING_OK; Needs attention (amber) = AT_RISK + UNDERPERFORMING; Not producing (red) = NOT_PRODUCING; display-only |
 | **D-39** | Live voice cap 12 → 13 | Accepted (user, 2026-10-08) | Adds `ui_control` to Live voice; SDD §11.3 cap is our own rule |
 | **D-41** | Health filter is a display action | Accepted (user, 2026-10-08) | `ui_control health_filter`; display requests never open Health & priority; runner drops health navigation when `ui_control` ran |
+| **D-42** | Urvi AI Agent | Accepted (user, 2026-10-08) | Full name "Urvi AI Agent"; senior engineer colleague personality; Live voice stays Aoede (Charon too harsh); small talk never changes the screen; Urvi is the front-facing brand, WellPulse the platform; Urvi mark everywhere |
 | **D-40** | Hands-off control | Accepted (user, 2026-10-08) | Plain UI commands run in the browser (no model call); everything else goes to the agent, which can call `ui_control`; allow-listed actions only |

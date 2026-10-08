@@ -95,7 +95,7 @@ def build_agent(model: Any = None, tools: list | None = None, name: str = "wellp
     return Agent(
         name=name,
         model=model if model is not None else build_model(),
-        description="WellPulse operations copilot for ONGC Assam Asset (Geleki, Lakwa, Lakhmani).",
+        description="Urvi AI Agent for ONGC Assam Asset (Geleki, Lakwa, Lakhmani).",
         instruction=prompt.build,
         tools=list(tools if tools is not None else adk_tools.ALL),
         before_model_callback=callbacks.sanitize_history,

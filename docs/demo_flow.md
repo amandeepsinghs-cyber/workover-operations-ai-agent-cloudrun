@@ -193,7 +193,34 @@ This 11-step demonstration guides an executive (Executive Director / Asset Manag
 
 ## ED Rehearsal Script (v0.6 Stage ED · Ajay Ratan, 2026-10-09)
 
-**Setup:** run the app locally (`bash run_local.sh`, open :5180). The map opens on **India**: 13 ONGC assets. Tags outside Assam are well names and positions only. Showcase mode is on, so nothing is hidden; the persona menu notes that role-based access can be switched on. Click **Assam Asset · live ▸** (or **Assam** in the map bar) to drill down.
+**Setup (v0.6, updated 2026-10-08 for ED-10…14):**
+- Open the Cloud Run URL **https://wellpulse-app-806277846965.us-central1.run.app** (local fallback: `bash run_local.sh`, open :5180).
+- The map opens on **India** with 13 ONGC assets. Tags outside Assam are well names and positions only (not clickable).
+- Click the **Urvi AI Agent** pill (or Ctrl+K). It docks on the right; the map fits beside it.
+- For voice: press **Live**, then **Open mic** (or hold **Hold to talk**). From here on nothing needs a click.
+- Showcase mode is on, so nothing is hidden; the persona menu notes that role-based access can be switched on.
+
+### Part A · Hands-off and voice (≈ 3 min, show it is an agent, not a chatbot)
+
+Say (or type) each line. Every command leaves a green **↗** chip in the chat; the screen changes in about 0.5–1 s.
+
+| # | Say | Screen result |
+|---|---|---|
+| A0 | "Namaste Urvi" → "Aap kaun ho?" | Greets back in one line, nothing on screen changes; then "Main Urvi AI Agent hoon…" |
+| A1 | "Assam dikhao" / "Take me to Assam" | India → Assam Asset (Lakwa, Lakhmani, Geleki) |
+| A2 | "Sirf band wells dikhao" / "Only show non producing wells" | Map shows only red wells; chip "Showing: Not producing (79)". Health & priority screen does **not** open |
+| A3 | "Sirf healthy wells dikhao" → "Sab wells dikhao" | Only green wells (245) → all wells back |
+| A4 | "GGS three dikhao" | Zooms to GGS-03 and opens its popup; serviced wells are buttons coloured by health tag |
+| A5 | (one click, optional) a red well button in the popup | That well opens in the panel and the map zooms to it |
+| A6 | "Full screen karo" → "SCADA map" → "Satellite dikhao" | Full-screen map with the agent docked on the right; basemap switches |
+| A7 | "Full screen band karo" | Back to map + panel |
+| A8 | "GK one two nine wellbore kholo" | GK-129 completion diagram in the panel |
+| A9 | "Hindi mein bolo" | Agent switches to Hindi (Devanagari captions) |
+| A10 | "Print the report" | Field report opens and the print dialog appears |
+
+Also clickable as a backup: the **Healthy / Needs attention / Not producing** items in the map legend and the header filter the map the same way (click again to clear).
+
+### Part B · Technical questions
 
 Expected answers below come from the tools at AS_OF 2026-09-23 (smoke run 2026-10-08). The agent quotes the same numbers, and the panel opens the view in the last column.
 
@@ -211,12 +238,19 @@ Expected answers below come from the tools at AS_OF 2026-09-23 (smoke run 2026-1
 | 10 | "What should we do on GK-129, and why not wax removal?" | `recommend_next_best_action`, `compare_interventions` | Top 3 from the multimodal engine; counterfactual explains why wax removal loses | Recommendation → Compare |
 
 **Pass criteria:**
+- Part A: every command changes the screen and leaves a chip; no Health & priority screen for display requests.
 - Each answer is ≤ 4 sentences.
 - Every number appears in the tool result for that turn.
 - No currency.
 - The panel opens the listed view.
 - India tags are not clickable.
 
+**If something goes wrong:**
+- Voice mishears → type the same phrase in the agent box (plain commands run instantly in the browser).
+- Live drops → the agent falls back to text automatically; keep typing.
+- Bad deploy → `gcloud run services update-traffic wellpulse-app --project workover-operations-agentic-ai --region us-central1 --to-revisions=wellpulse-app-00007-nqz=100` (revision live before the Urvi deploy).
+
 **If asked:**
 - *"Is the data real?"* No. Synthetic and representative of the Assam Asset. Asset centres are approximate public locations; the tags outside Assam are illustrative.
+- *"Is it a chatbot?"* No. Urvi AI Agent drives the screen through an allow-listed `ui_control` tool (map, filters, panel, language, report); it cannot run anything outside that list.
 - *"Who sees what?"* Everything is shown today; role-based access per persona (CMD / ED / field engineer) is built and can be switched on (`WELLPULSE_RBAC_ENFORCE=1`).

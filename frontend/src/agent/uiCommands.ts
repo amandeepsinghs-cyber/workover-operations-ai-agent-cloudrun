@@ -327,3 +327,21 @@ export function parseUiCommands(text: string, currentWellId?: string | null): Ui
   });
   return uniq.length ? uniq.map((c) => ({ ...c, label: labelOf(c) })) : null;
 }
+
+
+// ---- ED-16 (D-42): small talk never drives the screen ----
+const SMALL_TALK_PHRASES = [
+  'hi+', 'hello', 'hey', 'hallo', 'namaste', 'namaskar', 'namaskaar', 'pranam', 'ram ram',
+  'good (?:morning|afternoon|evening|night|day)', 'thanks?', 'thank you(?: so much| very much)?', 'thanku', 'ty',
+  'shukriya', 'dhanyavaad', 'dhanyawad', 'dhanyavad', 'ok(?:ay)?', 'theek hai', 'thik hai', 'accha', 'achha', 'great', 'nice',
+  'how are you', '(?:aap |tum )?kaise ho', 'kya haal hai', 'who are you', '(?:aap|tum) kaun ho',
+  'urvi', 'ji', 'sir', 'there', 'dost', 'bhai',
+  'नमस्ते', 'नमस्कार', 'प्रणाम', 'धन्यवाद', 'शुक्रिया', 'आप कौन हो', '(?:आप )?कैसे हो', 'उर्वी', 'जी',
+];
+const SMALL_TALK_RE = new RegExp(`^(?:(?:${SMALL_TALK_PHRASES.join('|')})(?:\\s+|$))+$`, 'u');
+
+/** True when the whole utterance is only a greeting / thanks / "who are you" (no request). */
+export function isSmallTalk(text: string | null | undefined): boolean {
+  const t = (text ?? '').toLowerCase().replace(/[^\p{L}\p{N}\p{M}\s]/gu, ' ').replace(/\s+/g, ' ').trim();
+  return !!t && SMALL_TALK_RE.test(t);
+}

@@ -11,7 +11,7 @@ export const PersonaPicker: React.FC<{ lang?: Lang; compact?: boolean }> = ({
 
   return (
     <div
-      className="h-7 inline-flex items-center gap-1.5 px-2 bg-[#0d1117] border border-border rounded-lg text-xs font-mono text-white"
+      className="h-7 inline-flex items-center gap-1.5 px-2 shrink-0 whitespace-nowrap bg-[#0d1117] border border-border rounded-lg text-xs font-mono text-white"
       title={t('persona.demo_note', lang)}
     >
       <UserCog className="w-3.5 h-3.5 text-textMuted shrink-0" />
@@ -38,7 +38,7 @@ export const PersonaPicker: React.FC<{ lang?: Lang; compact?: boolean }> = ({
           className="text-[10px] text-emerald-300/80 font-sans shrink-0 pl-1.5 border-l border-border"
           title="Showcase: every role sees everything. Role-based access (CMD / ED / Field Engineer) can be switched on per deployment."
         >
-          Role-based access available
+          RBAC available
         </span>
       )}
       {Boolean(capabilities && capabilities.denied && capabilities.denied.length > 0) && (

@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { Bot, Maximize2, Minimize2, Minus, PanelRightClose, PanelRightOpen } from 'lucide-react';
+import { Maximize2, Minimize2, Minus, PanelRightClose, PanelRightOpen } from 'lucide-react';
+import { UrviMark } from '../common/UrviMark';
 import { VoiceAgentPanel, AgentVoiceStatus } from './VoiceAgentPanel';
 import type { WellDetail } from '../../types/well';
 import type { ChatAction } from '../../api/chat';
@@ -27,7 +28,7 @@ export const AGENT_DOCK_WIDTH = 'max(20vw, 340px)';
 const IDLE: AgentVoiceStatus = { live: false, listening: false, speaking: false, thinking: false };
 
 /**
- * WellPulse AI Agent — floating command centre (bottom-right, every screen).
+ * Urvi AI Agent (D-42) — floating command centre (bottom-right, every screen).
  * Modelled on the FCC cockpit CopilotLauncher: a launcher pill plus an overlay panel
  * with expand and minimise buttons. The panel stays mounted while minimised so the
  * live voice session and conversation survive minimise and screen changes.
@@ -249,7 +250,7 @@ export const FloatingAgent: React.FC<FloatingAgentProps> = ({
         onClick={minimise}
         className="p-1.5 rounded text-textMuted hover:text-white hover:bg-border transition-colors"
         title="Minimise (Esc)"
-        aria-label="Minimise WellPulse AI Agent (Esc)"
+        aria-label="Minimise Urvi AI Agent (Esc)"
       >
         <Minus className="w-4 h-4" />
       </button>
@@ -257,7 +258,7 @@ export const FloatingAgent: React.FC<FloatingAgentProps> = ({
   );
 
   const voiceBadge = voice.listening ? (
-    <span className="flex items-center gap-1 text-[9px] font-mono font-bold text-red-300 bg-red-950/70 border border-red-700/60 px-1.5 py-0.5 rounded animate-pulse">
+    <span className="flex items-center gap-1 text-[9px] font-mono font-bold text-emerald-300 bg-emerald-950/70 border border-emerald-600/60 px-1.5 py-0.5 rounded animate-pulse">
       ● LISTENING
     </span>
   ) : voice.speaking ? (
@@ -284,7 +285,7 @@ export const FloatingAgent: React.FC<FloatingAgentProps> = ({
         ref={panelRef}
         id="wellpulse-agent-panel"
         role={docked ? 'complementary' : 'dialog'}
-        aria-label="WellPulse AI Agent"
+        aria-label="Urvi AI Agent"
         aria-modal={docked ? undefined : false}
         style={
           docked
@@ -342,20 +343,22 @@ export const FloatingAgent: React.FC<FloatingAgentProps> = ({
           onClick={() => setOpen((v) => !v)}
           aria-expanded={open}
           aria-controls="wellpulse-agent-panel"
-          aria-label={`${open ? 'Minimise' : 'Open'} WellPulse AI Agent${voice.live ? ' — voice live' : ''}`}
+          aria-label={`${open ? 'Minimise' : 'Open'} Urvi AI Agent${voice.live ? ' — voice live' : ''}`}
           className={`fixed right-4 bottom-4 z-[1001] flex items-center gap-2 pl-2.5 pr-3 py-2 rounded-full border shadow-xl shadow-black/50 transition-colors ${
             open
               ? 'bg-[#12161c] border-border text-textMuted hover:text-white'
               : 'bg-[#12161c] border-accent/60 text-white hover:border-accent'
           }`}
         >
-          <span className="relative w-6 h-6 rounded-full bg-accent/20 border border-accent/50 flex items-center justify-center">
-            <Bot className="w-3.5 h-3.5 text-accent" />
+          <span className="relative w-6 h-6 flex items-center justify-center">
+            <UrviMark size={24} title="Urvi" />
             {unread && !open && (
               <span className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-accent border-2 border-[#12161c]" />
             )}
           </span>
-          <span className="text-xs font-semibold font-sans">{open ? 'Minimise' : 'WellPulse AI Agent'}</span>
+          <span className="text-xs font-semibold font-sans whitespace-nowrap">
+            {open ? 'Minimise' : 'Urvi AI Agent'}
+          </span>
           {!open && voiceBadge}
         </button>
       )}

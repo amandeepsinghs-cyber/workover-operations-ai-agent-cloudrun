@@ -311,6 +311,7 @@ export function App() {
       {/* Top Header (KPIs, status filter, search) */}
       <Header
         kpis={kpis}
+        compact={agentDocked}
         selectedStatus={selectedStatus}
         onSelectStatus={(s) =>
           // ED-14 (D-41): header KPIs drive the same health filter as the agent / voice / map legend.
@@ -441,7 +442,7 @@ export function App() {
         </div>
       )}
 
-      {/* WellPulse AI Agent — floating command centre, mounted once so it is on every screen
+      {/* Urvi AI Agent — floating command centre, mounted once so it is on every screen
           and keeps its voice session + conversation when minimised or when screens change. */}
       <FloatingAgent
         well={selectedWellDetail}

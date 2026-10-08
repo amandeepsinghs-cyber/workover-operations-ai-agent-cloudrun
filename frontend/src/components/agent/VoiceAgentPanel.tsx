@@ -15,6 +15,7 @@ import {
   Square,
   AlertTriangle,
 } from 'lucide-react';
+import { UrviMark } from '../common/UrviMark';
 import { ChatMessage, Recommendation, WellDetail } from '../../types/well';
 import {
   LiveClient,
@@ -32,7 +33,7 @@ import {
   pickCanvasView,
 } from '../../api/chat';
 import { ChatArtifact } from './ChatArtifact';
-import { dispatchUi, parseUiCommands, useUiCommands, labelOf, UiCommand } from '../../agent/uiCommands';
+import { dispatchUi, parseUiCommands, useUiCommands, labelOf, UiCommand, isSmallTalk } from '../../agent/uiCommands';
 
 interface VoiceAgentPanelProps {
   well?: WellDetail | null;
@@ -409,7 +410,7 @@ export const VoiceAgentPanel: React.FC<VoiceAgentPanelProps> = ({
           live: true,
         };
         setMessages((prev) => [...prev, agentMsg]);
-        if (onAgentAction) {
+        if (onAgentAction && !isSmallTalk(lastUserTextRef.current)) {
           const explicit = isExplicitDetailRequest(lastUserTextRef.current);
           for (const act of (msg.actions ?? []) as ChatAction[]) {
             onAgentAction({ ...act, explicit, view: pickCanvasView(act.source_tool, lastUserTextRef.current) });
@@ -434,6 +435,8 @@ export const VoiceAgentPanel: React.FC<VoiceAgentPanelProps> = ({
       },
 
       onAction: (kind, payload: any) => {
+        // ED-16 (D-42): a pure greeting / thanks turn never changes the screen.
+        if (isSmallTalk(lastUserTextRef.current)) return;
         if (kind === 'ui_control') {
           // v0.6 ED-11: Live voice drove the screen.
           const cmd = payload?.data?.command as UiCommand | undefined;
@@ -597,11 +600,11 @@ export const VoiceAgentPanel: React.FC<VoiceAgentPanelProps> = ({
       }
     } else {
       if (language === 'hinglish') {
-        greetingText = `WellPulse AI Agent ready for Assam Asset. Kisi bhi field ya well ke baare mein puchhiye.`;
+        greetingText = `Namaste, main **Urvi AI Agent** hoon. Kisi bhi field ya well ke baare mein puchhiye.`;
       } else if (language === 'hindi') {
-        greetingText = `असम एसेट ऑपरेशंस कोपायलट सक्रिय है। किसी भी फील्ड या वेल के बारे में पूछ सकते हैं।`;
+        greetingText = `नमस्ते, मैं **उर्वी AI एजेंट** हूँ। किसी भी फील्ड या वेल के बारे में पूछिए।`;
       } else {
-        greetingText = `WellPulse AI Agent ready for Assam Asset. Ask about any field, priority candidates, or select a wellhead.`;
+        greetingText = `Hello, I am **Urvi AI Agent** for Assam Asset. Ask about any field, priority candidates, or select a wellhead.`;
       }
     }
 
@@ -885,7 +888,7 @@ export const VoiceAgentPanel: React.FC<VoiceAgentPanelProps> = ({
         setCurrentRecommendation(reply.recommendation);
       }
 
-      if (reply.actions && reply.actions.length > 0 && onAgentAction) {
+      if (reply.actions && reply.actions.length > 0 && onAgentAction && !isSmallTalk(textToSend)) {
         const explicit = isExplicitDetailRequest(textToSend);
         for (const act of reply.actions) {
           onAgentAction({ ...act, explicit, view: pickCanvasView(act.source_tool, textToSend) });
@@ -1010,10 +1013,8 @@ export const VoiceAgentPanel: React.FC<VoiceAgentPanelProps> = ({
       <div className="border-b border-border px-3 pt-2 pb-1.5 shrink-0 bg-[#12161c]">
         <div className="flex items-center justify-between gap-2">
           <div className="flex items-center gap-2 min-w-0">
-            <div className="w-7 h-7 rounded-md bg-accent/20 border border-accent/40 flex items-center justify-center shrink-0">
-              <Bot className="w-4 h-4 text-accent" />
-            </div>
-            <h3 className="text-xs font-bold text-white font-sans truncate">WellPulse AI Agent</h3>
+            <UrviMark size={28} title="Urvi" />
+            <h3 className="text-xs font-bold text-white font-sans truncate" title="Urvi AI Agent · WellPulse">Urvi AI Agent</h3>
           </div>
 
           <div className="flex items-center gap-1 shrink-0">
@@ -1093,25 +1094,25 @@ export const VoiceAgentPanel: React.FC<VoiceAgentPanelProps> = ({
         <div
           className={`h-10 border-b px-4 flex items-center justify-between text-xs font-mono transition-colors ${
             activeListening
-              ? 'bg-red-950/70 border-red-800/70'
+              ? 'bg-emerald-950/60 border-emerald-800/60'
               : 'bg-blue-950/40 border-blue-800/40'
           }`}
         >
           <span
             className={`flex items-center gap-2 font-medium ${
-              activeListening ? 'text-red-300' : 'text-blue-300'
+              activeListening ? 'text-emerald-300' : 'text-blue-300'
             }`}
           >
             {activeListening ? (
               isOpenMic ? (
                 <>
-                  <span className="w-2 h-2 rounded-full bg-red-500 animate-ping"></span>
-                  <span>Listening (open mic)</span>
+                  <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
+                  <span>Listening · speak any time</span>
                 </>
               ) : (
                 <>
-                  <span className="w-2 h-2 rounded-full bg-red-500 animate-ping"></span>
-                  <span>🔴 Listening to voice... (Hold to talk)</span>
+                  <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
+                  <span>Listening · release to send</span>
                 </>
               )
             ) : (
@@ -1125,23 +1126,23 @@ export const VoiceAgentPanel: React.FC<VoiceAgentPanelProps> = ({
           {/* Animated Frequency Bars */}
           <div className="flex items-center gap-1 h-5">
             <div
-              className={`w-1 rounded-full animate-wave ${activeListening ? 'bg-red-400' : 'bg-accent'}`}
+              className={`w-1 rounded-full animate-wave ${activeListening ? 'bg-emerald-400' : 'bg-accent'}`}
               style={{ animationDelay: '0ms' }}
             ></div>
             <div
-              className={`w-1 rounded-full animate-wave ${activeListening ? 'bg-red-400' : 'bg-accent'}`}
+              className={`w-1 rounded-full animate-wave ${activeListening ? 'bg-emerald-400' : 'bg-accent'}`}
               style={{ animationDelay: '150ms' }}
             ></div>
             <div
-              className={`w-1 rounded-full animate-wave ${activeListening ? 'bg-red-400' : 'bg-accent'}`}
+              className={`w-1 rounded-full animate-wave ${activeListening ? 'bg-emerald-400' : 'bg-accent'}`}
               style={{ animationDelay: '300ms' }}
             ></div>
             <div
-              className={`w-1 rounded-full animate-wave ${activeListening ? 'bg-red-400' : 'bg-accent'}`}
+              className={`w-1 rounded-full animate-wave ${activeListening ? 'bg-emerald-400' : 'bg-accent'}`}
               style={{ animationDelay: '450ms' }}
             ></div>
             <div
-              className={`w-1 rounded-full animate-wave ${activeListening ? 'bg-red-400' : 'bg-accent'}`}
+              className={`w-1 rounded-full animate-wave ${activeListening ? 'bg-emerald-400' : 'bg-accent'}`}
               style={{ animationDelay: '200ms' }}
             ></div>
           </div>
@@ -1180,9 +1181,7 @@ export const VoiceAgentPanel: React.FC<VoiceAgentPanelProps> = ({
             className={`flex gap-3 ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}
           >
             {msg.sender === 'agent' && (
-              <div className="w-6 h-6 rounded-full bg-accent/20 border border-accent/40 flex items-center justify-center shrink-0 mt-0.5">
-                <Bot className="w-3.5 h-3.5 text-accent" />
-              </div>
+              <UrviMark size={24} className="mt-0.5" title="Urvi" />
             )}
 
             <div className="max-w-[85%] space-y-2">
@@ -1470,19 +1469,22 @@ export const VoiceAgentPanel: React.FC<VoiceAgentPanelProps> = ({
                 <button
                   type="button"
                   onClick={toggleOpenMic}
-                  title={isOpenMic ? 'Disable open mic' : 'Enable continuous open mic (server VAD)'}
+                  title={isOpenMic ? 'Mic is on and listening. Tap to stop' : 'Turn on the mic (hands-free, speak any time)'}
                   className={`flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-mono font-medium transition-colors shrink-0 ${
                     isOpenMic
-                      ? 'bg-red-950/80 text-red-300 border border-red-700 shadow-sm shadow-red-700/50'
+                      ? 'bg-emerald-600/25 text-emerald-200 border border-emerald-500 shadow-sm shadow-emerald-500/40'
                       : 'bg-[#0d1117] text-textMuted hover:text-white border border-border'
                   }`}
                 >
                   {isOpenMic ? (
-                    <MicOff className="w-3.5 h-3.5 text-red-400" />
+                    <span className="relative flex items-center justify-center">
+                      <Mic className="w-3.5 h-3.5 text-emerald-300" />
+                      <span className="absolute -top-0.5 -right-0.5 w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping" />
+                    </span>
                   ) : (
                     <Mic className="w-3.5 h-3.5 text-emerald-400" />
                   )}
-                  <span>{isOpenMic ? 'Open mic on' : 'Open mic'}</span>
+                  <span>{isOpenMic ? 'Listening · tap to stop' : 'Open mic'}</span>
                 </button>
 
                 {/* Push-to-talk button: hidden when open mic is on */}
@@ -1495,7 +1497,7 @@ export const VoiceAgentPanel: React.FC<VoiceAgentPanelProps> = ({
                     title="Hold to talk to the agent (or hold Spacebar)"
                     className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg font-mono text-xs font-semibold select-none transition-all shrink-0 ${
                       isTalking
-                        ? 'bg-red-600 hover:bg-red-700 text-white border border-red-400 shadow-lg shadow-red-600/40 animate-pulse'
+                        ? 'bg-emerald-600 hover:bg-emerald-600 text-white border border-emerald-300 shadow-lg shadow-emerald-500/40 animate-pulse'
                         : 'bg-[#0d1117] text-emerald-400 hover:text-white hover:bg-emerald-600/30 border border-emerald-500/50'
                     }`}
                   >
