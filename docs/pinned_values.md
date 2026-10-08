@@ -266,3 +266,20 @@ Authoritative targets and parameters for v0.5 stages (from `docs/v05_change_brie
 - No model training or Vertex AI custom training jobs in v0.5 (Decision D-32; production path described in architecture panel).
 
 
+
+## 13. Stage ED (v0.6) pinned values
+
+| Value | Pinned | Source | Notes |
+|---|---|---|---|
+| **TC-033 offsets** | ≤ 5 nearest; same zone if ≥ 3 exist | `offset_decline.py` (`MAX_OFFSETS`), TC-004 | Offsets without producing data in the window are skipped |
+| **TC-033 window / trend** | 24 monthly means (≥ 5 producing days per month); trend = log-linear fit of the last 12 months, needs ≥ 6 | `offset_decline.py` | `decline_pct_yr` positive = declining |
+| **TC-033 base verdict** | TC-004 `check_offsets`: `RESERVOIR_DECLINE` if \|excess\| ≤ 5 pp and offsets median residual < −10%; `WELL_SPECIFIC` if excess < −15 pp; else `MIXED`; < 3 offsets → `INSUFFICIENT` | `candidate_ranking.py` | Same verdict the diagnosis / NBA engine uses |
+| **TC-033 water rule** | Subject WC up ≥ 10 pts in 12 months → `WATER`; scope `AREA` if offsets' median WC up ≥ 5 pts, else `WELL` | `offset_decline.py` (`WC_JUMP_PTS`, `WC_AREA_PTS`) | Checked before the base verdict |
+| **TC-033 restored rule** | `MIXED` + rising rate + residual ≥ +10% → `RESTORED`; credited job = biggest successful uplift in the last 15 months | `offset_decline.py` (`RESTORED_RES_PCT`) | |
+| **Hero verdicts (AS_OF 2026-09-23)** | GK-129 `WATER` (WELL); LKW-019 `RESTORED` (straddle packer 2025-10-01, now waiting on rig for sand); LKM-061 `WELL_SPECIFIC` (GL valve signature) | `test_tc033_offset_decline.py` | |
+| **TC-034 anomaly rules** | RATE_DROP: 7-day mean oil ≤ 70% of prior 30-day median · WC_JUMP: 7-day mean WC ≥ +10 pts · WC_TREND: last-90-day mean WC ≥ +10 pts vs. the same 90 days a year earlier · THP_SHIFT: ≥ 25% and ≥ 2 kg/cm² · DOWNTIME: non-producing episode ≥ 7 days | `anomalies.py` (`RATE_DROP_FRAC`, `WC_JUMP_PTS`, `THP_SHIFT_FRAC`, `THP_SHIFT_MIN`, `DOWNTIME_DAYS`) | Producing days only for signal rules |
+| **TC-034 merge / link / cap** | Same-type events within 30 days merged; job linked if it starts within ±30 days; top 12 by severity, newest first | `anomalies.py` (`MERGE_DAYS`, `LINK_DAYS`, `MAX_EVENTS`) | Default window 24 months |
+| **TC-035 job match** | `failure_code` = WAX / SAND, or `catalogue_job_code` starts `WAX_` / `SAND_`; `CENSORED` rows excluded; downtime = status episodes with `reason_code` WAX / SAND | `wax_sand.py` | No sand-rate data (stated in every response) |
+| **TC-035 cadence** | Own cycle = median gap between the well's jobs (≥ 2 jobs); field norm = median of per-well cycles in the field; next due = last job + own cycle (never from the field norm); PREDICTABLE needs ≥ 3 jobs; "more / less often than norm" at < 0.8× / > 1.25× | `wax_sand.py` | |
+| **TC-035 demo wells** | GK-031 wax: 7 jobs, ~178-day cycle vs. Geleki 360, overdue 50 days · LKW-019 sand: DOWNTIME_ONLY, waiting on rig since 2026-09-06 · LKM-068 sand: 3 jobs, predictable | `test_tc035_wax_sand.py`, smoke run 2026-10-08 | |
+| **ED-6 India assets** | 13 ONGC assets at approximate public centres; only Assam live; 10–24 position-only tags per other asset within ≤ 0.18° of the centre (seeded by asset id); names shown from zoom 9 | `ongc_assets.py`, `WellMap.tsx` (`TAG_NAME_MIN_ZOOM`) | Tags carry name + lat/lng only (D-34) |

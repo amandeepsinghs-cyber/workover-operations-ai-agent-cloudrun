@@ -29,7 +29,10 @@ export type ArtifactKind =
   | 'dossier'
   | 'citations'
   | 'intervention_classification'
-  | 'well_map';
+  | 'well_map'
+  | 'offset_decline'
+  | 'well_anomalies'
+  | 'wax_sand';
 
 export interface ChatArtifact {
   kind: ArtifactKind;
@@ -82,15 +85,20 @@ export type CanvasViewKey =
   | 'diagnosis'
   | 'recommendation'
   | 'compare'
+  | 'offsets'
+  | 'history'
   | 'nearby';
 
 const KW: [CanvasViewKey, RegExp][] = [
+  // v0.6 ED-7: 'what is wrong' vs. offsets, and wax / sand / anomalies
+  ['offsets', /\b(offsets?|is\s+it\s+the\s+(well|reservoir)|(compare|vs\.?|versus)\s+(the\s+)?(decline\s+)?(with\s+)?(nearby|neighbou?ring|surrounding)|decline\s+(with|vs\.?)\s+nearby)\b/i],
+  ['history', /\b(wax\w*|paraffin|sand\w*|anomal\w*|unusual|abnormal)\b/i],
   ['compare', /\bwhy\s+not\b|\binstead\s+of\b|\bcompare\b|\balternative/i],
   ['recommendation', /\b(next\s+best|recommend\w*|what\s+should\s+we\s+do|suggest\w*|intervention\s+options?|best\s+(intervention|option|action))\b|kya\s+karna/i],
   ['interventions', /\b(interventions?|workovers?|jobs?|job\s+history|past\s+work|well\s+service)\b/i],
   ['wellbore', /\b(casing|tubing|completion|wellbore|schematic|perforations?|perfs?|lithology|formation|construction|diagram|packer)\b/i],
   ['pressures', /\b(pressure|well\s+test|test|survey|temperature|thp|chp|bhp)\b/i],
-  ['nearby', /\b(nearby|offset|neighbou?rs?|around)\b|aas\s*paas/i],
+  ['nearby', /\b(nearby|neighbou?rs?|around)\b|aas\s*paas/i],
   ['diagnosis', /\b(why\s+(did|is)|declin\w*|diagnos\w*|root\s+cause|attribution|human\s+factor|controllable|what'?s\s+wrong)\b/i],
   ['production', /\b(production|rate|bopd|oil|water\s*cut|gor|plot|chart|graph|trend)\b/i],
 ];
@@ -106,6 +114,9 @@ const TOOL_TO_KIND: Record<string, string> = {
   attribute_decline: 'attribution_waterfall',
   classify_intervention: 'intervention_classification',
   well_summary: 'well_profile',
+  compare_offset_decline: 'offset_decline',
+  well_anomalies: 'well_anomalies',
+  wax_sand_behaviour: 'wax_sand',
 };
 
 export function pickCanvasView(toolKind: string, userText: string | null | undefined): CanvasViewKey {
@@ -119,6 +130,11 @@ export function pickCanvasView(toolKind: string, userText: string | null | undef
       return byWords === 'compare' ? 'compare' : 'recommendation';
     case 'attribution_waterfall':
       return 'diagnosis';
+    case 'offset_decline':
+      return 'offsets';
+    case 'well_anomalies':
+    case 'wax_sand':
+      return 'history';
     case 'well_production_chart':
       return byWords === 'interventions' ? 'interventions' : 'production';
     default:

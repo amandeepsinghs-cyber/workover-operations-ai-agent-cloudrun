@@ -119,5 +119,48 @@ def well_field_report(well_id: str, intervention: str | None = Query(None),
     from app.analytics.tools.field_report import render_field_report
 
     wid = _known_well_or_404(well_id)
-    html_content = render_field_report(wid, intervention=intervention, persona=persona)
+    # D-33 showcase mode: nothing hidden, so render the full (non-FE) report unless RBAC is enforced.
+    report_persona = persona if rbac.ENFORCE else rbac.ASSET_MANAGER
+    html_content = render_field_report(wid, intervention=intervention, persona=report_persona)
     return HTMLResponse(content=html_content)
+
+
+# Stage ED-2 (v0.6): F-28 completion diagram for the dashboard Wellbore view
+@router.get("/wells/{well_id}/schematic.svg")
+def well_schematic_svg(well_id: str, persona: str = Depends(rbac.require("well.construction"))):
+    """Completion diagram (casing, cement, tubing / tools, perforations, formation tops, PBTD, TD) as SVG."""
+    from fastapi.responses import Response
+    from app.analytics.tools.field_report import render_well_schematic_svg
+
+    wid = _known_well_or_404(well_id)
+    return Response(content=render_well_schematic_svg(wid), media_type="image/svg+xml",
+                    headers={"Cache-Control": "max-age=300"})
+
+
+# Stage ED-3 (v0.6): F-29 TC-033 decline vs. nearby wells → "what is wrong"
+@router.get("/wells/{well_id}/offset-decline")
+def well_offset_decline(well_id: str, months: int = Query(24, ge=12, le=60),
+                        persona: str = Depends(rbac.require("well.diagnostics"))):
+    from app.analytics.tools.offset_decline import offset_decline_compare
+
+    wid = _known_well_or_404(well_id)
+    return rbac.redact(persona, "well.diagnostics", offset_decline_compare(wid, months=months).envelope())
+
+
+# Stage ED-4 (v0.6): F-30 TC-034 well history — any anomalies?
+@router.get("/wells/{well_id}/anomalies")
+def well_anomalies_route(well_id: str, months: int = Query(24, ge=6, le=60),
+                         persona: str = Depends(rbac.require("well.diagnostics"))):
+    from app.analytics.tools.anomalies import well_anomalies
+
+    wid = _known_well_or_404(well_id)
+    return rbac.redact(persona, "well.diagnostics", well_anomalies(wid, months=months).envelope())
+
+
+# Stage ED-5 (v0.6): F-31 TC-035 wax / sand behaviour — normal? predictable?
+@router.get("/wells/{well_id}/wax-sand")
+def well_wax_sand(well_id: str, persona: str = Depends(rbac.require("well.diagnostics"))):
+    from app.analytics.tools.wax_sand import wax_sand_behaviour
+
+    wid = _known_well_or_404(well_id)
+    return rbac.redact(persona, "well.diagnostics", wax_sand_behaviour(wid).envelope())

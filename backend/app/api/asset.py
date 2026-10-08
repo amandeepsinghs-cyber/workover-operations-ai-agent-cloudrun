@@ -122,6 +122,14 @@ def fields_map(field: str | None = None, cluster_id: str | None = None, color_by
     return rbac.redact(persona, "asset.overview", r.envelope())
 
 
+# Stage ED-6 (v0.6): F-32 India view — 13 ONGC assets; non-Assam = position-only well name tags (D-34)
+@router.get("/geo/ongc-assets")
+def geo_ongc_assets(persona: str = Depends(rbac.require("asset.overview"))):
+    from app.analytics.tools.ongc_assets import ongc_assets
+
+    return ongc_assets()
+
+
 @router.get("/fields/{field}/history")
 def field_history(
     field: str,

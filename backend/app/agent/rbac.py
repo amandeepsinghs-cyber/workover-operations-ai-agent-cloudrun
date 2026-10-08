@@ -50,6 +50,10 @@ FIELD_ENGINEER = "FIELD_ENGINEER"
 PERSONAS: tuple[str, ...] = (ED, ASSET_MANAGER, FIELD_ENGINEER)
 DEFAULT_PERSONA = ASSET_MANAGER
 
+# D-33 (v0.6) showcase mode: RBAC is presented as a capability, not enforced in the demo.
+# WELLPULSE_RBAC_ENFORCE=1 turns the matrix below back on (tests force it on in conftest).
+ENFORCE: bool = os.getenv("WELLPULSE_RBAC_ENFORCE", "0") == "1"
+
 PERSONA_LABELS = {
     ED: "Executive Director",
     ASSET_MANAGER: "Asset Manager / Production Engineer",
@@ -86,7 +90,7 @@ CAPABILITIES: dict[str, dict[str, Any]] = {
     "field.health": {"desc": "Health buckets (TC-020)", "tools": ["TC-020"], "routes": ["/api/fields/{field}/health"]},
     "queue.read": {"desc": "Candidate / priority queues, rig schedule", "tools": ["TC-010", "TC-015", "TC-018"],
                    "routes": ["/api/fields/{field}/priority"]},
-    "well.diagnostics": {"desc": "Single-well diagnostics + ML classifier", "tools": [f"TC-{i:03d}" for i in range(1, 10)] + ["TC-021"],
+    "well.diagnostics": {"desc": "Single-well diagnostics + ML classifier", "tools": [f"TC-{i:03d}" for i in range(1, 10)] + ["TC-021", "TC-033", "TC-034", "TC-035"],
                          "routes": ["/api/wells/{id}/classification"]},
     "well.nba": {"desc": "Next best action and counterfactual", "tools": ["TC-022", "TC-027"],
                  "routes": ["/api/wells/{id}/nba", "/api/wells/{id}/compare", "/api/wells/{id}/recommendations"]},
@@ -130,6 +134,8 @@ TOOL_CAPABILITY: dict[str, str] = {
     "TC-023": "docs.sop_dossier", "TC-026": "docs.sop_dossier",
     "TC-024": "field.aggregate", "TC-028": "field.aggregate",
     "TC-029": "well.construction",
+    # v0.6 Stage ED: offset decline, anomalies, wax / sand
+    "TC-033": "well.diagnostics", "TC-034": "well.diagnostics", "TC-035": "well.diagnostics",
 }
 
 # Document type → (capability, minimum access). Everything else → docs.sop_dossier.
@@ -225,6 +231,8 @@ def current_persona() -> str:
 def access(persona: str | None, capability: str) -> Access:
     if capability not in MATRIX:
         raise ValueError(f"unknown capability {capability!r}")
+    if not ENFORCE:  # D-33 showcase mode: nothing hidden for anyone
+        return Access.FULL
     return MATRIX[capability][resolve_persona(persona)]
 
 
@@ -235,7 +243,7 @@ def allowed(persona: str | None, capability: str) -> bool:
 def capabilities_for(persona: str | None) -> dict[str, Any]:
     """Payload of ``GET /api/me/capabilities`` (UI hint only; enforcement is server-side)."""
     p = resolve_persona(persona)
-    acc = {c: MATRIX[c][p].value for c in MATRIX}
+    acc = {c: access(p, c).value for c in MATRIX}
     return {
         "persona": p,
         "label": PERSONA_LABELS[p],
@@ -248,6 +256,7 @@ def capabilities_for(persona: str | None) -> dict[str, Any]:
         "personas": [{"id": x, "label": PERSONA_LABELS[x]} for x in PERSONAS],
         "matrix": {c: {x: MATRIX[c][x].value for x in PERSONAS} for c in MATRIX},
         "security_note": "demo persona switch (SDD §16.1); not a security boundary",
+        "enforced": ENFORCE,  # D-33: False in showcase mode (RBAC available, not applied)
     }
 
 

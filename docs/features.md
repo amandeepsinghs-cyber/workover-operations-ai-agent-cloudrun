@@ -391,6 +391,90 @@ Orchestrator (Opus/Pro-class): contracts, numeric logic, guardrails, ML gates, c
 
 ---
 
+## 3b. v0.6: personas and the ED meeting (Ajay Ratan), added 2026-10-08
+
+**Production questions differ by role. v0.6 builds what an ED needs tomorrow and logs the CMD set as backlog.** Showcase mode: everyone sees everything; role-based access is presented as a capability (D-33).
+
+| Persona | Scope | Typical questions |
+|---|---|---|
+| **CMD** | All of India, every asset | Production by asset and field; increase/decline per asset; comparisons; where it hurts |
+| **ED** (e.g. Ajay Ratan) | One asset and its fields, technical | Why is this well declining? Is it the well or the reservoir? Completion, perforations, interventions, wax/sand, anomalies |
+| **Field Engineer** | One well / job | Technical documents to execute: completion diagram, tallies, job program, hazards |
+
+### F-27 · Showcase mode (no hiding) — `NEW` (D-33)
+> User: *"Don't hide anything for anyone; we will showcase everything and then say we can provide role-based access."*
+
+**What it does:** Every persona sees every capability at FULL: construction tallies, diagnostics, cost bands, field roll-ups. RBAC code stays and is switched on with `WELLPULSE_RBAC_ENFORCE=1` (on in tests). The persona menu shows "Role-based access available (off for demo)".
+**Acceptance (Stage ED-1):** with the switch off, ED and FE receive FULL construction and cost bands; with it on, the existing RBAC tests pass unchanged.
+
+### F-28 · Completion diagram in the dashboard — `NEW`
+> User: *"Well completion diagrams, which we currently don't have, perforation intervals and everything."*
+
+**What it does:** The Wellbore view shows a completion diagram drawn from data: casing strings and shoes, cement tops, tubing with packer/pump, **perforations coloured by status**, formation tops, TD. It reuses the field-report schematic so the screen and the print match. Served as `GET /api/wells/{id}/schematic.svg`.
+**Acceptance (Stage ED-2):** renders for GK-129, LKW-019, LKM-061 + 10 random wells; every perforation interval in `perforation_intervals` appears; missing data shows a labelled placeholder.
+
+### F-29 · Decline vs. nearby wells → "what is wrong" — `NEW` (upgrades F-12)
+> User: *"Compare production decline with nearby wells; this will give what is wrong."*
+
+**What it does:** TC-033 `offset_decline_compare` compares the well with its 3–5 nearest same-zone offsets (`well_offsets`). It returns normalised oil-rate curves (24 months), the decline rate of each well (Arps), and water-cut and THP trends. A rule-based **verdict** classifies the decline:
+- `WELL_SPECIFIC`: the well declines much faster than its offsets → lift / skin / mechanical
+- `RESERVOIR_WIDE`: the offsets decline alike → depletion
+- `WATER`: water cut up ≥ 10 pts, scoped `AREA` or `WELL`
+- `RESTORED`: rate above its own curve after a successful job
+- `MIXED` / `INSUFFICIENT`: no single clear cause / fewer than 3 offsets
+
+The verdict builds on TC-004 `check_offsets`, so the diagnosis engine and this view never disagree.
+
+A new **Offsets** view in the well panel shows the curves and the verdict line. Route: `GET /api/wells/{id}/offset-decline`.
+**Acceptance (Stage ED-3):** verdict + numbers for the 3 hero wells; every number comes from the tool; the verdict rule thresholds are in `pinned_values.md`.
+
+### F-30 · Well-history anomaly scan — `NEW`
+> User: *"Well history, any anomalies."*
+
+**What it does:** TC-034 `well_anomalies` scans daily production and status history and returns dated events:
+- sudden oil-rate drops (≥ 30% vs. the 30-day median)
+- water-cut jumps (≥ 10 points)
+- THP shifts
+- downtime episodes (≥ 7 days)
+- each event is linked to a nearby workover, if any
+
+They appear as a dated timeline in the well panel's **History & Wax/Sand** view, each with the linked job (built 2026-10-08). Route: `GET /api/wells/{id}/anomalies`.
+**Acceptance (Stage ED-4):** deterministic; ≤ 12 most significant events; thresholds pinned.
+
+### F-31 · Wax and sand behaviour (is it normal, can it be predicted) — `NEW`
+> User: *"Can be normal wax, one can predict … sand production history."*
+
+**What it does:** TC-035 `wax_sand_behaviour` uses the hazard flags (`fluid_hazards.wax_flag` / `sand_flag`) and the wax- and sand-related jobs in `workover_history`. It reports job count, last job, the well's own repeat cycle vs. the field norm ("more often than the Geleki norm of 360 days"), downtime days and deferred bbl for WAX / SAND status episodes, and any ongoing episode. A **next-due date** (last job + own median interval) is given only when the well has a repeat pattern (≥ 2 jobs); a single job is reported as "no repeat pattern" rather than forecast from the field norm. Verdicts: NOT_PRONE, FLAGGED_NO_JOBS, DOWNTIME_ONLY, ISOLATED, REPEAT, PREDICTABLE (≥ 3 jobs). There is no sand-rate data; the view says so (F-38). Shown in the **History & Wax/Sand** view; route `GET /api/wells/{id}/wax-sand`.
+**Acceptance (Stage ED-5):** 3 hero wells + 10 random wells; no fabricated rates.
+
+### F-32 · India map with ONGC asset tags — `NEW` (D-34)
+> User: *"CMD will see all of India and so will the ED … only the well tags on the screen … I will drill down to Assam Asset."*
+
+**What it does:**
+- The map opens on India.
+- The 13 ONGC assets, at approximate public locations, show **well name tags as position-only dots**: non-interactive, no data, deterministic positions around each asset centre, offshore ones in the sea.
+- The Assam Asset (Geleki, Lakwa, Lakhmani) is the only live asset; zooming in or choosing a field shows today's interactive wells.
+- Built as a deterministic (seeded) module, `backend/app/analytics/tools/ongc_assets.py`, served by `GET /api/geo/ongc-assets`. The map has an **India / Assam** toggle; tag names appear from zoom 9; the Assam label is the one clickable item and drills down.
+
+**Acceptance (Stage ED-6):** tags visible at India zoom; no click handlers; Assam drill-down unchanged; tags labelled as illustrative locations.
+
+### F-33 · ED agent answers + rehearsal script — `NEW`
+**What it does:** "What's wrong with GK-129?" answers with F-29…F-31 in ≤ 4 sentences and opens the Offsets view. Tools are wired into the ADK agent (`compare_offset_decline`, `well_anomalies`, `wax_sand_behaviour`). Live has a 12-tool cap (SDD §11.3), so its `well_profile` tool carries the same three answers in `data.checks`. `docs/demo_flow.md` gains an ED script of 8–10 technical questions.
+**Acceptance (Stage ED-7):** the script passes in text chat on GK-129, LKW-019, LKM-061; numbers trace to tools.
+
+### CMD backlog (logged 2026-10-08, not built in v0.6)
+| ID | Feature | Notes |
+|---|---|---|
+| F-34 | Asset comparisons: production, change vs. last month/year/target, ranking | Needs aggregated numbers per asset |
+| F-35 | Field-wise production for every asset; increase/decline per asset | Assam only has data today |
+| F-36 | Asset-wise daily progress report (DPR) | daily_production, status, rig_calendar, field_targets |
+| F-37 | "Where does it hurt": top losing assets/fields and why | From attribution (TC-019) |
+| F-38 | Sand production rate history | No data |
+| F-39 | Service cost: tangible / intangible | Deferred (D-35); conflicts with X-3 |
+| F-40 | New locations / prospects | No data |
+
+---
+
 ## 4. Cross-cutting rules (apply to every feature)
 
 **Rule X-1 overrides everything: if a number did not come from a tool return, it is not shown or spoken.**
@@ -432,7 +516,7 @@ Orchestrator (Opus/Pro-class): contracts, numeric logic, guardrails, ML gates, c
 
 - Live SCADA or real ONGC data (synthetic only)
 - Absolute cost, NPV, payback or ROI in ₹ or USD (X-3)
-- Assets beyond the Assam Asset
+- Assets beyond the Assam Asset (v0.6: other ONGC assets appear only as position-only well tags on the India map, D-34)
 - Camera / image input to Live (WS-5 "multimodal" → audio-only, resolved)
 - Mobile / offline-first field app (the dossier PDF is the field artefact)
 - Gemini Enterprise republish (D-6: not applicable to WellPulse; future)
@@ -489,3 +573,8 @@ Orchestrator (Opus/Pro-class): contracts, numeric logic, guardrails, ML gates, c
 | MS-17 | Stage NN: Multimodal success engine (demo scorer in success_engine.py, TC-030 recommend_interventions, TC-031 similar_wells, NbaCard top-3 UI with P(success)/analogs/drivers, architecture diagram panel, plausibility review GK-129/LKW-019/LKM-061; D-32) | Milestone (v0.5) |
 | MS-18 | Stage FR: Field report HTML (GET /api/wells/{id}/report < 3 s, A4 print, fact check 100%) | Milestone (v0.5) |
 | MS-19 | Stage W2: Redeploy (local container + Cloud Run deploy + smoke 7/7) | Milestone (v0.5) |
+| D-33 | Showcase mode: every persona sees everything; RBAC kept behind `WELLPULSE_RBAC_ENFORCE=1` (on in tests) and presented as a capability | Accepted (v0.6, user 2026-10-08) |
+| D-34 | India map: 13 ONGC assets at approximate public locations with position-only, non-interactive well tags; no synthetic data for other assets; Assam is the only live asset | Accepted (v0.6, user 2026-10-08) |
+| D-35 | Service cost (tangible / intangible) deferred | Accepted (v0.6, user 2026-10-08) |
+| D-36 | Personas: CMD = all India; ED = one asset, technical; FE = execution documents. v0.6 builds the ED set; CMD set logged as backlog F-34…F-40 | Accepted (v0.6, user 2026-10-08) |
+| MS-20 | Stage ED: ED meeting pack (ED-1…ED-7: showcase mode, completion diagram, offset decline verdict, anomalies, wax/sand, India map, agent + script) | Milestone (v0.6) |

@@ -964,6 +964,41 @@ git add -A && git commit -m "v0.5(FR): field report HTML — Gate FR passed" && 
 
 ---
 
+## Stage ED · ED meeting pack (v0.6, Ajay Ratan) — in progress 2026-10-08
+
+**Goal:** Everything an ED (one asset, technical) asks about production, shown to everyone (showcase mode), on an India map that drills down to the Assam Asset. *Anchor: [`features.md`](./features.md) §3b F-27…F-33; D-33…D-36.*
+**Owner:** [O] Orchestrator, step by step. Each step is shown to the user, then committed and pushed after approval (X-7).
+
+| Step | Feature | Files | Done when |
+|---|---|---|---|
+| ED-1 | F-27 Showcase mode | `backend/app/agent/rbac.py`, `backend/tests/conftest.py`, `frontend/src/components/persona/PersonaPicker.tsx` | Switch off → every persona FULL; tests run with the switch on and stay green |
+| ED-2 | F-28 Completion diagram | `backend/app/analytics/tools/field_report.py` (shared SVG), `backend/app/api/analytics_wells.py` (`/schematic.svg`), `WellDeepDiveDrawer.tsx` (Wellbore view) | Diagram with casing, cement, tubing, packer/pump, perforations, formation tops, TD for hero + random wells |
+| ED-3 | F-29 Offset decline verdict | `backend/app/analytics/tools/offset_decline.py` (TC-033), route `/offset-decline`, `OffsetDeclineView.tsx`, `docs/pinned_values.md` | Verdict + curves for GK-129, LKW-019, LKM-061; unit tests |
+| ED-4 | F-30 Anomaly scan | `backend/app/analytics/tools/anomalies.py` (TC-034), route `/anomalies`, `WellHistoryView.tsx` ("History & Wax/Sand" view: dated timeline) | ≤ 12 dated events, deterministic; unit tests |
+| ED-5 | F-31 Wax & sand behaviour | `backend/app/analytics/tools/wax_sand.py` (TC-035), route `/wax-sand`, `WellHistoryView.tsx` (wax / sand panels) | Counts, own cycle vs. field norm, next-due only from own cycle, downtime; "no sand-rate data" stated; unit tests |
+| ED-6 | F-32 India map | `backend/app/analytics/tools/ongc_assets.py` (seeded), `/api/geo/ongc-assets` (`api/asset.py`), `WellMap.tsx` (India / Assam toggle) | India view on login with non-interactive tags for 13 assets; Assam drill-down unchanged |
+| ED-7 | F-33 Agent + script | `backend/app/agent/adk_tools_ext.py` (+3 tools → 33), `runner.py` (artifacts → well view), `rbac.py`, `prompt.py`, `live/voice_tools.py` (`well_profile.data.checks`, 12-tool cap kept), `frontend/src/api/chat.ts` + `VoiceAgentPanel.tsx` (offsets / history views), `docs/demo_flow.md` | "What's wrong with GK-129?" uses TC-033…035 and opens Offsets; ED script rehearsed |
+
+```bash
+# per step
+cd backend && uv run pytest -q tests/unit -p no:warnings
+cd ../frontend && npx tsc --noEmit -p . && npx vite build
+```
+
+### ✅ Gate ED
+- [ ] ED-1 … ED-7 done and each approved by the user
+- [ ] Unit tests green (current baseline 527 + new TC-033…035 / schematic tests)
+- [ ] `tsc` + `vite build` green
+- [ ] Every new number traces to a tool return (X-1/X-2); no currency (X-3)
+- [ ] ED rehearsal script passes on the local app
+
+**Commit (per step, user approved):**
+```bash
+git commit -m "v0.6(ED-n): <name>" && git push origin main
+```
+
+---
+
 ## Stage W2 · Redeploy
 
 **Goal:** Redeploy WellPulse v0.5 container to Cloud Run with zero-downtime revision rollout, verifying answer canvas, multimodal success scoring, data gap tables, and field report via 7/7 smoke tests. *Anchor: brief §2; §8.*
@@ -1010,6 +1045,16 @@ git add -A && git commit -m "v0.5(W2): redeploy — Gate W2 passed" && git push 
 - [ ] 11-step demo script (Lakwa → LKW-019) passes in chat and voice with canvas routing and brevity (F-26)
 - [ ] Deployed to Cloud Run with `deploy/deploy.sh deploy` and smoke test 7/7 green
 - [ ] One commit + push to `origin main` per passed stage gate with user sign-off (orchestrator only)
+
+---
+
+## Definition of done (v0.6, ED meeting)
+- [ ] Showcase mode: nothing hidden for any persona; RBAC presented as a switchable capability (D-33)
+- [ ] Completion diagram with perforations in the dashboard (F-28)
+- [ ] "What is wrong" answered by the offset decline verdict, anomaly scan and wax/sand behaviour (F-29…F-31)
+- [ ] India map with 13 ONGC asset tags; Assam drill-down (F-32)
+- [ ] ED rehearsal script passes; CMD features logged as backlog F-34…F-40
+- [ ] One commit + push per approved step
 
 ---
 

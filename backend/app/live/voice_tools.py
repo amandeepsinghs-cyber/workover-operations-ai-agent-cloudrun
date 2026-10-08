@@ -453,8 +453,10 @@ def _v_field_production_history(fields: str = "", freq: str = "M") -> dict[str, 
         "TC-029 + TC-017: tell me about one well (e.g. 'GK-129'): zone / formation, lift type, casing and tubing "
         "sizes, lithology, health bucket, current rate, decline residual, last test and pressure survey, the "
         "interventions in the last `months` (24 / 36 / 60; job, date, outcome) and nearby wells in the same "
-        "cluster with bucket, rate and decline residual. Use for 'tell me more about this well', 'history', "
-        "'nearby wells', 'is well ke aas paas'."
+        "cluster with bucket, rate and decline residual, plus data.checks: offset-decline verdict + headline "
+        "(TC-033: is it the well or the reservoir), anomaly summary (TC-034) and wax / sand behaviour (TC-035). "
+        "Use for 'tell me more about this well', 'history', 'what's wrong with this well', 'compare with nearby "
+        "wells', 'any anomalies', 'wax / sand', 'nearby wells', 'is well ke aas paas'."
     ),
     action_kind="well_profile",
 )
@@ -479,7 +481,38 @@ def _v_well_profile(well_id: str, months: int = 36) -> dict[str, Any]:
         data["historical_interventions"] = pd_.get("historical_interventions", [])
         data["history_window"] = {"months": pd_.get("months"), "start": pd_.get("window_start"),
                                   "end": pd_.get("window_end")}
+        data["checks"] = _ed_checks(well_id)  # v0.6 ED-7: voice cap is 12 tools, so the ED checks ride here
     return env
+
+
+def _ed_checks(well_id: str) -> dict[str, Any]:
+    """v0.6 ED-7: compact TC-033 / TC-034 / TC-035 answers for voice (strings + verdicts only)."""
+    wid = (well_id or "").strip().upper()
+    out: dict[str, Any] = {}
+    try:
+        from app.analytics.tools.offset_decline import offset_decline_compare
+
+        v = offset_decline_compare(wid).value or {}
+        out["offset_decline"] = {"verdict": v.get("verdict"), "water_scope": v.get("water_scope"),
+                                 "headline": v.get("headline")}
+    except Exception:  # noqa: BLE001
+        pass
+    try:
+        from app.analytics.tools.anomalies import well_anomalies
+
+        a = well_anomalies(wid).value or {}
+        out["anomalies"] = {"n_total": a.get("n_total"), "summary": a.get("summary")}
+    except Exception:  # noqa: BLE001
+        pass
+    try:
+        from app.analytics.tools.wax_sand import wax_sand_behaviour
+
+        w = wax_sand_behaviour(wid).value or {}
+        out["wax_sand"] = {"wax": (w.get("wax") or {}).get("text"), "sand": (w.get("sand") or {}).get("text"),
+                           "note": w.get("data_note")}
+    except Exception:  # noqa: BLE001
+        pass
+    return out
 
 
 # ---------------------------------------------------------------------------

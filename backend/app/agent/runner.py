@@ -48,6 +48,10 @@ ARTIFACT_KIND = {
     "search_documents": "citations",
     "classify_intervention": "intervention_classification",
     "render_well_map": "well_map",
+    # v0.6 Stage ED-7
+    "compare_offset_decline": "offset_decline",
+    "well_anomalies": "well_anomalies",
+    "wax_sand_behaviour": "wax_sand",
 }
 # tool name → screen the UI should drill to (T2 "drill down … different screens")
 ACTION_SCREEN = {
@@ -62,6 +66,9 @@ ACTION_SCREEN = {
     "recommend_next_best_action": "well",
     "compare_interventions": "well",
     "build_well_dossier": "well",
+    "compare_offset_decline": "well",
+    "well_anomalies": "well",
+    "wax_sand_behaviour": "well",
 }
 _PLOT_WORDS = ("plot", "chart", "graph", "dikhao")
 

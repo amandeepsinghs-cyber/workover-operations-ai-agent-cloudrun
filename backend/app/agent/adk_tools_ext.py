@@ -617,7 +617,93 @@ def list_sops(
 
 
 # --------------------------------------------------------------------------------------------------
-# EXT_TOOLS registry (19 wrappers in exact spec order)
+# v0.6 Stage ED-7: ED meeting diagnostics (TC-033 / TC-034 / TC-035)
+# --------------------------------------------------------------------------------------------------
+
+
+def compare_offset_decline(
+    well_id: str = "",
+    months: int = 24,
+    tool_context: ToolContext = None,
+) -> dict:
+    """TC-033: what is wrong with this well? Compares its decline, water cut and THP with its nearest offset wells
+    over `months` (default 24). Verdict WELL_SPECIFIC (problem in this well), RESERVOIR_WIDE (offsets decline
+    alike), WATER (scope WELL or AREA), RESTORED (a recent job restored rate), MIXED or INSUFFICIENT, with a
+    one-line headline, each offset's last job and the mechanical signature. Use for 'what's wrong with GK-129',
+    'compare decline with nearby wells', 'is it the well or the reservoir'."""
+    from app.analytics.tools.offset_decline import offset_decline_compare as tc033
+
+    wid = ctx_well(tool_context, well_id)
+    if not wid:
+        return _missing("TC-033", "well_id", "Which well? e.g. GK-129.")
+    return invoke(
+        tool_context,
+        tool_id="TC-033",
+        capability="well.diagnostics",
+        fn=tc033,
+        kwargs={"well_id": wid, "months": max(12, min(int(months or 24), 60))},
+        post=_series_post,
+    )
+
+
+def well_anomalies(
+    well_id: str = "",
+    months: int = 24,
+    tool_context: ToolContext = None,
+) -> dict:
+    """TC-034: any anomalies in this well's history? Rule-based scan of the last `months` (default 24): rate drops
+    (>=30%), water-cut jumps / 12-month rise (>=10 pts), THP shifts (>=25%), downtime episodes (>=7 days, with
+    reason and deferred bbl, ongoing flag), each linked to a nearby job. Use for 'well history', 'anything
+    unusual', 'anomalies', 'what happened to this well'."""
+    from app.analytics.tools.anomalies import well_anomalies as tc034
+
+    wid = ctx_well(tool_context, well_id)
+    if not wid:
+        return _missing("TC-034", "well_id", "Which well? e.g. GK-129.")
+    return invoke(
+        tool_context,
+        tool_id="TC-034",
+        capability="well.diagnostics",
+        fn=tc034,
+        kwargs={"well_id": wid, "months": max(6, min(int(months or 24), 60))},
+    )
+
+
+def wax_sand_behaviour(
+    well_id: str = "",
+    tool_context: ToolContext = None,
+) -> dict:
+    """TC-035: is this normal wax / sand, and can we predict it? For WAX and SAND: fluid flag, job count and last
+    job, the well's own repeat cycle vs the field norm, next-due date / overdue days (only when the well has a
+    repeat pattern), downtime days and deferred bbl, and an ongoing episode if any. There is no sand-rate data:
+    say behaviour is inferred from jobs and downtime. Use for 'wax problem', 'sand production history', 'when is
+    the next wax job due', 'is this normal wax'."""
+    from app.analytics.tools.wax_sand import wax_sand_behaviour as tc035
+
+    wid = ctx_well(tool_context, well_id)
+    if not wid:
+        return _missing("TC-035", "well_id", "Which well? e.g. GK-129.")
+    return invoke(
+        tool_context,
+        tool_id="TC-035",
+        capability="well.diagnostics",
+        fn=tc035,
+        kwargs={"well_id": wid},
+    )
+
+
+def _series_post(env: dict) -> dict:
+    """Drop monthly series from the model payload (the chart is on screen)."""
+    data = env.get("data")
+    if isinstance(data, dict):
+        for blk in [data.get("subject")] + list(data.get("offsets") or []):
+            if isinstance(blk, dict) and isinstance(blk.get("series"), list):
+                blk["series_months"] = len(blk.pop("series"))
+    return env
+
+
+# --------------------------------------------------------------------------------------------------
+# EXT_TOOLS registry (19 wrappers in exact spec order + 3 v0.6 ED tools)
 # --------------------------------------------------------------------------------------------------
 
 EXT_TOOLS: list[Callable[..., dict]] = [
@@ -640,6 +726,9 @@ EXT_TOOLS: list[Callable[..., dict]] = [
     classify_intervention,       # TC-021
     get_document,                # TC-026
     list_sops,                   # TC-026
+    compare_offset_decline,      # TC-033 (v0.6 ED-7)
+    well_anomalies,              # TC-034 (v0.6 ED-7)
+    wax_sand_behaviour,          # TC-035 (v0.6 ED-7)
 ]
 
 # If adk_tools was imported during our module initialization before EXT_TOOLS was bound,

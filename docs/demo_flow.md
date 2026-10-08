@@ -188,3 +188,35 @@ This 11-step demonstration guides an executive (Executive Director / Asset Manag
 * **Forbidden Tool(s):** `build_well_dossier` (agent must not trigger full multi-page dossier dump in chat text)
 * **Expected Canvas View:** `overview`
 * **Chat Answer Rule:** Maximum 3 sentences. Concise summary only; full history is accessible exclusively via the field report link or answer canvas switcher.
+
+---
+
+## ED Rehearsal Script (v0.6 Stage ED · Ajay Ratan, 2026-10-09)
+
+**Setup:** run the app locally (`bash run_local.sh`, open :5180). The map opens on **India**: 13 ONGC assets. Tags outside Assam are well names and positions only. Showcase mode is on, so nothing is hidden; the persona menu notes that role-based access can be switched on. Click **Assam Asset · live ▸** (or **Assam** in the map bar) to drill down.
+
+Expected answers below come from the tools at AS_OF 2026-09-23 (smoke run 2026-10-08). The agent quotes the same numbers, and the panel opens the view in the last column.
+
+| # | ED asks (text or voice) | Tool(s) | Expected answer (key facts) | Panel view |
+|---|---|---|---|---|
+| 1 | "Show me all our assets." → "Take me to Assam." | map | India with 13 assets → Assam Asset: Lakwa, Lakhmani, Geleki | Map (India → Assam) |
+| 2 | "What's wrong with GK-129?" | `compare_offset_decline` (+ `well_anomalies`) | Water cut up 13.0 pts in 12 months while offsets changed 2.2 pts, so a water problem in this well (channelling / casing leak / coning), not wax | vs Offsets |
+| 3 | "Compare its decline with the nearby wells." | `compare_offset_decline` | Same verdict, with the chart and table of offsets: distance, 12-month trend, WC Δ, last job | vs Offsets |
+| 4 | "Any anomalies in GK-129's history?" | `well_anomalies` | 5 anomalies in 24 months (1 rate drop, 1 water-cut rise, 3 downtime). Biggest: 2024-09-21 tubing-leak workover, 34 days, 1154 bbl deferred | History & Wax/Sand |
+| 5 | "Show me the completion diagram." | `well_profile` | Casing, cement, tubing / tools, perforations, formation tops, TD | Wellbore (completion diagram) |
+| 6 | "Is LKW-019 a well problem or the reservoir?" | `compare_offset_decline` | 32.6% above its own decline curve: rate restored by straddle packer on 2025-10-01 (+55.7 bopd). Offsets decline 16.6%/yr. Now waiting on rig (sand) since 2026-09-06 | vs Offsets |
+| 7 | "What's the sand history on LKW-019?" | `wax_sand_behaviour` | No sand jobs yet, but 1 sand downtime episode (18 days, 626 bbl deferred), ongoing since 2026-09-06. No sand-rate data: inferred from jobs and downtime | History & Wax/Sand |
+| 8 | "Why is LKM-061 down?" | `compare_offset_decline`, `well_anomalies` | 37.7% below its own decline curve while offsets are at −13.5%: the problem is in this well (gas-lift valve signature). Oil fell 31.0% in 2024-11 and the GLV replacement failed | vs Offsets |
+| 9 | "Is GK-031's wax normal? Can we predict the next job?" | `wax_sand_behaviour` | 7 wax jobs, repeating about every 178 days, more often than the Geleki norm of 360 days. Next due 2026-08-04, overdue by 50 days. 12132 bbl deferred to wax | History & Wax/Sand |
+| 10 | "What should we do on GK-129, and why not wax removal?" | `recommend_next_best_action`, `compare_interventions` | Top 3 from the multimodal engine; counterfactual explains why wax removal loses | Recommendation → Compare |
+
+**Pass criteria:**
+- Each answer is ≤ 4 sentences.
+- Every number appears in the tool result for that turn.
+- No currency.
+- The panel opens the listed view.
+- India tags are not clickable.
+
+**If asked:**
+- *"Is the data real?"* No. Synthetic and representative of the Assam Asset. Asset centres are approximate public locations; the tags outside Assam are illustrative.
+- *"Who sees what?"* Everything is shown today; role-based access per persona (CMD / ED / field engineer) is built and can be switched on (`WELLPULSE_RBAC_ENFORCE=1`).

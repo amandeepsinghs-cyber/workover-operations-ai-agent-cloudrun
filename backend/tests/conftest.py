@@ -26,6 +26,21 @@ def _fake_agent_llm(monkeypatch, request):
     runner.reset_runner()
 
 
+@pytest.fixture(autouse=True, scope="session")
+def _rbac_enforced():
+    """D-33: the app runs in showcase mode (RBAC off); tests keep the RBAC matrix enforced.
+
+    Session-scoped so module/session fixtures (e.g. dossier PDFs) are built with RBAC on too;
+    showcase tests flip it off locally with monkeypatch.
+    """
+    from app.agent import rbac
+
+    prev = rbac.ENFORCE
+    rbac.ENFORCE = True
+    yield
+    rbac.ENFORCE = prev
+
+
 @pytest.fixture(scope="session")
 def client():
     from app.main import app

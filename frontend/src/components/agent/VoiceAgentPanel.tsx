@@ -77,6 +77,9 @@ const PANEL_ARTIFACTS: Record<string, { screen: ChatAction['screen']; label: str
   field_comparison: { screen: 'field_compare', label: 'Field comparison' },
   health_buckets: { screen: 'field_health', label: 'Health & priority' },
   priority_queue: { screen: 'priority', label: 'Priority list' },
+  offset_decline: { screen: 'well', label: 'vs Offsets' },
+  well_anomalies: { screen: 'well', label: 'History & Wax/Sand' },
+  wax_sand: { screen: 'well', label: 'History & Wax/Sand' },
 };
 const VIEW_LABEL: Record<string, string> = {
   overview: 'Overview',
@@ -87,6 +90,8 @@ const VIEW_LABEL: Record<string, string> = {
   diagnosis: 'Diagnosis',
   recommendation: 'Recommendation',
   compare: 'Compare',
+  offsets: 'vs Offsets',
+  history: 'History & Wax/Sand',
   nearby: 'Nearby',
 };
 

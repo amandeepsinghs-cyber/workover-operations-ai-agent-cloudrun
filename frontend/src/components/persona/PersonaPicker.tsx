@@ -33,6 +33,14 @@ export const PersonaPicker: React.FC<{ lang?: Lang; compact?: boolean }> = ({
           </option>
         ))}
       </select>
+      {capabilities && capabilities.enforced === false && (
+        <span
+          className="text-[10px] text-emerald-300/80 font-sans shrink-0 pl-1.5 border-l border-border"
+          title="Showcase: every role sees everything. Role-based access (CMD / ED / Field Engineer) can be switched on per deployment."
+        >
+          Role-based access available
+        </span>
+      )}
       {Boolean(capabilities && capabilities.denied && capabilities.denied.length > 0) && (
         <span
           className="text-[10px] text-textMuted font-mono shrink-0 pl-1 border-l border-border"

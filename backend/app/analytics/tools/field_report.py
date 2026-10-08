@@ -345,6 +345,23 @@ def render_wellbore_svg(geom: dict, width: int = 700, height: int = 680) -> str:
     return "".join(svg_parts)
 
 
+def render_well_schematic_svg(well_id: str) -> str:
+    """F-28 (v0.6 ED-2): standalone completion diagram for the dashboard Wellbore view.
+
+    Same drawing as the field report (casing, cement, tubing / downhole tools, perforations by status,
+    formation tops, PBTD, TD), served as an ``image/svg+xml`` document with a white background.
+    """
+    wid = (well_id or "").strip().upper()
+    prof = well_profile(wid, k_neighbours=0, as_of=settings.AS_OF).value
+    if prof is None:
+        raise ValueError(f"Well profile for {wid} could not be resolved.")
+    svg = render_wellbore_svg(_build_schematic_geom(prof.identity, prof.construction, prof.lithology))
+    # Standalone document: valid sizing + white page so it reads like the printed diagram.
+    svg = svg.replace('height="auto" ', "", 1).replace("<br/>", " ")
+    head_end = svg.index("</style>") + len("</style>")
+    return svg[:head_end] + '<rect x="0" y="0" width="100%" height="100%" fill="#ffffff" />' + svg[head_end:]
+
+
 # -------------------------------------------------------------------------------------------------
 # SVG Production History Chart (WH-11)
 # -------------------------------------------------------------------------------------------------

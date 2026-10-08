@@ -108,7 +108,7 @@ def test_ed_classify_intervention() -> None:
 
 def test_all_tools_count_and_unique_names() -> None:
     """from app.agent.adk_tools import ALL has len 30 and unique __name__s."""
-    assert len(ALL) == 30, f"Expected 30 tools in ALL, found {len(ALL)}"
+    assert len(ALL) == 33, f"Expected 33 tools in ALL, found {len(ALL)}"
     names = [t.__name__ for t in ALL]
-    assert len(set(names)) == 30, f"Duplicate tool names in ALL: {names}"
-    assert len(EXT_TOOLS) == 19, f"Expected 19 tools in EXT_TOOLS, found {len(EXT_TOOLS)}"
+    assert len(set(names)) == 33, f"Duplicate tool names in ALL: {names}"
+    assert len(EXT_TOOLS) == 22, f"Expected 22 tools in EXT_TOOLS, found {len(EXT_TOOLS)}"

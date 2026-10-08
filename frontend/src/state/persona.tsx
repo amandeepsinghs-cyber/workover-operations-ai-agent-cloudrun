@@ -21,6 +21,8 @@ export interface Capabilities {
   denied: string[];
   access: Record<string, 'FULL' | 'SUMMARY' | 'OWN_CLUSTER' | 'NONE'>;
   denied_doc_types: string[];
+  /** D-33: false in showcase mode (RBAC available, not applied). */
+  enforced?: boolean;
   personas: { id: Persona; label: string }[];
 }
 

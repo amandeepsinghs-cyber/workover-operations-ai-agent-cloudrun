@@ -492,6 +492,29 @@
 
 ---
 
+### Milestone MS-20 · Stage ED — ED meeting pack (v0.6)
+**Anchor:** [`features.md`](./features.md) §3b F-27…F-33; D-33…D-36 (user, 2026-10-08)
+
+#### Tasks
+- [x] [O] ED-1 Showcase mode: `WELLPULSE_RBAC_ENFORCE` switch (default off → every persona FULL); tests force it on; persona menu note "Role-based access available (off for demo)"
+- [x] [O] ED-2 Completion diagram: shared SVG builder → `GET /api/wells/{id}/schematic.svg`; Wellbore view shows it (casing, cement, tubing, packer/pump, perforations by status, formation tops, TD)
+- [x] [O] ED-3 TC-033 offset decline compare + verdict (`WELL_SPECIFIC` / `RESERVOIR_WIDE` / `WATER` / `RESTORED` / `MIXED`); route; Offsets view; thresholds pinned
+- [x] [O] ED-4 TC-034 anomaly scan (rate drop, WC jump / trend, THP shift, downtime, linked workover); route; timeline in "History & Wax/Sand" view
+- [x] [O] ED-5 TC-035 wax/sand behaviour (job count, interval, next due, field norm; no sand rate stated); route; card in well panel
+- [x] [O] ED-6 India map: `ongc_assets.py` (13 assets, public approximate locations, position-only well tags); map opens on India; Assam drill-down unchanged
+- [x] [O] ED-7 Agent: TC-033…035 wired into ADK + Live; "What's wrong with GK-129?" opens Offsets; ED rehearsal script in `demo_flow.md`
+
+#### Gate ED
+- [ ] Each step approved by the user, then committed + pushed (`v0.6(ED-n): …`)
+- [ ] Unit tests green (baseline 527 + new); `tsc` + `vite build` green
+- [ ] Numbers only from tools; no currency
+- [ ] ED script rehearsed locally
+
+#### CMD backlog (logged, not in v0.6)
+- [ ] F-34 Asset comparisons · F-35 Field-wise production per asset · F-36 Asset DPR · F-37 Where it hurts · F-38 Sand rate (no data) · F-39 Service cost (deferred) · F-40 New locations (no data)
+
+---
+
 ### Milestone MS-19 · Stage W2 — Redeploy
 **Anchor:** brief §2; §8
 
@@ -567,3 +590,12 @@
 | **D-31** | Argon tier for data generation | Accepted | Argon = `gemini-3.8-flash-high` via `swarm add` for data generation and consistency test suites; orchestrator owns architecture, leakage rules, and gates; Flash handles prose and templates (brief §8). |
 | **D-32** | No model training or data regeneration in v0.5 | Accepted | Multimodal NN presented as engine (art-of-the-possible demo); numbers from deterministic demo scorer in `backend/app/analytics/tools/success_engine.py`; Vertex custom job & Model Registry kept as production path in architecture diagram; supersedes training parts of D-26/D-27/D-28 (brief §5). |
 
+
+## Key decisions (v0.6)
+
+| ID | Decision | Status | Resolution / detail |
+|---|---|---|---|
+| **D-33** | Showcase mode | Accepted (user, 2026-10-08) | Nothing hidden for any persona; RBAC kept behind `WELLPULSE_RBAC_ENFORCE=1` and presented as a capability |
+| **D-34** | India map tags | Accepted (user, 2026-10-08) | 13 ONGC assets at approximate public locations; position-only, non-interactive well tags; no data for other assets; Assam is live |
+| **D-35** | Service cost deferred | Accepted (user, 2026-10-08) | Tangible / intangible cost not built in v0.6 |
+| **D-36** | Persona model | Accepted (user, 2026-10-08) | CMD = all India; ED = one asset, technical; FE = execution documents; v0.6 builds the ED set, CMD backlog F-34…F-40 |

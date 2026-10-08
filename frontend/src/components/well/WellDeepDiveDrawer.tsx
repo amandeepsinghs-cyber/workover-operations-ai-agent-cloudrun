@@ -15,6 +15,8 @@ import { NbaCard } from '../decision/NbaCard';
 import { RecommendationPanel } from '../decision/RecommendationPanel';
 import { CounterfactualTable } from '../decision/CounterfactualTable';
 import { AttributionWaterfall } from '../decision/AttributionWaterfall';
+import { OffsetDeclineView } from './OffsetDeclineView';
+import { WellHistoryView } from './WellHistoryView';
 
 /** One focused view per question (answer canvas). Undefined = all sections (legacy overlay). */
 export type CanvasView =
@@ -27,6 +29,8 @@ export type CanvasView =
   | 'diagnosis'
   | 'recommendation'
   | 'compare'
+  | 'offsets'
+  | 'history'
   | 'nearby';
 
 export const CANVAS_VIEWS: { key: CanvasView; label: string }[] = [
@@ -36,7 +40,9 @@ export const CANVAS_VIEWS: { key: CanvasView; label: string }[] = [
   { key: 'interventions', label: 'Interventions' },
   { key: 'wellbore', label: 'Wellbore' },
   { key: 'pressures', label: 'Tests & Pressure' },
+  { key: 'history', label: 'History & Wax/Sand' },
   { key: 'diagnosis', label: 'Diagnosis' },
+  { key: 'offsets', label: 'vs Offsets' },
   { key: 'recommendation', label: 'Recommendation' },
   { key: 'nearby', label: 'Nearby' },
 ];
@@ -481,6 +487,35 @@ export const WellDeepDiveDrawer: React.FC<WellDeepDiveDrawerProps> = ({
               </div>
             </div>
             </>
+            )}
+
+            {show(['wellbore']) && (
+            /* F-28 (v0.6 ED-2): completion diagram — same drawing as the printed field report */
+            <div className="bg-[#0d1117] border border-border rounded-lg p-4 space-y-3">
+              <div className="text-xs font-mono uppercase text-textMuted font-bold flex items-center justify-between">
+                <span className="flex items-center gap-1.5">
+                  <Layers className="w-3.5 h-3.5 text-accent" />
+                  Completion diagram
+                </span>
+                <a
+                  href={`/api/wells/${encodeURIComponent(wellId)}/schematic.svg`}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="normal-case font-sans font-normal text-[11px] text-accent hover:text-white"
+                  title="Open the diagram full size in a new tab"
+                >
+                  Open full size ↗
+                </a>
+              </div>
+              <div className="rounded bg-white p-2 flex justify-center">
+                <img
+                  key={wellId}
+                  src={`/api/wells/${encodeURIComponent(wellId)}/schematic.svg`}
+                  alt={`Completion diagram for ${wellId}: casing, cement, tubing, perforations, formation tops`}
+                  className="w-full max-w-[700px] h-auto"
+                />
+              </div>
+            </div>
             )}
 
             {show(['overview', 'wellbore']) && (
@@ -963,6 +998,16 @@ export const WellDeepDiveDrawer: React.FC<WellDeepDiveDrawerProps> = ({
               <AttributionWaterfall wellId={wellId} windowDays={180} />
             </div>
             </>
+            )}
+
+            {show(['offsets']) && (
+              /* F-29 (v0.6 ED-3): decline vs. nearby wells → what is wrong */
+              <OffsetDeclineView wellId={wellId} onSelectWell={onSelectWell} />
+            )}
+
+            {show(['history']) && (
+              /* F-30 / F-31 (v0.6 ED-4/5): anomalies + wax / sand behaviour */
+              <WellHistoryView wellId={wellId} />
             )}
 
             {show(['nearby']) && (

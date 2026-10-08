@@ -17,6 +17,29 @@ import { t } from '../../i18n/strings';
 const CLUSTER_MAX_ZOOM = 11;
 const HEALTH_BUCKETS: HealthBucket[] = ['PRODUCING_OK', 'AT_RISK', 'UNDERPERFORMING', 'NOT_PRODUCING'];
 
+/** Stage ED-6: GET /api/geo/ongc-assets — 13 assets; non-Assam tags are names + positions only (D-34). */
+interface OngcAsset {
+  asset_id: string;
+  name: string;
+  basin: string;
+  lat: number;
+  lng: number;
+  offshore: boolean;
+  live: boolean;
+  well_tags: { name: string; lat: number; lng: number }[];
+}
+interface OngcAssets {
+  assets: OngcAsset[];
+  source_note: string;
+  bbox: { min_lat: number; max_lat: number; min_lng: number; max_lng: number };
+}
+/** At or above this zoom the India tags show their well names. */
+const TAG_NAME_MIN_ZOOM = 9;
+const ASSAM_DRILL_BOUNDS: L.LatLngBoundsExpression = [
+  [26.55, 94.3],
+  [27.25, 95.15],
+];
+
 interface WellMapProps {
   wells: WellSummary[];
   selectedWellId: string | null;
@@ -59,6 +82,12 @@ export const WellMap: React.FC<WellMapProps> = ({
   const [infrastructure, setInfrastructure] = useState<FieldInfrastructure | null>(null);
   const [mapData, setMapData] = useState<WellMapData | null>(null);
   const [zoom, setZoom] = useState<number>(10);
+  // Stage ED-6 (F-32, D-34): open on all-India; Assam Asset is the live drill-down.
+  const [indiaView, setIndiaView] = useState<boolean>(true);
+  const [viewNonce, setViewNonce] = useState<number>(0);
+  const [ongc, setOngc] = useState<OngcAssets | null>(null);
+  const indiaLayerGroupRef = useRef<L.LayerGroup | null>(null);
+  const firstFieldRef = useRef<boolean>(true);
   const fieldLabel = field === 'ALL' ? 'Assam Asset' : field;
   // Stage Y: TC-020 bucket + cluster per well from /api/fields/map (same source as the KPI header counts)
   const bucketById = useMemo(() => {
@@ -169,6 +198,9 @@ export const WellMap: React.FC<WellMapProps> = ({
     const tileGroup = L.layerGroup().addTo(map);
     tileLayerGroupRef.current = tileGroup;
 
+    const indiaGroup = L.layerGroup().addTo(map);
+    indiaLayerGroupRef.current = indiaGroup;
+
     const boundaryGroup = L.layerGroup().addTo(map);
     boundaryLayerGroupRef.current = boundaryGroup;
 
@@ -216,7 +248,18 @@ export const WellMap: React.FC<WellMapProps> = ({
       layer.bindTooltip(`${f.properties.name || f.properties.cluster_id} (${f.properties.field})`, { sticky: true });
       group.addLayer(layer);
     });
-    const bb = mapData.bbox;
+    if (!indiaViewRef.current) fitField();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [mapData]);
+
+  // Stage ED-6: keep a ref for effects that must not re-run on view toggles.
+  const indiaViewRef = useRef<boolean>(indiaView);
+  indiaViewRef.current = indiaView;
+
+  function fitField() {
+    const map = mapInstanceRef.current;
+    if (!map) return;
+    const bb = mapData?.bbox;
     if (bb && bb.min_lat != null && bb.max_lat != null && bb.min_lng != null && bb.max_lng != null) {
       map.fitBounds(
         [
@@ -225,8 +268,104 @@ export const WellMap: React.FC<WellMapProps> = ({
         ],
         { padding: [24, 24] },
       );
+    } else {
+      map.fitBounds(ASSAM_DRILL_BOUNDS, { padding: [24, 24] });
     }
-  }, [mapData]);
+  }
+
+  // Stage ED-6: India ↔ Assam Asset view.
+  useEffect(() => {
+    const map = mapInstanceRef.current;
+    if (!map) return;
+    if (indiaView) {
+      const b = ongc?.bbox ?? { min_lat: 8, max_lat: 29.5, min_lng: 68.5, max_lng: 97.5 };
+      map.fitBounds(
+        [
+          [b.min_lat, b.min_lng],
+          [b.max_lat, b.max_lng],
+        ],
+        { padding: [8, 8] },
+      );
+    } else {
+      fitField();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [indiaView, ongc, viewNonce]);
+
+  // Choosing a field (selector / agent) drills into the Assam Asset.
+  useEffect(() => {
+    if (firstFieldRef.current) {
+      firstFieldRef.current = false;
+      return;
+    }
+    setIndiaView(false);
+  }, [field]);
+
+  // Stage ED-6: fetch the 13-asset India overview once.
+  useEffect(() => {
+    let cancelled = false;
+    fetch('/api/geo/ongc-assets')
+      .then((r) => (r.ok ? (r.json() as Promise<OngcAssets>) : null))
+      .then((d) => !cancelled && d && setOngc(d))
+      .catch((e) => console.warn('ONGC assets fetch failed:', e));
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  // Stage ED-6 (D-34): asset labels + position-only well tags. Not clickable — except the live
+  // Assam Asset label, which drills down.
+  useEffect(() => {
+    const group = indiaLayerGroupRef.current;
+    if (!group) return;
+    group.clearLayers();
+    if (!ongc) return;
+    const showNames = zoom >= TAG_NAME_MIN_ZOOM;
+    ongc.assets.forEach((a) => {
+      if (!a.live) {
+        a.well_tags.forEach((tg) => {
+          group.addLayer(
+            L.circleMarker([tg.lat, tg.lng], {
+              radius: showNames ? 4 : 2.5,
+              color: a.offshore ? '#38bdf8' : '#e2e8f0',
+              weight: 1,
+              fillColor: a.offshore ? '#0ea5e9' : '#94a3b8',
+              fillOpacity: 0.9,
+              interactive: false,
+            }),
+          );
+          if (showNames) {
+            group.addLayer(
+              L.marker([tg.lat, tg.lng], {
+                interactive: false,
+                keyboard: false,
+                icon: L.divIcon({
+                  className: '',
+                  html: `<div style="transform: translate(8px,-7px); font: 600 10px ui-monospace,monospace; color:#e6edf3; text-shadow:0 0 3px #000,0 0 3px #000; white-space:nowrap;">${tg.name}</div>`,
+                  iconSize: [0, 0],
+                }),
+              }),
+            );
+          }
+        });
+      }
+      if (zoom < TAG_NAME_MIN_ZOOM) {
+        const live = a.live;
+        const label = L.marker([a.lat, a.lng], {
+          interactive: live,
+          keyboard: false,
+          zIndexOffset: live ? 900 : 0,
+          icon: L.divIcon({
+            className: '',
+            html: `<div style="transform: translate(${live ? '-50%' : '10px'}, ${live ? '-34px' : '-8px'}); white-space:nowrap; font: ${live ? 700 : 600} ${live ? 12 : 10}px Inter,sans-serif; color:${live ? '#fff' : '#cbd5e1'}; ${live ? 'background:#0d9488; border:1px solid #5eead4; padding:2px 8px; border-radius:999px; box-shadow:0 0 12px rgba(45,212,191,.6); cursor:pointer;' : 'text-shadow:0 0 3px #000,0 0 3px #000;'}">${a.name}${live ? ' · live ▸' : ''}</div>`,
+            iconSize: [0, 0],
+          }),
+        });
+        if (live) label.on('click', () => setIndiaView(false));
+        group.addLayer(label);
+      }
+    });
+  }, [ongc, zoom]);
 
   // Update Tile Layers when mapStyle changes
   useEffect(() => {
@@ -736,6 +875,36 @@ export const WellMap: React.FC<WellMapProps> = ({
 
       {/* Layer Style & Flowline Controls */}
       <div className="absolute top-3 right-3 z-[400] flex items-center gap-1.5 bg-surface/90 backdrop-blur-md border border-border p-1 rounded-lg shadow-xl font-mono text-xs">
+        {/* Stage ED-6: India overview ↔ Assam Asset drill-down */}
+        <button
+          type="button"
+          onClick={() => {
+            setIndiaView(true);
+            setViewNonce((n) => n + 1);
+          }}
+          title="All ONGC assets across India (tags outside Assam are position-only)"
+          className={`px-2.5 py-1 rounded transition-colors ${
+            indiaView ? 'bg-teal-600 text-white font-bold shadow-sm' : 'text-textMuted hover:text-white'
+          }`}
+        >
+          India
+        </button>
+        <button
+          type="button"
+          onClick={() => {
+            setIndiaView(false);
+            setViewNonce((n) => n + 1);
+          }}
+          title="Assam Asset — Lakwa, Lakhmani, Geleki (live data)"
+          className={`px-2.5 py-1 rounded transition-colors ${
+            !indiaView ? 'bg-teal-600 text-white font-bold shadow-sm' : 'text-textMuted hover:text-white'
+          }`}
+        >
+          Assam
+        </button>
+
+        <span className="text-border">|</span>
+
         <button
           onClick={() => setShowFlowlines(!showFlowlines)}
           title={`Toggle ${fieldLabel} Flowline Network & GGS Gathering Stations`}
@@ -794,6 +963,17 @@ export const WellMap: React.FC<WellMapProps> = ({
           )}
         </button>
       </div>
+
+      {/* Stage ED-6 (D-34): India view note — tags outside Assam carry no data */}
+      {indiaView && ongc && (
+        <div
+          data-testid="map-india-note"
+          className="absolute bottom-12 right-4 z-[400] max-w-xs bg-black/50 border border-white/10 text-white/80 px-2 py-1 rounded text-[10px] font-sans shadow-xl"
+          title={ongc.source_note}
+        >
+          {ongc.assets.length} ONGC assets · live data: Assam Asset (Lakwa, Lakhmani, Geleki) · other tags: well name &amp; position only
+        </div>
+      )}
 
       {/* Stage Y (D-3): synthetic geometry label, always visible */}
       {isSynthetic && (
