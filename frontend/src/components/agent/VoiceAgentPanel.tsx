@@ -44,7 +44,14 @@ interface VoiceAgentPanelProps {
   contextLabel?: string;
   /** Reports voice state so the minimised launcher can show LIVE / listening / speaking. */
   onStatusChange?: (s: AgentVoiceStatus) => void;
+  /** Step 5: open the printable field report overlay for a well. */
+  onOpenFieldReport?: (wellId: string) => void;
 }
+
+/** Step 5: "prepare the field report / crew pack / printable report for GK-129". */
+const FIELD_REPORT_RE =
+  /\b(field|crew|site|rig)[\s-]+(report|pack)\b|\bwell[\s-]+pack\b|\breport\s+for\s+(the\s+)?(crew|field|site|rig)\b|\bprint(able)?\s+(the\s+)?report\b/i;
+const WELL_ID_RE = /\b([A-Z]{2,3})[\s-]?(\d{3})\b/i;
 
 export interface AgentVoiceStatus {
   live: boolean;
@@ -101,6 +108,8 @@ export type LiveChatMessage = Omit<ChatMessage, 'recommendation'> & {
   recommendation?: SafeRecommendation;
   artifacts?: ChatArtifactType[];
   status?: 'ok' | 'degraded';
+  /** Step 5: this message is a "↗ Field report · WELL" chip. */
+  fieldReportWell?: string;
 };
 
 export const VoiceAgentPanel: React.FC<VoiceAgentPanelProps> = ({
@@ -111,6 +120,7 @@ export const VoiceAgentPanel: React.FC<VoiceAgentPanelProps> = ({
   headerActions,
   contextLabel,
   onStatusChange,
+  onOpenFieldReport,
 }) => {
   const [messages, setMessages] = useState<LiveChatMessage[]>([]);
   const [inputPrompt, setInputPrompt] = useState<string>('');
@@ -146,6 +156,29 @@ export const VoiceAgentPanel: React.FC<VoiceAgentPanelProps> = ({
   // Latest user utterance (typed or spoken). Agent actions open the full well view only when this
   // explicitly asks for history / deep dive / report (isExplicitDetailRequest).
   const lastUserTextRef = useRef<string>('');
+
+  // Step 5: an explicit "field report / crew pack" request opens the printable report overlay for the
+  // well named in the message (or the selected well) and leaves a re-open chip in the chat. Held in a
+  // ref so the Live handlers (registered once per well/field) always call the latest version.
+  const maybeOpenFieldReport = (text: string) => {
+    if (!onOpenFieldReport || !text || !FIELD_REPORT_RE.test(text)) return;
+    const m = text.match(WELL_ID_RE);
+    const id = m ? `${m[1].toUpperCase()}-${m[2]}` : well?.id;
+    if (!id) return;
+    onOpenFieldReport(id);
+    setMessages((prev) => [
+      ...prev,
+      {
+        id: `report-${Date.now()}`,
+        sender: 'agent',
+        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        text: '',
+        fieldReportWell: id,
+      },
+    ]);
+  };
+  const fieldReportRef = useRef(maybeOpenFieldReport);
+  fieldReportRef.current = maybeOpenFieldReport;
 
   // 1. LiveClient instance per panel in useRef
   const clientRef = useRef<LiveClient | null>(null);
@@ -257,6 +290,8 @@ export const VoiceAgentPanel: React.FC<VoiceAgentPanelProps> = ({
             })
           );
         }
+        // Spoken request (transcribed this turn): "prepare the field report for GK-129".
+        if (currentUserMsgIdRef.current) fieldReportRef.current(lastUserTextRef.current);
         currentUserMsgIdRef.current = null;
         currentAgentMsgIdRef.current = null;
       },
@@ -737,6 +772,7 @@ export const VoiceAgentPanel: React.FC<VoiceAgentPanelProps> = ({
 
     setMessages((prev) => [...prev, userMessage]);
     setInputPrompt('');
+    maybeOpenFieldReport(textToSend);
     setIsProcessing(true);
 
     try {
@@ -817,6 +853,8 @@ export const VoiceAgentPanel: React.FC<VoiceAgentPanelProps> = ({
       if (!sent) {
         // Fallback to HTTP if socket unexpectedly failed
         await handleSendMessage(textToSend, false);
+      } else {
+        maybeOpenFieldReport(textToSend);
       }
       return;
     }
@@ -1031,7 +1069,19 @@ export const VoiceAgentPanel: React.FC<VoiceAgentPanelProps> = ({
 
       {/* Chat Messages Stream */}
       <div className="flex-1 overflow-y-auto p-4 space-y-4 font-sans text-xs">
-        {messages.map((msg) => (
+        {messages.map((msg) => msg.fieldReportWell ? (
+          <div key={msg.id} className="flex pl-9">
+            <button
+              type="button"
+              onClick={() => onOpenFieldReport?.(msg.fieldReportWell as string)}
+              title="Re-open the printable field report"
+              className="flex items-center gap-1.5 text-[11px] font-mono text-accent hover:text-white bg-accent/10 hover:bg-accent/25 border border-accent/40 rounded-full px-2.5 py-1 transition-colors"
+            >
+              <span aria-hidden>↗</span>
+              <span>Field report · {msg.fieldReportWell}</span>
+            </button>
+          </div>
+        ) : (
           <div
             key={msg.id}
             className={`flex gap-3 ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}

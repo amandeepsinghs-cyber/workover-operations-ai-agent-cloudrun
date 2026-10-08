@@ -9,6 +9,7 @@ import { FieldSelector } from './components/fields/FieldSelector';
 import { FieldHistoryChart } from './components/fields/FieldHistoryChart';
 import { FieldComparison } from './components/fields/FieldComparison';
 import { WellDeepDiveDrawer, CanvasView } from './components/well/WellDeepDiveDrawer';
+import { FieldReportOverlay } from './components/well/FieldReportOverlay';
 import { usePersona } from './state/persona'; // Stage Y: tabs hidden per persona (UI hint; server enforces)
 // Stage R (additive): field health buckets (TC-020) + priority queue (TC-010)
 import { HealthBucketsCard } from './components/decision/HealthBucketsCard';
@@ -52,6 +53,8 @@ export function App() {
   // Map full-screen (reported by WellMap) and whether the agent is docked as the right-hand column.
   const [mapFullscreen, setMapFullscreen] = useState<boolean>(false);
   const [agentDocked, setAgentDocked] = useState<boolean>(false);
+  // Step 5: well whose printable field report is open in the full-screen overlay.
+  const [reportWellId, setReportWellId] = useState<string | null>(null);
   useEffect(() => {
     if (!middleExpanded) return;
     const onKey = (e: KeyboardEvent) => {
@@ -284,7 +287,8 @@ export function App() {
           {/* Right-hand panel: well summary / well views / field views */}
           {panelOpen && (
             <section className="flex-1 basis-1/2 min-w-[400px] flex flex-col overflow-hidden relative">
-              <div className="absolute top-2 right-2 z-20 flex items-center gap-1">
+              {/* z-30: must sit above the well panel's sticky header (z-20), which would otherwise hide it. */}
+              <div className="absolute top-2 right-2 z-30 flex items-center gap-1">
                 <button
                   onClick={() => setMiddleExpanded((v) => !v)}
                   className="p-1.5 rounded border border-border bg-[#12161c]/90 text-textMuted hover:text-white hover:border-accent"
@@ -351,6 +355,7 @@ export function App() {
                   compareRecommended={canvasCompareRec}
                   onClose={handlePanelBack}
                   onSelectWell={(id) => openWellInPanel(id, canvasView)}
+                  onFieldReport={setReportWellId}
                 />
               )}
             </section>
@@ -368,7 +373,12 @@ export function App() {
         onAgentAction={handleAgentAction}
         autoDock={(middleExpanded && panelOpen) || mapFullscreen}
         onDockedChange={setAgentDocked}
+        onOpenFieldReport={setReportWellId}
+        suspended={!!reportWellId}
       />
+
+      {/* Step 5: printable field report — full-screen overlay (Print / Close / Esc). */}
+      {reportWellId && <FieldReportOverlay wellId={reportWellId} onClose={() => setReportWellId(null)} />}
     </div>
   );
 }

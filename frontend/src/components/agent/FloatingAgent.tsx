@@ -14,6 +14,10 @@ interface FloatingAgentProps {
   autoDock?: boolean;
   /** Reports whether the agent currently occupies the docked right column (so the app can reserve it). */
   onDockedChange?: (docked: boolean) => void;
+  /** Opens the printable field report (Step 5) when the user asks the agent for it. */
+  onOpenFieldReport?: (wellId: string) => void;
+  /** A full-screen overlay (e.g. the field report) is up: minimise the agent out of the way. */
+  suspended?: boolean;
 }
 
 /** Docked command-centre column width: 20% of the screen, never narrower than 340px. */
@@ -35,6 +39,8 @@ export const FloatingAgent: React.FC<FloatingAgentProps> = ({
   onAgentAction,
   autoDock = false,
   onDockedChange,
+  onOpenFieldReport,
+  suspended = false,
 }) => {
   const [open, setOpen] = useState<boolean>(false);
   const [expanded, setExpanded] = useState<boolean>(false);
@@ -144,6 +150,11 @@ export const FloatingAgent: React.FC<FloatingAgentProps> = ({
     setOpen(false);
     launcherRef.current?.focus();
   }, []);
+
+  // Field report (or any full-screen overlay) opened: get out of the way.
+  useEffect(() => {
+    if (suspended) setOpen(false);
+  }, [suspended]);
 
   // Keyboard: Ctrl/Cmd+K toggles, "/" opens, Esc minimises (handled before other Esc listeners).
   useEffect(() => {
@@ -295,6 +306,7 @@ export const FloatingAgent: React.FC<FloatingAgentProps> = ({
           onAgentAction={handleAction}
           onStatusChange={handleStatus}
           headerActions={headerActions}
+          onOpenFieldReport={onOpenFieldReport}
         />
       </div>
 

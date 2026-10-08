@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, Loader2, AlertTriangle, Layers, Activity, Wrench, Shield, Compass, Calendar, Gauge } from 'lucide-react';
+import { X, Loader2, AlertTriangle, Layers, Activity, Wrench, Shield, Compass, Calendar, Gauge, FileText } from 'lucide-react';
 import {
   assetApi,
   WellProfile,
@@ -52,6 +52,8 @@ export interface WellDeepDiveDrawerProps {
   onViewChange?: (v: CanvasView) => void;
   /** Recommended job to compare against in the 'compare' view. */
   compareRecommended?: string;
+  /** Opens the printable field report for this well (Step 5). */
+  onFieldReport?: (wellId: string) => void;
 }
 
 function formatNum(val: number | null | undefined, digits = 1): string {
@@ -83,6 +85,7 @@ export const WellDeepDiveDrawer: React.FC<WellDeepDiveDrawerProps> = ({
   view,
   onViewChange,
   compareRecommended,
+  onFieldReport,
 }) => {
   const show = (vs: CanvasView[]) => !view || vs.includes(view);
   const [months, setMonths] = useState<24 | 36 | 60>(36);
@@ -235,6 +238,16 @@ export const WellDeepDiveDrawer: React.FC<WellDeepDiveDrawerProps> = ({
               >
                 {bucket.replace(/_/g, ' ')}
               </span>
+            )}
+            {onFieldReport && (
+              <button
+                type="button"
+                onClick={() => onFieldReport(wellId)}
+                className="ml-auto flex items-center gap-1 text-[11px] font-sans px-2 py-0.5 rounded border border-accent/40 text-accent hover:bg-accent/20 hover:text-white transition-colors"
+                title="Prepare the printable field report for the crew"
+              >
+                <FileText className="w-3 h-3" /> Field report
+              </button>
             )}
           </div>
           <div className="text-xs font-mono text-textMuted mt-1">

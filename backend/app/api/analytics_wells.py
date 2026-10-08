@@ -108,3 +108,16 @@ def well_compare(well_id: str, alternative: str = Query(..., min_length=1), reco
     env = compare_interventions(wid, recommended_job=recommended or None, alternative_job=alternative,
                                 as_of=_as_of_or_422(as_of)).envelope()
     return rbac.redact(persona, "well.nba", env)
+
+
+# Stage FR (v0.5): TC-032 field_report printable HTML report
+@router.get("/wells/{well_id}/report")
+def well_field_report(well_id: str, intervention: str | None = Query(None),
+                      persona: str = Depends(rbac.require("well.nba"))):
+    """TC-032 (v0.5 Stage FR): printable HTML 'Pre-field Well Pack' / Field Report."""
+    from fastapi.responses import HTMLResponse
+    from app.analytics.tools.field_report import render_field_report
+
+    wid = _known_well_or_404(well_id)
+    html_content = render_field_report(wid, intervention=intervention, persona=persona)
+    return HTMLResponse(content=html_content)
