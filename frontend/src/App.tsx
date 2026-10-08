@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Header } from './components/common/Header';
 import { WellMap } from './components/map/WellMap';
-import { WellDetails } from './components/telemetry/WellDetails';
 import { FloatingAgent, AGENT_DOCK_WIDTH } from './components/agent/FloatingAgent';
 import { FleetKPIs, WellDetail, WellSummary } from './types/well';
 import { Maximize2, Minimize2, X } from 'lucide-react';
@@ -46,7 +45,7 @@ export function App() {
     if (!canAggregate && screenTab !== 'map' && screenTab !== 'field_health') setScreenTab('map');
   }, [canAggregate, screenTab]);
   const [drawerWellId, setDrawerWellId] = useState<string | null>(null);
-  const [canvasView, setCanvasView] = useState<CanvasView>('overview');
+  const [canvasView, setCanvasView] = useState<CanvasView>('summary');
   const [canvasCompareRec, setCanvasCompareRec] = useState<string | undefined>(undefined);
   // Middle (well telemetry) panel expanded: map hidden, agent stays on the right as command centre.
   const [middleExpanded, setMiddleExpanded] = useState<boolean>(false);
@@ -56,11 +55,11 @@ export function App() {
   useEffect(() => {
     if (!middleExpanded) return;
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && !drawerWellId) setMiddleExpanded(false);
+      if (e.key === 'Escape' && !drawerWellId && !selectedWellId) setMiddleExpanded(false);
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [middleExpanded, drawerWellId]);
+  }, [middleExpanded, drawerWellId, selectedWellId]);
   // While the full detail is open, picking another well on the map/list shows that well's detail.
   useEffect(() => {
     if (drawerWellId && selectedWellId && selectedWellId !== drawerWellId) setDrawerWellId(selectedWellId);
@@ -176,16 +175,6 @@ export function App() {
     setDrawerWellId(null);
   }, [fieldFilter, wells]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Esc on the plain well summary closes the panel and returns to the full map.
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key !== 'Escape' || mapFullscreen || drawerWellId || middleExpanded || screenTab !== 'map' || !selectedWellId) return;
-      setSelectedWellId(null);
-      setSelectedWellDetail(null);
-    };
-    window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
-  }, [mapFullscreen, drawerWellId, middleExpanded, screenTab, selectedWellId]);
 
 
   // "What the agent sees": Field · Well · View (shown in the agent header, sent with each turn via props).
@@ -214,10 +203,17 @@ export function App() {
     setScreenTab('map');
     setMiddleExpanded(false);
   };
-  const openWellInPanel = (id: string) => {
+  const openWellInPanel = (id: string, view: CanvasView = 'summary') => {
     setSelectedWellId(id);
     setDrawerWellId(id);
+    setCanvasView(view);
     setScreenTab('map');
+  };
+  // Esc / panel close: leave expanded mode first, otherwise return to the full map.
+  const handlePanelBack = () => {
+    if (mapFullscreen) return; // Esc belongs to the full-screen map
+    if (middleExpanded) setMiddleExpanded(false);
+    else closePanel();
   };
   const fieldViewBtn = (t: ScreenTab, label: string) => (
     <button
@@ -262,12 +258,9 @@ export function App() {
               <WellMap
                 wells={filteredWells}
                 selectedWellId={selectedWellId}
-                onSelectWell={setSelectedWellId}
+                onSelectWell={(id) => openWellInPanel(id, 'summary')}
                 field={fieldFilter}
-                onOpenWell={(id) => {
-                  setCanvasView('overview');
-                  openWellInPanel(id);
-                }}
+                onOpenWell={(id) => openWellInPanel(id, 'overview')}
                 onFullscreenChange={setMapFullscreen}
                 fullscreenRightInset={agentDocked ? AGENT_DOCK_WIDTH : undefined}
               />
@@ -340,33 +333,25 @@ export function App() {
                     ))}
                     <span className="text-textMuted ml-2">Click a well to open it.</span>
                   </div>
-                  <HealthBucketsCard field={healthField} selectedWellId={drawerWellId} onSelectWell={openWellInPanel} />
+                  <HealthBucketsCard field={healthField} selectedWellId={drawerWellId} onSelectWell={(id) => openWellInPanel(id)} />
                   <PriorityQueueTable
                     field={healthField}
                     limit={20}
                     selectedWellId={drawerWellId}
-                    onSelectWell={openWellInPanel}
+                    onSelectWell={(id) => openWellInPanel(id)}
                   />
                 </div>
-              ) : drawerWellId ? (
+              ) : (
+                // One well panel: Summary first, slim tab strip for the deeper views.
                 <WellDeepDiveDrawer
                   embedded
-                  wellId={drawerWellId}
+                  wellId={(drawerWellId ?? selectedWellId) as string}
                   view={canvasView}
                   onViewChange={setCanvasView}
                   compareRecommended={canvasCompareRec}
-                  onClose={() => setDrawerWellId(null)}
-                  onSelectWell={(id) => {
-                    setDrawerWellId(id);
-                    setSelectedWellId(id);
-                  }}
+                  onClose={handlePanelBack}
+                  onSelectWell={(id) => openWellInPanel(id, canvasView)}
                 />
-              ) : selectedWellDetail && selectedWellDetail.id === selectedWellId ? (
-                <WellDetails well={selectedWellDetail} />
-              ) : (
-                <div className="flex-1 flex items-center justify-center font-mono text-xs text-textMuted">
-                  <span className="animate-spin mr-2">◌</span> Loading {selectedWellId}…
-                </div>
               )}
             </section>
           )}

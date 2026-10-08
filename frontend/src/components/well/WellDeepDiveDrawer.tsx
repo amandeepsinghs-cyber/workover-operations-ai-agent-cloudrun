@@ -18,6 +18,7 @@ import { AttributionWaterfall } from '../decision/AttributionWaterfall';
 
 /** One focused view per question (answer canvas). Undefined = all sections (legacy overlay). */
 export type CanvasView =
+  | 'summary'
   | 'overview'
   | 'production'
   | 'interventions'
@@ -29,6 +30,7 @@ export type CanvasView =
   | 'nearby';
 
 export const CANVAS_VIEWS: { key: CanvasView; label: string }[] = [
+  { key: 'summary', label: 'Summary' },
   { key: 'overview', label: 'Overview' },
   { key: 'production', label: 'Production' },
   { key: 'interventions', label: 'Interventions' },
@@ -87,6 +89,9 @@ export const WellDeepDiveDrawer: React.FC<WellDeepDiveDrawerProps> = ({
   // Stage R: counterfactual panel (opened from the NBA card or the toggle)
   const [compareOpen, setCompareOpen] = useState<boolean>(false);
   const [compareRec, setCompareRec] = useState<string | undefined>(undefined);
+  useEffect(() => {
+    if (view === 'summary') setMonths(24);
+  }, [view, wellId]);
   useEffect(() => {
     setCompareOpen(view === 'compare');
     setCompareRec(view === 'compare' ? compareRecommended : undefined);
@@ -218,11 +223,6 @@ export const WellDeepDiveDrawer: React.FC<WellDeepDiveDrawerProps> = ({
       >
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
-            {embedded && (
-              <span className="text-[10px] font-mono uppercase tracking-wider text-accent">
-                {view ? CANVAS_VIEWS.find((v) => v.key === view)?.label ?? 'Why not another job' : 'Well detail'}
-              </span>
-            )}
             <h2 className="text-base font-bold font-mono text-white tracking-wide">{wellId}</h2>
             {bucket && (
               <span
@@ -241,33 +241,36 @@ export const WellDeepDiveDrawer: React.FC<WellDeepDiveDrawerProps> = ({
             {profile?.identity.field ?? '—'} · {profile?.identity.cluster_id ? `Cluster ${profile.identity.cluster_id}` : '—'}
           </div>
           {embedded && onViewChange && (
-            <div className="flex flex-wrap gap-1 mt-2">
-              {CANVAS_VIEWS.map((v) => (
-                <button
-                  key={v.key}
-                  onClick={() => onViewChange(v.key)}
-                  className={`px-2 py-0.5 rounded border text-[10px] font-mono ${
-                    view === v.key || (view === 'compare' && v.key === 'recommendation')
-                      ? 'border-accent text-white bg-surface'
-                      : 'border-border text-textMuted hover:text-white'
-                  }`}
-                >
-                  {v.label}
-                </button>
-              ))}
-            </div>
+            <nav className="flex gap-3 mt-2.5 -mb-4 overflow-x-auto no-scrollbar" aria-label="Well views">
+              {CANVAS_VIEWS.map((v) => {
+                const active = view === v.key || (view === 'compare' && v.key === 'recommendation');
+                return (
+                  <button
+                    key={v.key}
+                    onClick={() => onViewChange(v.key)}
+                    aria-current={active ? 'page' : undefined}
+                    className={`whitespace-nowrap pb-2 text-[11px] font-sans border-b-2 transition-colors ${
+                      active ? 'border-accent text-white font-semibold' : 'border-transparent text-textMuted hover:text-white'
+                    }`}
+                  >
+                    {v.label}
+                  </button>
+                );
+              })}
+            </nav>
           )}
         </div>
 
+        {!embedded && (
         <button
           onClick={onClose}
           className="p-1 rounded text-textMuted hover:text-white hover:bg-surface transition-colors shrink-0 flex items-center gap-1 text-[10px] font-mono"
           aria-label={embedded ? 'Back to production view' : 'Close drawer'}
           title={embedded ? 'Back to production view (ESC)' : 'Close (ESC)'}
         >
-          {embedded && <span>Back</span>}
           <X className="w-5 h-5" />
         </button>
+        )}
       </div>
 
       {/* Main Drawer Body */}
@@ -294,6 +297,32 @@ export const WellDeepDiveDrawer: React.FC<WellDeepDiveDrawerProps> = ({
           </div>
         ) : profile ? (
           <>
+            {show(['summary']) && (
+              <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 text-xs font-mono">
+                {[
+                  { k: 'Status', v: (profile.status.bucket ?? '—').replace(/_/g, ' '), c: bucketColor },
+                  { k: 'Oil', v: `${formatNum(profile.current.oil_bopd)} BOPD` },
+                  { k: 'Water cut', v: `${formatNum(profile.current.water_cut_pct)} %` },
+                  { k: 'Gas', v: `${formatNum(profile.current.gas_mscfd)} Mscfd` },
+                  { k: 'Lift', v: String(profile.lift?.lift_type ?? '—').replace(/_/g, ' ') },
+                ].map((c) => (
+                  <div key={c.k} className="bg-surface/50 border border-border/60 rounded p-2 min-w-0">
+                    <div className="text-[10px] text-textMuted uppercase">{c.k}</div>
+                    <div className="font-semibold text-sm mt-0.5 truncate" style={{ color: c.c ?? '#fff' }} title={c.v}>
+                      {c.v}
+                    </div>
+                  </div>
+                ))}
+                {profile.status.reason && (
+                  <div className="col-span-2 sm:col-span-5 text-[11px] text-textMuted font-sans">
+                    <span className="text-white">Why: </span>
+                    {profile.status.reason}
+                    {profile.current.last_producing_date ? ` · last producing ${profile.current.last_producing_date}` : ''}
+                  </div>
+                )}
+              </div>
+            )}
+
             {show(['overview']) && (
             <>
             {/* Section 1: Status & Current Performance */}
@@ -704,7 +733,7 @@ export const WellDeepDiveDrawer: React.FC<WellDeepDiveDrawerProps> = ({
             </>
             )}
 
-            {show(['interventions']) && (
+            {show(['summary', 'interventions']) && (
             <>
             {/* Section 8: Interventions Summary */}
             <div className="bg-[#0d1117] border border-border rounded-lg p-3 space-y-2">
@@ -738,7 +767,7 @@ export const WellDeepDiveDrawer: React.FC<WellDeepDiveDrawerProps> = ({
             </>
             )}
 
-            {show(['production', 'interventions']) && (
+            {show(['summary', 'production', 'interventions']) && (
             <>
             {/* Section 9: Production Section with Months Selector */}
             <div className="bg-[#0d1117] border border-border rounded-lg p-4 space-y-3">
