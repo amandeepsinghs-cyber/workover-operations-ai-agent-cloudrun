@@ -569,18 +569,3 @@ def install(app: Any) -> None:
     """Register the PermissionDenied / UnknownPersona → envelope handler (one line in ``main.py``)."""
     app.add_exception_handler(PermissionDenied, _permission_denied_handler)
     app.add_exception_handler(UnknownPersona, _permission_denied_handler)
-
-
-
-# ------------------------------------------------------------------------------------------------
-# Stage V TODO (routes / tools owned by other stages; apply when they are free)
-# ------------------------------------------------------------------------------------------------
-STAGE_V_TODO = (
-    "api/analytics_wells.py: /wells/{id}/attribution → Depends(require('well.attribution')); "
-    "/wells/{id}/classification → require('well.diagnostics'); nba/compare → require('well.nba') + redact cost_band",
-    "api/wells.py: /wells/{id}/recommendations → require('well.nba') and redact(persona,'well.nba',body); "
-    "/wells/{id}/chat → pass persona into the runner (persona_scope)",
-    "agent/adk_tools.py: decorate every wrapper with @gated(<capability>) (TOOL_CAPABILITY / attribution_capability)",
-    "agent/runner.py: wrap each turn in persona_scope(request persona); ChatReply.persona",
-    "services/ai_agent.py: remove persona-agnostic recommendation path once runner lands",
-)

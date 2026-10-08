@@ -523,11 +523,13 @@ async def run_fallback_session(websocket: WebSocket, inbound: asyncio.Queue, sta
         text = str(data.get("text", ""))
         _log_turn(state, "User", text)
         await _send(websocket, {"type": "voice_state", "state": "thinking"})
-        reply = await asyncio.to_thread(fallback.answer_text, text, dict(state["ui"]), list(state["log"]))
+        reply = await fallback.answer_text_async(text, dict(state["ui"]), list(state["log"]))
         reply_text = voice_tools.strip_money(str(reply.get("text", "")))
         _log_turn(state, "Agent", reply_text)
         await _send(websocket, {"type": "fallback_reply", "text": reply_text,
                                 "recommendation": voice_tools.strip_money(reply.get("recommendation")),
+                                "artifacts": voice_tools.to_json_safe(voice_tools.strip_money(reply.get("artifacts") or [])),
+                                "actions": voice_tools.to_json_safe(reply.get("actions") or []),
                                 "engine": reply.get("engine", "text-fallback")})
         await _send(websocket, {"type": "caption_delta", "text": reply_text, "role": "agent"})
         await _send(websocket, {"type": "turn_complete", "full_text": reply_text})

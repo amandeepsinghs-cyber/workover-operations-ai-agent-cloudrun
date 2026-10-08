@@ -532,12 +532,14 @@ Each class maps to ≥ 1 `job_catalogue.job_code`. V§2 WS-3 archetypes are cove
 | Features (`analytics/model/features.py::build_features(well_id, s)`) | **Production** (90 d before `s`): decline residual %, oil / liquid / WC slopes, GOR change, THP/CHP slope, mean SPM, runtime fraction, downtime-reason mix, Chan WOR′ slope (TC-002), fillage gap (TC-003), GL injection slope, WHT trend. **Construction:** lift type, TVD, casing age, production casing OD, tubing OD, pump depth, `casing_vented`, zone, open / squeezed perf counts. **History:** prior jobs per class, last class, last outcome, days since last job, last run life, failures in 24 months |
 | Train = serve | The same `build_features` is called by training and by TC-021 |
 | Leakage guard | Features read only rows dated `< s`; unit test asserts no read `≥ s` |
-| Model | `HistGradientBoostingClassifier(class_weight="balanced")` + `CalibratedClassifierCV(method="isotonic")` |
+| Model | `HistGradientBoostingClassifier(class_weight="balanced")` + `CalibratedClassifierCV(method="isotonic")` *(note: see §19.3 deviations subsection)* |
 | Explanations | `shap.TreeExplainer` on the uncalibrated booster; top-5 signed contributions |
 | Splits | Selection: `GroupKFold(5)` by `well_id`. **Gate holdout:** temporal, last 12 months before `AS_OF`. Informational: leave-Lakhmani-out |
 | Baseline | TC-008 rule route mapped to IC |
 | Serving | `INSUFFICIENT_HISTORY` if < 90 days of production before `AS_OF` |
 | Artifacts | `analytics/model/intervention_classifier_v1.pkl`, `intervention_classifier_metrics.json` (the agent reads quality numbers from this file, never from memory) |
+
+*Note on §8.2 calibration: v0.4 calibration uses temperature scaling instead of isotonic (see §19.3 v0.4 implementation deviations (as built)).*
 
 ### 8.3 Gate Q (blocks Stage R)
 | Metric | Bar |
@@ -1105,6 +1107,17 @@ No API keys; `GEMINI_API_KEY` is removed from the service's env and from code.
 | D-22 | Ranking metric (verbatim NPV vs D-1) | ✅ Resolved 2026-10-07 | Expected deferred barrels recovered × `p_success` ÷ rig-days, displayed with cost band (§9.1; K-7 fix) |
 | D-23 | `frontend/dist` in git | ✅ Resolved 2026-10-07 | Stop tracking in Stage W once the multi-stage Dockerfile builds it |
 | D-24 | Autonomy | ✅ Authorised by user 2026-10-07 19:52 | Fully autonomous overnight run incl. BigQuery DDL apply (dry-run first) and Cloud Run deploy of `wellpulse-app` (smoke test after); never delete existing resources; commit + push after every passed gate. See [`EXECUTION_PLAN.md`](./EXECUTION_PLAN.md) |
+
+### 19.3 v0.4 implementation deviations (as built)
+
+Factually documented deviations and rulings established during implementation:
+- **(a)** §8.2 calibration uses temperature scaling instead of isotonic (Stage Q ruling; Geleki core excluded from classifier training because labels are random by construction; LKM-061 passes if top-2 = {IC-07, IC-04});
+- **(b)** the well dossier PDF is rendered with reportlab as vector output (`backend/app/analytics/docs_pdf/dossier_render.py`);
+- **(c)** `GET /api/wells/{id}/export?format=pdf` returns 200;
+- **(d)** `/api/healthz` added as alias of `/api/health`;
+- **(e)** legacy `/api/wells/{id}/audio` and per-well WS routes removed (D-20), voice goes through `/ws/live`;
+- **(f)** Stage R LKW-047 PUMP_OVERHAUL evaluated as-of 2026-05-14/2026-07-06 (R-D1) because the pump job happened on 2026-07-07;
+- **(g)** Lakwa has 0 UNDERPERFORMING wells under data-driven triggers (Stage P ruling, honest, not forced).
 
 ---
 

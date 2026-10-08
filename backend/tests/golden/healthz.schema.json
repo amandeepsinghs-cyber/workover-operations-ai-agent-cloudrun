@@ -1,0 +1,33 @@
+{
+  "method": "GET",
+  "route": "/api/healthz",
+  "schema": {
+    "properties": {
+      "service": {
+        "type": [
+          "string"
+        ]
+      },
+      "status": {
+        "type": [
+          "string"
+        ]
+      },
+      "version": {
+        "type": [
+          "string"
+        ]
+      }
+    },
+    "required": [
+      "service",
+      "status",
+      "version"
+    ],
+    "type": [
+      "object"
+    ]
+  },
+  "status": 200,
+  "wells": []
+}

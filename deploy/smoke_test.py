@@ -143,7 +143,7 @@ def main(argv: list[str] | None = None) -> int:
     base = a.base_url.rstrip("/")
     print(f"WellPulse smoke test -> {base}")
 
-    # 1. health: /api/healthz is the SDD name; the app currently serves /api/health.
+    # 1. health: try /api/healthz first; fall back to /api/health
     try:
         status, *_ = http_get(base + "/api/healthz")
     except Exception:
@@ -151,7 +151,7 @@ def main(argv: list[str] | None = None) -> int:
     if status == 200:
         check_json("GET /api/healthz", base + "/api/healthz", _health)
     else:
-        check_json("GET /api/health (no /api/healthz)", base + "/api/health", _health)
+        check_json("GET /api/health (fallback)", base + "/api/health", _health)
 
     check_json("GET /api/wells/kpis", base + "/api/wells/kpis", _kpis)
     check_json("GET /api/fields", base + "/api/fields", _fields)

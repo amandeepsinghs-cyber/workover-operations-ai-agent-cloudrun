@@ -50,6 +50,7 @@ def _well_or_404(well_id: str) -> dict:
 
 
 @router.get("/health")
+@router.get("/healthz")
 def health_check():
     return {
         "status": "healthy",

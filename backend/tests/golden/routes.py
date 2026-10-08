@@ -17,6 +17,7 @@ _AUDIO_BODY = {"audio_base64": "AAAA", "mime_type": "audio/webm", "language": "e
 
 ROUTES: list[tuple[str, str, str, dict | None]] = [
     ("health", "GET", "/api/health", None),
+    ("healthz", "GET", "/api/healthz", None),
     ("wells_kpis", "GET", "/api/wells/kpis", None),
     ("wells_list", "GET", "/api/wells", None),
     ("wells_list_filtered", "GET", "/api/wells?status=all&basin=Assam&search=GK", None),

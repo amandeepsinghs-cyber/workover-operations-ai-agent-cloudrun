@@ -252,15 +252,22 @@ export const VoiceAgentPanel: React.FC<VoiceAgentPanelProps> = ({
           setCurrentRecommendation(rec);
         }
 
+        const fbArtifacts = (msg.artifacts ?? []) as ChatArtifactType[];
         const agentMsg: LiveChatMessage = {
           id: `agent-fallback-${Date.now()}`,
           sender: 'agent',
           timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
           text: msg.text,
           recommendation: rec,
+          artifacts: fbArtifacts.length > 0 ? fbArtifacts : undefined,
           live: true,
         };
         setMessages((prev) => [...prev, agentMsg]);
+        if (onAgentAction) {
+          for (const act of (msg.actions ?? []) as ChatAction[]) {
+            onAgentAction(act);
+          }
+        }
       },
 
       onError: (message) => {

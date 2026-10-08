@@ -40,7 +40,13 @@ export interface LiveHandlers {
   onToolCall?: (ev: ToolCallEvent) => void;
   onAction?: (kind: string, payload: unknown) => void;
   onInterrupted?: () => void;
-  onFallbackReply?: (msg: { text: string; recommendation?: unknown; engine?: string }) => void;
+  onFallbackReply?: (msg: {
+    text: string;
+    recommendation?: unknown;
+    engine?: string;
+    artifacts?: unknown[];
+    actions?: unknown[];
+  }) => void;
   onError?: (message: string) => void;
   onFirstAudio?: (latencyMs: number) => void; // ms from last audio_end/prompt sent to first downstream audio chunk of that turn
 }
@@ -275,6 +281,8 @@ export class LiveClient {
           text: msg.text ?? '',
           recommendation: msg.recommendation,
           engine: msg.engine,
+          artifacts: Array.isArray(msg.artifacts) ? msg.artifacts : [],
+          actions: Array.isArray(msg.actions) ? msg.actions : [],
         });
         break;
       }
