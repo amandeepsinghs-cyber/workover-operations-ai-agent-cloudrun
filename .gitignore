@@ -49,3 +49,6 @@ backend/app/data/index/
 
 # v0.4 (D-23): dist is built in the Docker web stage
 frontend/dist/
+
+# Local ad-hoc fake eval runs (curated eval results above remain tracked)
+backend/tests/eval/results/fake-run-*.json
