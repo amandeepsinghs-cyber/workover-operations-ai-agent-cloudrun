@@ -128,7 +128,8 @@ def build_live_config(types: Any, system_prompt: str, tools: list[Any], handle: 
         system_instruction=types.Content(parts=[types.Part.from_text(text=system_prompt)]),
         tools=tools,
         speech_config=types.SpeechConfig(
-            voice_config=types.VoiceConfig(prebuilt_voice_config=types.PrebuiltVoiceConfig(voice_name=voice))
+            voice_config=types.VoiceConfig(prebuilt_voice_config=types.PrebuiltVoiceConfig(voice_name=voice)),
+            language_code=_env("LIVE_LANGUAGE_CODE", "en-IN"),  # Indian English accent (R-6 follow-up)
         ),
         session_resumption=types.SessionResumptionConfig(handle=handle),
         context_window_compression=types.ContextWindowCompressionConfig(sliding_window=types.SlidingWindow()),
